@@ -26,7 +26,7 @@ and input the commands as explained below.
 * Clone the source code:
 
 ```
-    git clone https://github.com/tripatheea/PFCandidate-Filter PFCandidate/PFCandidate
+    git clone https://github.com/tripatheea/PFCandidate-Filter PFCandidateFilter/PFCandidateFilter
 ````
 * Compile the code with the command:
 
