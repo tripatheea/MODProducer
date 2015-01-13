@@ -9,10 +9,16 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/Utilities/interface/InputTag.h"
 
+
+// The following four lines are for Muons. Remove them later on. 
+// Not too sure about the last two lines though.
 #include "DataFormats/MuonReco/interface/Muon.h"
 #include "DataFormats/MuonReco/interface/MuonFwd.h"
 #include "DataFormats/TrackReco/interface/Track.h"
 #include "DataFormats/TrackReco/interface/TrackBase.h"
+
+#include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
+#include "DataFormats/ParticleFlowCandidate/interface/PFCandidateFwd.h"
 
 #include <iostream>
 #include <string>
@@ -21,6 +27,14 @@
 #include <TFile.h>
 
 #include <fstream>
+
+#include "FWCore/Utilities/interface/InputTag.h"
+
+#include "DataFormats/JetReco/interface/PFJet.h"
+
+#include "PhysicsTools/SelectorUtils/interface/PFJetIDSelectionFunctor.h"
+#include "PhysicsTools/SelectorUtils/interface/strbitset.h"
+
 
 class PFCandidateFilter : public edm::EDFilter 
 {
@@ -62,7 +76,8 @@ PFCandidateFilter::PFCandidateFilter(const edm::ParameterSet& iConfig)
 {
   //rootFile_ = new TFile(rootFileName_.c_str(), "RECREATE");
 
-  int nbins = int((invariantMassMax_ - invariantMassMin_)/binInterval_); 
+  int nbins = int((invariantMassMax_ - invariantMassMin_)/binInterval_);
+  std::cout << "Analyzing" << std::endl; 
   
   invariantMasses_ = new TH1D("dimuon invariant mass",
                               "dimuon invariant mass",
@@ -81,8 +96,15 @@ PFCandidateFilter::filter(edm::Event& event, const edm::EventSetup& eventSetup)
 
   std::cout << "Started filtering. Ting." << std::endl;
 
-  edm::Handle<reco::MuonCollection> collection;
+  edm::Handle<reco::PFCandidateCollection> collection;
+
+
+  std::cout << muonInputTag_ << std::endl;
+  
   event.getByLabel(muonInputTag_, collection);
+
+
+  std::cout << "The collection size is: " << collection->size() << std::endl;
 
   if ( ! collection.isValid() )
   {
@@ -90,146 +112,8 @@ PFCandidateFilter::filter(edm::Event& event, const edm::EventSetup& eventSetup)
     return false;
   }
   
-  int charge;
-  double pt, eta, phi;
-  double energy, px, py, pz;
-
-  double last_energy = 0.0;
-  double last_px = 0.0;
-  double last_py = 0.0;
-  double last_pz = 0.0;
-
-  double last_pt = 0.0;
-  double last_eta = 0.0;
-  double last_phi = 0.0;
-
-  // Only examine if there are precisely 2 muons in the event (for simplicity)
-  if ( collection->size() != 2 )
-    return false;
-
-  int last_charge = 0;
-  int combined_charge = 0;
-
-  bool last_was_tracker = false;
-  bool last_was_global = false;
-
-  bool this_is_tracker = false;
-  bool this_is_global = false;
- 
-  for ( reco::MuonCollection::const_iterator it = collection->begin(), end = collection->end(); 
-        it != end; ++it) 
-  {
-    // We are only looking for tracker or global muons, not stand-alone
-    if ( ! ((*it).track().isNonnull() || (*it).combinedMuon().isNonnull()) )
-      return false;
-
-    //if ( nEvents_ >= maxNEvents_ )
-    //  return false;
-    
-    if  ( (*it).combinedMuon().isNonnull() ) // Global muon                                                             
-    {
-      pt = (*it).combinedMuon()->pt();
-      phi = (*it).combinedMuon()->phi();
-      eta = (*it).combinedMuon()->eta();
-    }
-    
-    if ( (*it).track().isNonnull() ) // Tracker muon                                                                      
-    {
-      pt = (*it).track()->pt();
-      phi = (*it).track()->phi();
-      eta = (*it).track()->eta();
-    }
+  std::cout << "Yay, it worked!" << std::endl;
   
-    charge = (*it).charge();
-    
-    if ( last_charge == 0 ) // i.e. this is the first of the pair of muons
-    {
-      last_charge = charge;
-      last_energy = (*it).energy();
-      last_px = (*it).px();
-      last_py = (*it).py();
-      last_pz = (*it).pz();
-
-      last_pt = pt;
-      last_eta = eta;
-      last_phi = phi;
-
-      if ( (*it).track().isNonnull() )
-      {
-        last_was_global = false;
-        last_was_tracker = true;
-      }
-      
-      if ( (*it).combinedMuon().isNonnull() )
-      {
-        last_was_tracker = false;
-        last_was_global = true;
-      }
-      
-    }
-    
-    else // we are on the second muon of the pair and can compare charge and calculate invariant mass
-    {
-      combined_charge = last_charge*charge;
-      
-      energy = (*it).energy();
-      px = (*it).px();
-      py = (*it).py();
-      pz = (*it).pz();
-
-      double E  = last_energy + energy;
-      double PX = last_px + px;
-      double PY = last_py + py;
-      double PZ = last_pz + pz;
-
-      double m = E*E;
-      m -= (PX*PX + PY*PY + PZ*PZ);
-      m = sqrt(m);
-
-      if ( m < invariantMassMin_ || m > invariantMassMax_ )
-        return false;
-
-      std::string this_type;
-
-      if ( (*it).track().isNonnull() )
-      {
-        this_is_tracker = true;
-        this_is_global = false;
-        this_type = "T";
-      }
-      
-      if ( (*it).combinedMuon().isNonnull() )
-      {
-        this_is_global = true;
-        this_is_tracker = false; // a global actually contains both, so make it false
-        this_type = "G";
-      }
-      
-      std::string last_type;
-
-      if ( last_was_tracker )
-        last_type = "T";
-      if ( last_was_global )
-        last_type = "G";
-
-      // If both are tracker then reject
-      if ( last_was_tracker && this_is_tracker )
-        return false; // TT
-      
-      //invariantMasses_->Fill(m);
-
-      csvOut_<< event.id().run() <<","<< event.id().event() <<","
-	     << last_type <<","
-             << last_energy <<","<< last_px <<","<< last_py <<","<< last_pz <<","
-             << last_pt <<","<< last_eta <<","<< last_phi <<","<< last_charge <<","
-             << this_type <<","
-	     << energy <<","<< px <<","<< py <<","<< pz <<","
-             << pt <<","<< eta <<","<< phi <<","<< charge <<","
-             << m <<std::endl;
-    }
-  }
-
-  nEvents_ += 1;
   
   return true;
 }

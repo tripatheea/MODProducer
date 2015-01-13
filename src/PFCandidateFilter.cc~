@@ -9,10 +9,16 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/Utilities/interface/InputTag.h"
 
+
+// The following four lines are for Muons. Remove them later on. 
+// Not too sure about the last two lines though.
 #include "DataFormats/MuonReco/interface/Muon.h"
 #include "DataFormats/MuonReco/interface/MuonFwd.h"
 #include "DataFormats/TrackReco/interface/Track.h"
 #include "DataFormats/TrackReco/interface/TrackBase.h"
+
+#include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
+#include "DataFormats/ParticleFlowCandidate/interface/PFCandidateFwd.h"
 
 #include <iostream>
 #include <string>
@@ -62,7 +68,8 @@ PFCandidateFilter::PFCandidateFilter(const edm::ParameterSet& iConfig)
 {
   //rootFile_ = new TFile(rootFileName_.c_str(), "RECREATE");
 
-  int nbins = int((invariantMassMax_ - invariantMassMin_)/binInterval_); 
+  int nbins = int((invariantMassMax_ - invariantMassMin_)/binInterval_);
+  std::cout << "Analyzing" << std::endl; 
   
   invariantMasses_ = new TH1D("dimuon invariant mass",
                               "dimuon invariant mass",
@@ -72,7 +79,7 @@ PFCandidateFilter::PFCandidateFilter(const edm::ParameterSet& iConfig)
 }
 
 
-PFCandidateFilter::~DimuonFilter()
+PFCandidateFilter::~PFCandidateFilter()
 {}
 
 bool
