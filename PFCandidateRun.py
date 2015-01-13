@@ -3030,7 +3030,7 @@ process.PFCandidateFilter.invariantMassMax = cms.double(110.0)
 
 # Change this to set the maximum number of events to process
 # -1 means all of them
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(5))
 
 process.Filter = cms.Path(process.PFCandidateFilter)
 process.schedule = cms.Schedule(process.Filter)
