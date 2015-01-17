@@ -3025,8 +3025,6 @@ process_load = process.load("PFCandidateFilter.PFCandidateFilter.PFCandidateFilt
 
 # Set the output file name and the invariant mass range (GeV)
 process.PFCandidateFilter.csvFileName = cms.string("PFCandidate.csv")
-process.PFCandidateFilter.invariantMassMin = cms.double(2.0)
-process.PFCandidateFilter.invariantMassMax = cms.double(110.0)
 
 # Change this to set the maximum number of events to process
 # -1 means all of them
