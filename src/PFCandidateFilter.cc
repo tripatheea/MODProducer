@@ -9,17 +9,6 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/Utilities/interface/InputTag.h"
 
-
-// The following four lines are for Muons. Remove them later on. 
-// Not too sure about the last two lines though.
-#include "DataFormats/MuonReco/interface/Muon.h"
-#include "DataFormats/MuonReco/interface/MuonFwd.h"
-#include "DataFormats/TrackReco/interface/Track.h"
-#include "DataFormats/TrackReco/interface/TrackBase.h"
-
-#include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
-#include "DataFormats/ParticleFlowCandidate/interface/PFCandidateFwd.h"
-
 #include <iostream>
 #include <string>
 
@@ -30,10 +19,66 @@
 
 #include "FWCore/Utilities/interface/InputTag.h"
 
+#include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
+#include "DataFormats/ParticleFlowCandidate/interface/PFCandidateFwd.h"
+#include "DataFormats/ParticleFlowReco/interface/PFBlockElement.h"
 #include "DataFormats/JetReco/interface/PFJet.h"
+#include "DataFormats/Candidate/interface/CompositeCandidate.h"
+#include "DataFormats/ParticleFlowReco/interface/PFBlockFwd.h"
+#include "DataFormats/TrackReco/interface/TrackFwd.h"
+#include "DataFormats/GsfTrackReco/interface/GsfTrack.h"
+#include "DataFormats/GsfTrackReco/interface/GsfTrackFwd.h"
+
+
+#include "DataFormats/Common/interface/Ptr.h"
+#include "DataFormats/Common/interface/PtrVector.h"
+#include "DataFormats/Common/interface/RefProd.h"
+#include "DataFormats/Common/interface/Ref.h"
+#include "DataFormats/Common/interface/RefVector.h"
+
+
+#include "RecoParticleFlow/PFProducer/interface/PFMuonAlgo.h"
+#include "DataFormats/ParticleFlowReco/interface/PFBlock.h"
+#include "DataFormats/ParticleFlowReco/interface/PFBlockElement.h"
+#include "DataFormats/ParticleFlowReco/interface/PFBlockElementTrack.h"
+#include "DataFormats/ParticleFlowReco/interface/PFBlockElementGsfTrack.h"
+#include "DataFormats/TrackReco/interface/Track.h"
+#include "DataFormats/MuonReco/interface/Muon.h"
+#include "DataFormats/MuonReco/interface/MuonSelectors.h"
+#include "DataFormats/MuonReco/interface/MuonCocktails.h"
+
+
+#include "DataFormats/MuonReco/interface/MuonFwd.h"
+#include "DataFormats/ParticleFlowCandidate/interface/PFCandidateElectronExtraFwd.h"
+#include "DataFormats/EgammaCandidates/interface/GsfElectronFwd.h"
+#include "DataFormats/ParticleFlowReco/interface/PFDisplacedVertexFwd.h"
+#include "DataFormats/EgammaCandidates/interface/ConversionFwd.h"
+#include "DataFormats/Candidate/interface/VertexCompositeCandidate.h"
+#include "DataFormats/ParticleFlowCandidate/interface/PFCandidatePhotonExtraFwd.h"
+#include "DataFormats/EgammaCandidates/interface/PhotonFwd.h"
+
+#include "DataFormats/Math/interface/LorentzVector.h"
+#include "DataFormats/Candidate/interface/Candidate.h"
 
 #include "PhysicsTools/SelectorUtils/interface/PFJetIDSelectionFunctor.h"
 #include "PhysicsTools/SelectorUtils/interface/strbitset.h"
+#include "FWCore/Framework/interface/EDAnalyzer.h"
+
+#include "FWCore/Framework/interface/Event.h"
+#include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/ServiceRegistry/interface/Service.h"
+#include "FWCore/Utilities/interface/InputTag.h"
+#include "FWCore/Utilities/interface/EDMException.h"
+#include "CommonTools/UtilAlgos/interface/TFileService.h"
+
+#include "TH1D.h"
+#include "TMath.h"
+#include <vector>
+#include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
+#include "DataFormats/ParticleFlowCandidate/interface/IsolatedPFCandidate.h"
+#include <DataFormats/TrackReco/interface/Track.h>
+#include <DataFormats/MuonReco/interface/Muon.h>
+
 
 
 class PFCandidateFilter : public edm::EDFilter 
@@ -47,42 +92,34 @@ private:
   virtual bool filter(edm::Event&, const edm::EventSetup&);
   virtual void endJob() ;
  
-  edm::InputTag muonInputTag_;
+  edm::InputTag pfCandidateInputTag_;
 
-  double binInterval_;
   std::string rootFileName_;
-  double invariantMassMin_;
-  double invariantMassMax_;
- 
+  
   TFile* rootFile_;
-  TH1D*  invariantMasses_;
-
+  
   std::ofstream csvOut_;
   std::string csvFileName_;
 
   int maxNEvents_;
   int nEvents_;
+
+
+ 
 };
 
 PFCandidateFilter::PFCandidateFilter(const edm::ParameterSet& iConfig)
-  : muonInputTag_(iConfig.getParameter<edm::InputTag>("muonInputTag")),
-    binInterval_(iConfig.getParameter<double>("binInterval")),
+  : pfCandidateInputTag_(iConfig.getParameter<edm::InputTag>("pfCandidateInputTag")),
     rootFileName_(iConfig.getParameter<std::string>("rootFileName")),
-    invariantMassMin_(iConfig.getParameter<double>("invariantMassMin")),
-    invariantMassMax_(iConfig.getParameter<double>("invariantMassMax")),
     csvFileName_(iConfig.getParameter<std::string>("csvFileName")),
     maxNEvents_(iConfig.getParameter<int>("maxNEvents")),
     nEvents_(0)
 {
-  //rootFile_ = new TFile(rootFileName_.c_str(), "RECREATE");
+  rootFile_ = new TFile(rootFileName_.c_str(), "RECREATE");
 
-  int nbins = int((invariantMassMax_ - invariantMassMin_)/binInterval_);
   std::cout << "Analyzing" << std::endl; 
-  
-  invariantMasses_ = new TH1D("dimuon invariant mass",
-                              "dimuon invariant mass",
-                              nbins, invariantMassMin_, invariantMassMax_);
 
+  
   csvOut_.open(csvFileName_.c_str());
 }
 
@@ -98,22 +135,35 @@ PFCandidateFilter::filter(edm::Event& event, const edm::EventSetup& eventSetup)
 
   edm::Handle<reco::PFCandidateCollection> collection;
 
-
-  std::cout << muonInputTag_ << std::endl;
-  
-  event.getByLabel(muonInputTag_, collection);
-
+  event.getByLabel(pfCandidateInputTag_, collection);
 
   std::cout << "The collection size is: " << collection->size() << std::endl;
 
-  if ( ! collection.isValid() )
-  {
-    std::cerr<<"DimuonFilter: invalid collection"<<std::endl;
+  if ( ! collection.isValid()){
+    std::cerr << "PFCandidateFilter: Invalid collection." << std::endl;
     return false;
   }
   
-  std::cout << "Yay, it worked!" << std::endl;
+  std::cout << "Valid collection created." << std::endl;
   
+  reco::PFCandidate::ParticleType currentParticleType;
+
+  for(reco::PFCandidateCollection::const_iterator it = collection->begin(), end = collection->end(); it != end; it++) {
+    
+    currentParticleType = (*it).particleId();
+    
+    int particleType = (int) currentParticleType;
+    double PT = it->pt();
+    double phi = it->phi();
+    double eta = it->eta();
+    double ecal = it->ecalEnergy();
+    double hcal = it->hcalEnergy();
+    
+    csvOut_ << event.id().run() << ", " << event.id().event() << ", " << particleType << ", " << PT << ", " << phi << ", " << eta << ", " << ecal << ", " << hcal << std::endl;
+    
+  }
+  
+
   
   return true;
 }
@@ -121,7 +171,7 @@ PFCandidateFilter::filter(edm::Event& event, const edm::EventSetup& eventSetup)
 void 
 PFCandidateFilter::beginJob()
 {
-  csvOut_<<"Run,Event,Type1,E1,px1,py1,pz1,pt1,eta1,phi1,Q1,Type2,E2,px2,py2,pz2,pt2,eta2,phi2,Q2,M"<<std::endl;
+  csvOut_ << "Run, Event, particleType, PT, phi, eta, ecal, hcal" << std::endl;
 }
 
 void 
@@ -133,5 +183,7 @@ PFCandidateFilter::endJob()
 
   csvOut_.close();
 }
+
+#include "FWCore/Framework/interface/MakerMacros.h"
 
 DEFINE_FWK_MODULE(PFCandidateFilter);
