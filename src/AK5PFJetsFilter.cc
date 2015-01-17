@@ -12,8 +12,8 @@
 #include <iostream>
 #include <string>
 
+#include <TH1.h>
 #include <TFile.h>
-#include <TTree.h>
 
 #include <fstream>
 
@@ -71,7 +71,9 @@
 #include "FWCore/Utilities/interface/EDMException.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
-
+#include "TH1D.h"
+#include "TMath.h"
+#include <vector>
 #include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
 #include "DataFormats/ParticleFlowCandidate/interface/IsolatedPFCandidate.h"
 #include <DataFormats/TrackReco/interface/Track.h>
@@ -79,23 +81,22 @@
 
 
 
-class PFCandidateFilter : public edm::EDFilter 
+class AK5PFJetsFilter : public edm::EDFilter 
 {
 public: 
-  explicit PFCandidateFilter(const edm::ParameterSet&);
-  ~PFCandidateFilter();
+  explicit AK5PFJetsFilter(const edm::ParameterSet&);
+  ~AK5PFJetsFilter();
 
 private:
   virtual void beginJob() ;
   virtual bool filter(edm::Event&, const edm::EventSetup&);
   virtual void endJob() ;
  
-  edm::InputTag pfCandidateInputTag_;
+  edm::InputTag AK5PFJetsInputTag_;
 
   std::string rootFileName_;
   
-  TFile * rootFile_;
-  TTree * pfCandidateTree_;
+  TFile* rootFile_;
   
   std::ofstream csvOut_;
   std::string csvFileName_;
@@ -103,85 +104,78 @@ private:
   int maxNEvents_;
   int nEvents_;
 
-  int runNum;
-  int eventNum;
 
-  int particleType;
-  double PT;
-  double phi;
-  double eta;
-  double ecal;
-  double hcal;
  
 };
 
-PFCandidateFilter::PFCandidateFilter(const edm::ParameterSet& iConfig)
-  : pfCandidateInputTag_(iConfig.getParameter<edm::InputTag>("pfCandidateInputTag")),
+AK5PFJetsFilter::AK5PFJetsFilter(const edm::ParameterSet& iConfig)
+  : AK5PFJetsInputTag_(iConfig.getParameter<edm::InputTag>("AK5PFJetsInputTag")),
     rootFileName_(iConfig.getParameter<std::string>("rootFileName")),
     csvFileName_(iConfig.getParameter<std::string>("csvFileName")),
     maxNEvents_(iConfig.getParameter<int>("maxNEvents")),
     nEvents_(0)
 {
   rootFile_ = new TFile(rootFileName_.c_str(), "RECREATE");
-  pfCandidateTree_ = new TTree("PF Candidates", "ParticleFlow Candidates ");
 
+  std::cout << "Analyzing" << std::endl; 
+
+  
   csvOut_.open(csvFileName_.c_str());
 }
 
 
-PFCandidateFilter::~PFCandidateFilter() {}
+AK5PFJetsFilter::~AK5PFJetsFilter()
+{}
 
-bool PFCandidateFilter::filter(edm::Event& event, const edm::EventSetup& eventSetup) {
+bool
+AK5PFJetsFilter::filter(edm::Event& event, const edm::EventSetup& eventSetup)
+{
 
-  edm::Handle<reco::PFCandidateCollection> collection;
-  event.getByLabel(pfCandidateInputTag_, collection);
+  std::cout << "Started filtering. Ting." << std::endl;
+  
+  
+  edm::Handle<reco::PFJetCollection> collection;
+
+  event.getByLabel(AK5PFJetsInputTag_, collection);
+
+  std::cout << "The collection size is: " << collection->size() << std::endl;
 
   if ( ! collection.isValid()){
-    std::cerr << "PFCandidateFilter: Invalid collection." << std::endl;
+    std::cerr << "AK5PFJetsFilter: Invalid collection." << std::endl;
     return false;
   }
   
   std::cout << "Valid collection created." << std::endl;
-  
-  runNum = event.id().run();
-  eventNum = event.id().event();
 
-  for(reco::PFCandidateCollection::const_iterator it = collection->begin(), end = collection->end(); it != end; it++) {
-    particleType = (int) (*it).particleId();
-    PT = it->pt();
-    phi = it->phi();
-    eta = it->eta();
-    ecal = it->ecalEnergy();
-    hcal = it->hcalEnergy();
+  for(reco::PFJetCollection::const_iterator it = collection->begin(), end = collection->end(); it != end; it++) {
+
+    double PT = it->pt();
+    double phi = it->phi();
+    double eta = it->eta();
     
-    csvOut_ << runNum << ", " << eventNum << ", " << particleType << ", " << PT << ", " << phi << ", " << eta << ", " << ecal << ", " << hcal << std::endl;
-    pfCandidateTree_->Fill();
+    csvOut_ << event.id().run() << ", " << event.id().event() << ", " << PT << ", " << phi << ", " << eta << std::endl;
+    
   }
-    
+
+  
   return true;
 }
 
-void PFCandidateFilter::beginJob() {
-  csvOut_ << "Run, Event, particleType, PT, phi, eta, ecal, hcal" << std::endl;
-  
-  pfCandidateTree_->Branch("runNum", &runNum, "runNum/I"); // TTree::Branch(name, address, leaflist. leaflist is the concatenation of all variable names and types. The variable name and variable type (1 character) are separated by a slash.
-  pfCandidateTree_->Branch("eventNum", &eventNum, "eventNum/I");
-  pfCandidateTree_->Branch("particleType", &particleType, "particleType/I");
-  pfCandidateTree_->Branch("PT", &PT, "PT/D");
-  pfCandidateTree_->Branch("phi", &phi, "phi/D");
-  pfCandidateTree_->Branch("eta", &eta, "eta/D");
-  pfCandidateTree_->Branch("ecal", &ecal, "ecal/D");
-  pfCandidateTree_->Branch("hcal", &hcal, "hcal/D");
-
+void 
+AK5PFJetsFilter::beginJob()
+{
+  csvOut_ << "Run, Event, PT, phi, eta" << std::endl;
 }
 
-void PFCandidateFilter::endJob() {
-  rootFile_->cd();
-  pfCandidateTree_->Write();
-  rootFile_->Close();
+void 
+AK5PFJetsFilter::endJob() 
+{
+  //rootFile_->cd();
+  //invariantMasses_->Write();
+  //rootFile_->Close();
 
   csvOut_.close();
 }
 
 
-DEFINE_FWK_MODULE(PFCandidateFilter);
+DEFINE_FWK_MODULE(AK5PFJetsFilter);
