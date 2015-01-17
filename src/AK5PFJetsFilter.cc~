@@ -14,8 +14,6 @@
 
 #include <TH1.h>
 #include <TFile.h>
-#include <TTree.h>
-
 
 #include <fstream>
 
@@ -98,8 +96,7 @@ private:
 
   std::string rootFileName_;
   
-  TFile * rootFile_;
-  TTree * AK5PFJetsTree_;
+  TFile* rootFile_;
   
   std::ofstream csvOut_;
   std::string csvFileName_;
@@ -107,12 +104,6 @@ private:
   int maxNEvents_;
   int nEvents_;
 
-  int runNum;
-  int eventNum;
-
-  double PT;
-  double phi;
-  double eta;
 
  
 };
@@ -125,18 +116,29 @@ AK5PFJetsFilter::AK5PFJetsFilter(const edm::ParameterSet& iConfig)
     nEvents_(0)
 {
   rootFile_ = new TFile(rootFileName_.c_str(), "RECREATE");
-  AK5PFJetsTree_ = new TTree("AK5PFJets", "AK5PFJets");
+
+  std::cout << "Analyzing" << std::endl; 
+
   
   csvOut_.open(csvFileName_.c_str());
 }
 
 
-AK5PFJetsFilter::~AK5PFJetsFilter() {}
+AK5PFJetsFilter::~AK5PFJetsFilter()
+{}
 
-bool AK5PFJetsFilter::filter(edm::Event& event, const edm::EventSetup& eventSetup) {  
+bool
+AK5PFJetsFilter::filter(edm::Event& event, const edm::EventSetup& eventSetup)
+{
+
+  std::cout << "Started filtering. Ting." << std::endl;
+  
   
   edm::Handle<reco::PFJetCollection> collection;
+
   event.getByLabel(AK5PFJetsInputTag_, collection);
+
+  std::cout << "The collection size is: " << collection->size() << std::endl;
 
   if ( ! collection.isValid()){
     std::cerr << "AK5PFJetsFilter: Invalid collection." << std::endl;
@@ -146,32 +148,31 @@ bool AK5PFJetsFilter::filter(edm::Event& event, const edm::EventSetup& eventSetu
   std::cout << "Valid collection created." << std::endl;
 
   for(reco::PFJetCollection::const_iterator it = collection->begin(), end = collection->end(); it != end; it++) {
-    PT = it->pt();
-    phi = it->phi();
-    eta = it->eta();
+
+    double PT = it->pt();
+    double phi = it->phi();
+    double eta = it->eta();
     
     csvOut_ << event.id().run() << ", " << event.id().event() << ", " << PT << ", " << phi << ", " << eta << std::endl;
-    AK5PFJetsTree_->Fill();
+    
   }
 
+  
   return true;
 }
 
-void AK5PFJetsFilter::beginJob() {
+void 
+AK5PFJetsFilter::beginJob()
+{
   csvOut_ << "Run, Event, PT, phi, eta" << std::endl;
-
-  AK5PFJetsTree_->Branch("runNum", &runNum, "runNum/I");
-  AK5PFJetsTree_->Branch("eventNum", &eventNum, "eventNum/I");
-  AK5PFJetsTree_->Branch("PT", &PT, "PT/D");
-  AK5PFJetsTree_->Branch("phi", &phi, "phi/D");
-  AK5PFJetsTree_->Branch("eta", &eta, "eta/D");
-  
 }
 
-void AK5PFJetsFilter::endJob() {
-  rootFile_->cd();
-  AK5PFJetsTree_->Write();
-  rootFile_->Close();
+void 
+AK5PFJetsFilter::endJob() 
+{
+  //rootFile_->cd();
+  //invariantMasses_->Write();
+  //rootFile_->Close();
 
   csvOut_.close();
 }
