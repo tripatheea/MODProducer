@@ -107,11 +107,10 @@ private:
   int eventNum;
 
   int particleType;
-  double PT;
-  double phi;
-  double eta;
-  double ecal;
-  double hcal;
+  double px;
+  double py;
+  double pz;
+  double energy;
  
 };
 
@@ -148,13 +147,13 @@ bool PFCandidateFilter::filter(edm::Event& event, const edm::EventSetup& eventSe
 
   for(reco::PFCandidateCollection::const_iterator it = collection->begin(), end = collection->end(); it != end; it++) {
     particleType = (int) (*it).particleId();
-    PT = it->pt();
-    phi = it->phi();
-    eta = it->eta();
-    ecal = it->ecalEnergy();
-    hcal = it->hcalEnergy();
+    px = it->px();
+    py = it->py();
+    pz = it->pz();
+    energy = it->energy();
     
-    csvOut_ << runNum << ", " << eventNum << ", " << particleType << ", " << PT << ", " << phi << ", " << eta << ", " << ecal << ", " << hcal << std::endl;
+    
+    csvOut_ << runNum << ", " << eventNum << ", " << particleType << ", " << px << ", " << py << ", " << pz << ", " << energy << std::endl;
     pfCandidateTree_->Fill();
   }
     
@@ -167,11 +166,10 @@ void PFCandidateFilter::beginJob() {
   pfCandidateTree_->Branch("runNum", &runNum, "runNum/I"); // TTree::Branch(name, address, leaflist. leaflist is the concatenation of all variable names and types. The variable name and variable type (1 character) are separated by a slash.
   pfCandidateTree_->Branch("eventNum", &eventNum, "eventNum/I");
   pfCandidateTree_->Branch("particleType", &particleType, "particleType/I");
-  pfCandidateTree_->Branch("PT", &PT, "PT/D");
-  pfCandidateTree_->Branch("phi", &phi, "phi/D");
-  pfCandidateTree_->Branch("eta", &eta, "eta/D");
-  pfCandidateTree_->Branch("ecal", &ecal, "ecal/D");
-  pfCandidateTree_->Branch("hcal", &hcal, "hcal/D");
+  pfCandidateTree_->Branch("px", &px, "px/D");
+  pfCandidateTree_->Branch("py", &py, "py/D");
+  pfCandidateTree_->Branch("pz", &pz, "pz/D");
+  pfCandidateTree_->Branch("energy", &energy, "energy/D");
 
 }
 

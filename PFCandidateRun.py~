@@ -3014,21 +3014,21 @@ readFiles.extend( [
        'root://eospublic.cern.ch//eos/opendata/cms/Run2010B/Mu/AOD/Apr21ReReco-v1/0005/FCFA03A0-6F72-E011-870C-90E6BA0D09CA.root' ] );
 
 
-#goodJSON = 'Cert_136033-149442_7TeV_Apr21ReReco_Collisions10_JSON_v2.txt'
-#myLumis = LumiList.LumiList(filename = goodJSON).getCMSSWString().split(',')
-#process.source.lumisToProcess = cms.untracked.VLuminosityBlockRange()
-#process.source.lumisToProcess.extend(myLumis)
+goodJSON = 'Cert_136033-149442_7TeV_Apr21ReReco_Collisions10_JSON_v2.txt'
+myLumis = LumiList.LumiList(filename = goodJSON).getCMSSWString().split(',')
+process.source.lumisToProcess = cms.untracked.VLuminosityBlockRange()
+process.source.lumisToProcess.extend(myLumis)
 
 from FWCore.MessageLogger.MessageLogger_cfi import *
 
-process_load = process.load("PFCandidateFilter.PFCandidateFilter.AK5PFJetsFilter_cfi")
+process_load = process.load("PFCandidateFilter.PFCandidateFilter.PFCandidateFilter_cfi")
 
 # Set the output file name and the invariant mass range (GeV)
-process.AK5PFJetsFilter.csvFileName = cms.string("AK5PFJets.csv")
+process.PFCandidateFilter.csvFileName = cms.string("PFCandidate.csv")
 
 # Change this to set the maximum number of events to process
 # -1 means all of them
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(5))
 
-process.Filter = cms.Path(process.AK5PFJetsFilter)
+process.Filter = cms.Path(process.PFCandidateFilter)
 process.schedule = cms.Schedule(process.Filter)
