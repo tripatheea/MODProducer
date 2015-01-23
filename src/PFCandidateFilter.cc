@@ -103,6 +103,8 @@ private:
   int maxNEvents_;
   int nEvents_;
 
+  double ptCut_;
+
   int runNum;
   int eventNum;
 
@@ -121,6 +123,7 @@ PFCandidateFilter::PFCandidateFilter(const edm::ParameterSet& iConfig)
     rootFileName_(iConfig.getParameter<std::string>("rootFileName")),
     csvFileName_(iConfig.getParameter<std::string>("csvFileName")),
     maxNEvents_(iConfig.getParameter<int>("maxNEvents")),
+    ptCut_(iConfig.getParameter<double>("ptCut")),
     nEvents_(0)
 {
   rootFile_ = new TFile(rootFileName_.c_str(), "RECREATE");
@@ -143,10 +146,10 @@ bool PFCandidateFilter::filter(edm::Event& event, const edm::EventSetup& eventSe
   }
   
   std::cout << "Valid collection created." << std::endl;
-  
+
   runNum = event.id().run();
   eventNum = event.id().event();
-
+  
   for(reco::PFCandidateCollection::const_iterator it = collection->begin(), end = collection->end(); it != end; it++) {
     particleType = (int) (*it).particleId();
     px = it->px();
@@ -156,25 +159,26 @@ bool PFCandidateFilter::filter(edm::Event& event, const edm::EventSetup& eventSe
 
     pt = it->pt();
     
-    
-    csvOut_ << runNum << ", " << eventNum << ", " << particleType << ", " << px << ", " << py << ", " << pz << ", " << energy << ", " << pt << std::endl;
-    pfCandidateTree_->Fill();
+    if (pt > ptCut_) {
+      csvOut_ << runNum << ", " << eventNum << ", " << px << ", " << py << ", " << pz << ", " << energy << ", " << pt << ", " << particleType << std::endl;
+      pfCandidateTree_->Fill();
+    }
   }
     
   return true;
 }
 
 void PFCandidateFilter::beginJob() {
-  csvOut_ << "Run, Event, particleType, px, py, pz, energy, pt" << std::endl;
+  csvOut_ << "Run, Event, px, py, pz, energy, pt, particleType" << std::endl;
   
   pfCandidateTree_->Branch("runNum", &runNum, "runNum/I"); // TTree::Branch(name, address, leaflist. leaflist is the concatenation of all variable names and types. The variable name and variable type (1 character) are separated by a slash.
   pfCandidateTree_->Branch("eventNum", &eventNum, "eventNum/I");
-  pfCandidateTree_->Branch("particleType", &particleType, "particleType/I");
   pfCandidateTree_->Branch("px", &px, "px/D");
   pfCandidateTree_->Branch("py", &py, "py/D");
   pfCandidateTree_->Branch("pz", &pz, "pz/D");
   pfCandidateTree_->Branch("energy", &energy, "energy/D");
   pfCandidateTree_->Branch("pt", &pt, "pt/D");
+  pfCandidateTree_->Branch("particleType", &particleType, "particleType/I");
 
 }
 
