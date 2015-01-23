@@ -115,7 +115,8 @@ private:
   double pz;
   double energy;
 
- 
+  double pt;
+
 };
 
 AK5PFJetsFilter::AK5PFJetsFilter(const edm::ParameterSet& iConfig)
@@ -151,8 +152,9 @@ bool AK5PFJetsFilter::filter(edm::Event& event, const edm::EventSetup& eventSetu
     py = it->py();
     pz = it->pz();
     energy = it->energy();
+    pt = it->pt();
     
-    csvOut_ << event.id().run() << ", " << event.id().event() << ", " << px << ", " << py << ", " << pz << ", " << energy << std::endl;
+    csvOut_ << event.id().run() << ", " << event.id().event() << ", " << px << ", " << py << ", " << pz << ", " << energy << ", " << pt << std::endl;
     AK5PFJetsTree_->Fill();
   }
 
@@ -160,7 +162,7 @@ bool AK5PFJetsFilter::filter(edm::Event& event, const edm::EventSetup& eventSetu
 }
 
 void AK5PFJetsFilter::beginJob() {
-  csvOut_ << "Run, Event, px, py, pz, energy" << std::endl;
+  csvOut_ << "Run, Event, px, py, pz, energy, pt" << std::endl;
 
   AK5PFJetsTree_->Branch("runNum", &runNum, "runNum/I"); // TTree::Branch(name, address, leaflist. leaflist is the concatenation of all variable names and types. The variable name and variable type (1 character) are separated by a slash.
   AK5PFJetsTree_->Branch("eventNum", &eventNum, "eventNum/I");
@@ -168,6 +170,7 @@ void AK5PFJetsFilter::beginJob() {
   AK5PFJetsTree_->Branch("py", &py, "py/D");
   AK5PFJetsTree_->Branch("pz", &pz, "pz/D");
   AK5PFJetsTree_->Branch("energy", &energy, "energy/D");
+  AK5PFJetsTree_->Branch("pt", &pt, "pt/D");
   
 }
 
