@@ -1,5 +1,6 @@
 import FWCore.ParameterSet.Config as cms 
 import FWCore.PythonUtilities.LumiList as LumiList 
+import FWCore.Utilities.FileUtils as FileUtils
 
 from FWCore.MessageLogger.MessageLogger_cfi import *
 
@@ -10,16 +11,14 @@ process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 process.GlobalTag.globaltag = 'GR_R_42_V25::All'
 
-readFiles = cms.untracked.vstring()
-process.source = cms.Source ("PoolSource",fileNames = readFiles)
+# Need to split into 3 separate files because there's a limit of 255 values for a set of parameters and thereby for the indices files too.
+indices_file = 'CMS_Run2010B_MultiJet_AOD_Apr21ReReco-v1_0002_file_index'	# Should append "_" + indexNumber + ".txt" to this.
+mylist = FileUtils.loadListFromFile (indices_file + '_1.txt') 
+mylist.extend ( FileUtils.loadListFromFile (indices_file + '_2.txt') )
+mylist.extend ( FileUtils.loadListFromFile (indices_file + '_3.txt') )
+readFiles = cms.untracked.vstring( *mylist)
 
-# Enumerate all ROOT file links into a list.
-all_root_links = []
-indices_file = 'CMS_Run2010B_MultiJet_AOD_Apr21ReReco-v1_0002_file_index.txt'
-for line in open(indices_file, 'r'):
-	all_root_links.append(line.strip)
-
-readFiles.extend(all_root_links);
+process.source = cms.Source ("PoolSource", fileNames=readFiles)
 
 # Process only those luminosity sections in which runs are considered good and should be processed.
 goodJSON = 'Cert_136033-149442_7TeV_Apr21ReReco_Collisions10_JSON_v2.txt' 
