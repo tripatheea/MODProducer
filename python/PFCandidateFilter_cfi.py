@@ -7,6 +7,6 @@ PFCandidateFilter = cms.EDFilter('PFCandidateFilter' ,
                             pfCandidateInputTag = cms.InputTag("particleFlow"),
                             csvFileName = cms.string("pfcandidate.csv"),
                             rootFileName = cms.string("pfcandidate.root"),
-			    ptCut = cms.double(1.4),
+			    ptCut = cms.double(0.0),
                             maxNEvents = cms.int32(1)
                             )
