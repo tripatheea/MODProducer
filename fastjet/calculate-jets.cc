@@ -13,15 +13,14 @@ int main () {
   vector<PseudoJet> particles;
   double Run, px, py, pz, energy;
 
-  std::ifstream file("PFCandidate.csv");
-  // std::ifstream file("AK5PFJets.csv");
+  std::ifstream file("../PFCandidate.csv");
 
   CSVRow row;
   while(file >> row) {
-  	px = stringToDouble(row[3]);
-  	py = stringToDouble(row[4]);
-  	pz = stringToDouble(row[5]);
-  	energy = stringToDouble(row[6]);
+  	px = stringToDouble(row[2]);
+  	py = stringToDouble(row[3]);
+  	pz = stringToDouble(row[4]);
+  	energy = stringToDouble(row[5]);
 	particles.push_back( PseudoJet(px, py, pz, energy) ); 
   }
 
