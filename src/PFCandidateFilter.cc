@@ -159,7 +159,7 @@ bool PFCandidateFilter::filter(edm::Event& event, const edm::EventSetup& eventSe
 
     pt = it->pt();
     
-    if (pt > ptCut_) {
+    if (pt >= ptCut_) {
       csvOut_ << runNum << ", " << eventNum << ", " << px << ", " << py << ", " << pz << ", " << energy << ", " << pt << ", " << particleType << std::endl;
       pfCandidateTree_->Fill();
     }
