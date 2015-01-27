@@ -21,7 +21,7 @@ int main () {
   	py = stringToDouble(row[3]);
   	pz = stringToDouble(row[4]);
   	energy = stringToDouble(row[5]);
-	particles.push_back( PseudoJet(px, py, pz, energy) ); 
+    particles.push_back( PseudoJet(px, py, pz, energy) ); 
   }
 
   // choose a jet definition
