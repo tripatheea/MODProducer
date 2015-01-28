@@ -15,11 +15,8 @@ double stringToDouble(string s);
 int main() {
 	ifstream file("../PFCandidate.csv");
 
-	// Should really be using std::unordered_map as there's absolutely no use of order here and now it's O(logn) access instead of O(1).
-	// Need to compile using C++11 if std::unordered_map is to be used.
 	unordered_map< string, vector<PseudoJet> > events;		
 
-	vector<PseudoJet> particles;
 	double Run, px, py, pz, energy;
 	string event_id;
 
@@ -72,6 +69,7 @@ int main() {
 		}
 
 		cout << N_jet_current_event << endl;
+		N_jet.push_back(N_jet_current_event);
 	}
 
 }
