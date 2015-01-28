@@ -68,9 +68,11 @@ int main() {
 			N_jet_current_event += pt_i * heavisideStep(pt_iR - pt_cut) / pt_iR;
 		}
 
-		cout << N_jet_current_event << endl;
 		N_jet.push_back(N_jet_current_event);
+		cout << N_jet_current_event << ", ";
 	}
+
+	// cout << N_jet.size();
 
 }
 
