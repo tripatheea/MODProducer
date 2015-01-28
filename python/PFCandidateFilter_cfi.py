@@ -8,5 +8,5 @@ PFCandidateFilter = cms.EDFilter('PFCandidateFilter' ,
                             csvFileName = cms.string("pfcandidate.csv"),
                             rootFileName = cms.string("pfcandidate.root"),
 			    ptCut = cms.double(2.5),
-                            maxNEvents = cms.int32(1)
+                            maxNEvents = cms.int32(100)
                             )
