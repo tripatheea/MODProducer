@@ -29,7 +29,7 @@ int main() {
   }
   
   rootFile_->cd();
-  pfCandidateTree_->Write();
+  multiplicityTree_->Write();
   rootFile_->Close();
 
   return 0;
