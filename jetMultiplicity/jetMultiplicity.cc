@@ -14,7 +14,7 @@ double stringToDouble(string s);
 
 
 int main() {
-// int jetMultiplicity() {
+
 	ifstream file("../PFCandidate.csv");
 
 	unordered_map< string, vector<PseudoJet> > events;		
@@ -34,9 +34,6 @@ int main() {
 		energy = stringToDouble(row[5]);
 		PseudoJet current_particle = PseudoJet(px, py, pz, energy);
 
-		cout << "\t" << px << "\t" << py << "\t" << pz << "\t" << energy << endl;
-
-
 		if (events.find(event_id) != events.end()) {	
 			// If we already have a vector of PseudoJets for the current event id, just append to that vector.
 			events[event_id].push_back(current_particle);
@@ -51,8 +48,13 @@ int main() {
 
 
 	vector<double> N_jet;
+	vector<double> antikt_multiplicity;
 
-	double abc;
+	ofstream fmatch ("antikt_multiplicities.dat", ios::out);
+
+	// choose a jet definition
+	JetDefinition jet_def(antikt_algorithm, R);
+
 	for(auto const iter : events) {
 		
 		vector<PseudoJet> particles_current_event = iter.second;
@@ -74,10 +76,16 @@ int main() {
 			N_jet_current_event += pt_i * heavisideStep(pt_iR - pt_cut) / pt_iR;
 		}
 
-		abc += N_jet_current_event;
+		// run the clustering, extract the jets
+		ClusterSequence cs(particles_current_event, jet_def);
+		vector<PseudoJet> jets = sorted_by_pt(cs.inclusive_jets());	
+
 
 		N_jet.push_back(N_jet_current_event);
-		// cout << N_jet_current_event << ", ";
+		antikt_multiplicity.push_back(jets.size());		
+
+		// Write to file.
+		fmatch << N_jet_current_event << "\t" << jets.size() << endl;
 	}
 
 	// cout << endl << endl << abc << endl;
