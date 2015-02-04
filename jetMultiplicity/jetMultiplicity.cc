@@ -86,6 +86,7 @@ int main() {
 
 		// Write to file.
 		fmatch << N_jet_current_event << "\t" << jets.size() << endl;
+		cout << N_jet_current_event << ", " << jets.size();
 	}
 
 	// cout << endl << endl << abc << endl;
