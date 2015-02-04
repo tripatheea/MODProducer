@@ -53,9 +53,9 @@ int main () {
     	minPT = jets[i].pt();
     }
 
-    for (unsigned j = 0; j < constituents.size(); j++) {
-      cout << "    constituent " << j << "'s pt: " << constituents[j].pt() << " ; ";
-    }
+    // for (unsigned j = 0; j < constituents.size(); j++) {
+      // cout << "    constituent " << j << "'s pt: " << constituents[j].pt() << " ; ";
+    // }
   }
 
   std::cout << std::endl << "Max PT: " << maxPT << std::endl;
