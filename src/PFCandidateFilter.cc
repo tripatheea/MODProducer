@@ -147,7 +147,7 @@ bool PFCandidateFilter::filter(edm::Event& event, const edm::EventSetup& eventSe
     return false;
   }
   
-  std::cout << "Valid collection created." << std::endl;
+  std::cout << "Valid collection created with ptCut = " << ptCut_ << std::endl;
 
   runNum = event.id().run();
   eventNum = event.id().event();
