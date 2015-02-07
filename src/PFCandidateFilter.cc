@@ -103,8 +103,6 @@ private:
   int maxNEvents_;
   int nEvents_;
 
-  double ptCut_;
-
   int runNum;
   int eventNum;
 
@@ -117,7 +115,8 @@ private:
   double pt;
   double eta;
   double phi;
- 
+
+  int eventSerialNumber;
 };
 
 PFCandidateFilter::PFCandidateFilter(const edm::ParameterSet& iConfig)
@@ -125,7 +124,6 @@ PFCandidateFilter::PFCandidateFilter(const edm::ParameterSet& iConfig)
     rootFileName_(iConfig.getParameter<std::string>("rootFileName")),
     csvFileName_(iConfig.getParameter<std::string>("csvFileName")),
     maxNEvents_(iConfig.getParameter<int>("maxNEvents")),
-    ptCut_(iConfig.getParameter<double>("ptCut")),
     nEvents_(0)
 {
   rootFile_ = new TFile(rootFileName_.c_str(), "RECREATE");
@@ -146,12 +144,13 @@ bool PFCandidateFilter::filter(edm::Event& event, const edm::EventSetup& eventSe
     std::cerr << "PFCandidateFilter: Invalid collection." << std::endl;
     return false;
   }
-  
-  std::cout << "Valid collection created with ptCut = " << ptCut_ << std::endl;
 
   runNum = event.id().run();
   eventNum = event.id().event();
   
+  std::cout << "Event number: " << eventSerialNumber << " being processed." << std::endl;
+  eventSerialNumber++;
+
   for(reco::PFCandidateCollection::const_iterator it = collection->begin(), end = collection->end(); it != end; it++) {
     particleType = (int) (*it).particleId();
     px = it->px();
@@ -163,10 +162,8 @@ bool PFCandidateFilter::filter(edm::Event& event, const edm::EventSetup& eventSe
     eta = it->eta();
     phi = it->phi();
     
-    if (pt >= ptCut_) {
-      csvOut_ << runNum << ", " << eventNum << ", " << px << ", " << py << ", " << pz << ", " << energy << ", " << pt << ", " << eta << ", " << phi << ", " << particleType << std::endl;
-      pfCandidateTree_->Fill();
-    }
+    csvOut_ << runNum << ", " << eventNum << ", " << px << ", " << py << ", " << pz << ", " << energy << ", " << pt << ", " << eta << ", " << phi << ", " << particleType << std::endl;
+    pfCandidateTree_->Fill();
   }
     
   return true;
@@ -185,7 +182,8 @@ void PFCandidateFilter::beginJob() {
   pfCandidateTree_->Branch("eta", &eta, "eta/D");
   pfCandidateTree_->Branch("phi", &phi, "phi/D");
   pfCandidateTree_->Branch("particleType", &particleType, "particleType/I");
-
+  
+  eventSerialNumber = 1;
 }
 
 void PFCandidateFilter::endJob() {
