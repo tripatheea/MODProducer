@@ -33,7 +33,7 @@ process.PFCandidateFilter.csvFileName = cms.string("PFCandidate.csv")
 
 # Change this to set the maximum number of events to process
 # -1 means all of them
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000000))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))
 
 process.Filter = cms.Path(process.PFCandidateFilter)
 process.schedule = cms.Schedule(process.Filter)
