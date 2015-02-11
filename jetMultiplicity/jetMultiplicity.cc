@@ -23,7 +23,7 @@ int main() {
 	string event_id;
 
 	double R = 0.5;
-	double pt_cut = 50;
+	double pt_cut = 10.00;
 
 	CSVRow row;
 	while(file >> row) {
@@ -45,10 +45,6 @@ int main() {
 			events[event_id] = new_particles;
 		}
 	}
-
-
-	vector<double> N_jet;
-	vector<double> antikt_multiplicity;
 
 	ofstream fmatch ("antikt_multiplicities.dat", ios::out);
 
@@ -78,15 +74,10 @@ int main() {
 
 		// run the clustering, extract the jets
 		ClusterSequence cs(particles_current_event, jet_def);
-		vector<PseudoJet> jets = sorted_by_pt(cs.inclusive_jets());	
-
-
-		N_jet.push_back(N_jet_current_event);
-		antikt_multiplicity.push_back(jets.size());		
+		vector<PseudoJet> jets = cs.inclusive_jets(pt_cut);	
 
 		// Write to file.
 		fmatch << N_jet_current_event << "\t" << jets.size() << endl;
-		cout << N_jet_current_event << ", " << jets.size();
 	}
 
 	// cout << endl << endl << abc << endl;
@@ -94,7 +85,7 @@ int main() {
 }
 
 double heavisideStep(double x) {
-	return x > 0;
+	return x >= 0;
 }
 
 double stringToDouble(string s) {
