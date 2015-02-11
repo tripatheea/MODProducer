@@ -13,7 +13,8 @@ int main () {
   vector<PseudoJet> particles;
   double Run, px, py, pz, energy;
 
-  std::ifstream file("../PFCandidate.csv");
+  // std::ifstream file("../PFCandidate.csv");
+  std::ifstream file("../AK5PFJets.csv");
 
   CSVRow row;
   while(file >> row) {
