@@ -33,7 +33,7 @@ process.AK5PFJetsFilter.csvFileName = cms.string("AK5PFJets.csv")
 
 # Change this to set the maximum number of events to process
 # -1 means all of them
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))
 
 process.Filter = cms.Path(process.AK5PFJetsFilter)
 process.schedule = cms.Schedule(process.Filter)
