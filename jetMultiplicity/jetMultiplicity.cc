@@ -7,11 +7,9 @@
 using namespace fastjet;
 using namespace std;
 
-
 double heavisideStep(double x);
 
 double stringToDouble(string s);
-
 
 int main() {
 
@@ -23,7 +21,7 @@ int main() {
 	string event_id;
 
 	double R = 0.5;
-	double pt_cut = 10.00;
+	double pt_cut = 50.00;
 
 	CSVRow row;
 	while(file >> row) {
@@ -48,7 +46,7 @@ int main() {
 
 	ofstream fmatch ("antikt_multiplicities.dat", ios::out);
 
-	// choose a jet definition
+	// Choose a jet definition
 	JetDefinition jet_def(antikt_algorithm, R);
 
 	for(auto const iter : events) {
@@ -72,16 +70,13 @@ int main() {
 			N_jet_current_event += pt_i * heavisideStep(pt_iR - pt_cut) / pt_iR;
 		}
 
-		// run the clustering, extract the jets
+		// Run the clustering, extract the jets
 		ClusterSequence cs(particles_current_event, jet_def);
 		vector<PseudoJet> jets = cs.inclusive_jets(pt_cut);	
 
 		// Write to file.
 		fmatch << N_jet_current_event << "\t" << jets.size() << endl;
 	}
-
-	// cout << endl << endl << abc << endl;
-
 }
 
 double heavisideStep(double x) {
@@ -90,7 +85,7 @@ double heavisideStep(double x) {
 
 double stringToDouble(string s) {
   double d;
-  stringstream ss(s); //turn the string into a stream
-  ss >> d; //convert
+  stringstream ss(s); // Turn the string into a stream
+  ss >> d; 			  // Convert
   return d;
 }
