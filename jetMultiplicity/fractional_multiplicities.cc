@@ -27,7 +27,7 @@
 //   TFile * rootFile_;
 //   TTree * multiplicityTree_;
 
-//   TCanvas *c2e = new TCanvas("ntilde_antikt", "Ntilde and Antikt Multiplicity", 1000, 6@F00);
+//   TCanvas *c2e = new TCanvas("ntilde_antikt", "Ntilde and Antikt Multiplicity", 1000, 600);
   
 //   gStyle->SetOptStat(false);
 //   TH1F *h1 = new TH1F("Antikt Multiplicity", "", 1001, -0.5, 6.0);
@@ -106,6 +106,6 @@ void fractional_multiplicities() {
   TH1D * projh2X = h2->ProjectionX();
   TH1D * projh2Y = h2->ProjectionY();
   
-  h2->Draw("VIOLIN");
+  h2->Draw();
 
 }
