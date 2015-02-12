@@ -31,7 +31,7 @@ int main () {
 
   // run the clustering, extract the jets
   ClusterSequence cs(particles, jet_def);
-  vector<PseudoJet> jets = sorted_by_pt(cs.inclusive_jets());
+  vector<PseudoJet> jets = sorted_by_pt(cs.inclusive_jets(3.0));
 
   // print out some infos
   cout << "Clustering with " << jet_def.description() << endl;
