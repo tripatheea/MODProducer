@@ -57,8 +57,6 @@ int main() {
 		for(int i = 0; i < particles_current_event.size(); i++) {
 			double pt_i = particles_current_event[i].pt();
 			double pt_iR = 0.00;
-
-			// if (pt_i == 0.00) continue;			// Removing this line causes a divide by 0 error.
 			
 			for(int j = 0; j < particles_current_event.size(); j++) {
 				double pt_j = particles_current_event[j].pt();
