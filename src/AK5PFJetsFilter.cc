@@ -162,7 +162,7 @@ bool AK5PFJetsFilter::filter(edm::Event& event, const edm::EventSetup& eventSetu
 }
 
 void AK5PFJetsFilter::beginJob() {
-  csvOut_ << "Run, Event, px, py, pz, energy, pt" << std::endl;
+  // csvOut_ << "Run, Event, px, py, pz, energy, pt" << std::endl;
 
   AK5PFJetsTree_->Branch("runNum", &runNum, "runNum/I"); // TTree::Branch(name, address, leaflist. leaflist is the concatenation of all variable names and types. The variable name and variable type (1 character) are separated by a slash.
   AK5PFJetsTree_->Branch("eventNum", &eventNum, "eventNum/I");
