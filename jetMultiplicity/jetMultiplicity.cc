@@ -7,7 +7,6 @@
 using namespace fastjet;
 using namespace std;
 
-double heavisideStep(double x);
 
 double stringToDouble(string s);
 
@@ -62,10 +61,12 @@ int main() {
 				double pt_j = particles_current_event[j].pt();
 				double delta_Rij = particles_current_event[i].delta_R(particles_current_event[j]);
 
-				pt_iR += pt_j * heavisideStep(R - delta_Rij);
+				if (R - delta_Rij > 0)					// heavisideStep
+					pt_iR += pt_j;
 			}
 
-			N_jet_current_event += pt_i * heavisideStep(pt_iR - pt_cut) / pt_iR;
+			if (pt_iR - pt_cut > 0)						// heavisideStep
+				N_jet_current_event += pt_i / pt_iR;
 		}
 
 		// Run the clustering, extract the jets
@@ -77,9 +78,6 @@ int main() {
 	}
 }
 
-double heavisideStep(double x) {
-	return x >= 0;
-}
 
 double stringToDouble(string s) {
   double d;

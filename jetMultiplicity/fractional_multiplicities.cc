@@ -106,6 +106,6 @@ void fractional_multiplicities() {
   TH1D * projh2X = h2->ProjectionX();
   TH1D * projh2Y = h2->ProjectionY();
   
-  h2->Draw();
+  h2->Draw("LEGO");
 
 }
