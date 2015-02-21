@@ -13,8 +13,14 @@ double calculate_N_tilde(vector<PseudoJet> particles, double R, double pt_cut);	
 
 int main() {
 
-	ifstream file("../PFCandidate.csv");	
+	// ifstream file("../PFCandidate.csv");	
+	ifstream file("zeros_particles.csv");
+
+		
 	ofstream fmatch ("antikt_multiplicities.dat", ios::out);
+
+	ofstream zeros_file ("zeros_events.csv", ios::out);
+	ofstream nonzeros_file ("nonzeros_events.csv", ios::out);
 
 	string event_id;
 	CSVRow row;
@@ -23,8 +29,10 @@ int main() {
 	double Run, px, py, pz, energy;	
 	double R = 0.5;
 	double pt_cut = 50.00;
+	double particleType;
 
-	string last_event_id = "644983557";
+	// string last_event_id = "644983557";
+	string last_event_id = "644980277";
 
 	JetDefinition jet_def(antikt_algorithm, R);
 	while(file >> row) {
@@ -37,12 +45,24 @@ int main() {
 
 		PseudoJet current_particle = PseudoJet(px, py, pz, energy);
 
+		// cout << event_id << endl;
+
 		if (last_event_id != event_id) {
 			// We've moved on to a different event.
 			// That means, the vector particles_current_event is complete.
 
 			// So calculate everything from this vector before emptying it for the next event.
 			double N_tilde_current_event = calculate_N_tilde(particles_current_event, R, pt_cut);
+
+			cout << N_tilde_current_event << ", ";
+
+			if (N_tilde_current_event == 0.00) {
+				zeros_file << event_id << endl;
+			}
+			else {
+				nonzeros_file << event_id << endl;
+			}
+
 
 			// Next, run the clustering, extract the jets using fastjet.
 			ClusterSequence cs(particles_current_event, jet_def);
@@ -64,6 +84,15 @@ int main() {
 
 	// Calculate stuff for the final vector..
 	double N_tilde_current_event = calculate_N_tilde(particles_current_event, R, pt_cut);
+
+
+	if (N_tilde_current_event == 0.00) {
+		zeros_file << event_id << endl;
+	}
+	else {
+		nonzeros_file << event_id << endl;
+	}
+
 
 	// Next, run the clustering, extract the jets using fastjet.
 	ClusterSequence cs(particles_current_event, jet_def);
