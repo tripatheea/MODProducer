@@ -170,7 +170,7 @@ bool PFCandidateFilter::filter(edm::Event& event, const edm::EventSetup& eventSe
 }
 
 void PFCandidateFilter::beginJob() {
-  csvOut_ << "Run, Event, px, py, pz, energy, pt, eta, phi, particleType" << std::endl;
+  // csvOut_ << "Run, Event, px, py, pz, energy, pt, eta, phi, particleType" << std::endl;
   
   pfCandidateTree_->Branch("runNum", &runNum, "runNum/I"); // TTree::Branch(name, address, leaflist. leaflist is the concatenation of all variable names and types. The variable name and variable type (1 character) are separated by a slash.
   pfCandidateTree_->Branch("eventNum", &eventNum, "eventNum/I");

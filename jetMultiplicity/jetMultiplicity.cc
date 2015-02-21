@@ -20,27 +20,16 @@ int main() {
 
 	string event_id;
 	CSVRow row;
-	
 	vector<PseudoJet> particles_current_event;
-	int event_count = 1;
 
 	double Run, px, py, pz, energy;	
 	double R = 0.5;
 	double pt_cut = 50.00;
 
-
-
 	string last_event_id = "644983557";
 
-
-	int totalParticles = 1;
-
 	JetDefinition jet_def(antikt_algorithm, R);
-	
-	int lines = 1;
 	while(file >> row) {
-		
-		lines++;
 
 		event_id = row[1];
 		px = stringToDouble(row[2]);
@@ -48,37 +37,11 @@ int main() {
 		pz = stringToDouble(row[4]);
 		energy = stringToDouble(row[5]);
 
-		// std:: cout << px << " " << py << std::endl;
 		PseudoJet current_particle = PseudoJet(px, py, pz, energy);
-
-		// std::cout << std::endl << std::endl << std::endl << std::endl;
-
-		// std::cout << "Current event ID " << event_id << std::endl;
-		// std::cout << "Last event ID " << last_event_id << std::endl;
-
-		// std::cout << event_count << std::endl;
-
-
-
-
-
 
 		if (last_event_id != event_id) {
 			// We've moved on to a different event.
 			// That means, the vector particles_current_event is complete.
-
-			// std:: cout << "Hey there Dellilah!" << std:: endl;
-
-			// std::cout << std::endl << std::endl << std::endl << std::endl << std::endl << std::endl << std::endl;
-			std::cout << event_count << ") " << last_event_id << " Number of particles = " << particles_current_event.size() << ". New event id = " << event_id << std::endl;
-
-
-			event_count++; 
-
-
-
-
-			totalParticles += particles_current_event.size();
 
 			// So calculate everything from this vector before emptying it for the next event.
 			double N_tilde_current_event = calculate_N_tilde(particles_current_event, R, pt_cut);
@@ -100,11 +63,19 @@ int main() {
 		last_event_id = event_id;
 	}
 
-	
 
-	std::cout << "Total events: " << event_count << std::endl;
-	std::cout << "Total lines: " << lines << std::endl;
-	std:: cout << "Total number of particles: " << totalParticles << std::endl;
+	// Calculate stuff for the final vector..
+	double N_tilde_current_event = calculate_N_tilde(particles_current_event, R, pt_cut);
+
+	// Next, run the clustering, extract the jets using fastjet.
+	ClusterSequence cs(particles_current_event, jet_def);
+	vector<PseudoJet> jets = cs.inclusive_jets(pt_cut);	
+
+	// Write results from N_tilde and fastjet to a file.
+	fmatch << N_tilde_current_event << "\t" << jets.size() << endl;
+
+	// We've calculated all we need. Now empty the vector particles_current_event.
+	vector<PseudoJet>().swap(particles_current_event);
 
 }
 
