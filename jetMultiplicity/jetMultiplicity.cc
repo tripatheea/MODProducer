@@ -88,11 +88,11 @@ double calculate_N_tilde(vector<PseudoJet> particles, double R, double pt_cut) {
 			double pt_j = particles[j].pt();
 			double squared_distance = particles[i].squared_distance(particles[j]);			// squared_distance instead of delta_R to speed things up.
 
-			if (0.25 > squared_distance)					// heavisideStep
+			if (R*R > squared_distance)					// heavisideStep
 				pt_iR += pt_j;
 		}
 
-		if (pt_iR > pt_cut)						// heavisideStep
+		if (pt_iR > pt_cut)								// heavisideStep
 			N_tilde_current_event += pt_i / pt_iR;
 	}
 
