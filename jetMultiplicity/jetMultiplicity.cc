@@ -13,10 +13,9 @@ double calculate_N_tilde(vector<PseudoJet> particles, double R, double pt_cut);	
 
 int main() {
 
-	// ifstream file("../PFCandidate.csv");	
-	ifstream file("zeros_particles.csv");
+	ifstream file("../PFCandidate.csv");	
+	// ifstream file("zeros_particles.csv");
 
-		
 	ofstream fmatch ("antikt_multiplicities.dat", ios::out);
 
 	ofstream zeros_file ("zeros_events.csv", ios::out);
@@ -31,8 +30,8 @@ int main() {
 	double pt_cut = 50.00;
 	double particleType;
 
-	// string last_event_id = "644983557";
-	string last_event_id = "644980277";
+	string last_event_id = "644983557";
+	// string last_event_id = "644980277";
 
 	JetDefinition jet_def(antikt_algorithm, R);
 	while(file >> row) {
@@ -44,8 +43,6 @@ int main() {
 		energy = stringToDouble(row[5]);
 
 		PseudoJet current_particle = PseudoJet(px, py, pz, energy);
-
-		// cout << event_id << endl;
 
 		if (last_event_id != event_id) {
 			// We've moved on to a different event.
