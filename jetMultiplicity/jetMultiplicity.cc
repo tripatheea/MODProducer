@@ -7,8 +7,6 @@
 using namespace fastjet;
 using namespace std;
 
-
-
 double stringToDouble(string s);
 
 double calculate_N_tilde(vector<PseudoJet> particles, double R, double pt_cut);	// R is the cone size.
@@ -88,13 +86,13 @@ double calculate_N_tilde(vector<PseudoJet> particles, double R, double pt_cut) {
 		
 		for(int j = 0; j < particles.size(); j++) {
 			double pt_j = particles[j].pt();
-			double delta_Rij = particles[i].delta_R(particles[j]);
+			double squared_distance = particles[i].squared_distance(particles[j]);			// squared_distance instead of delta_R to speed things up.
 
-			if (R - delta_Rij > 0)					// heavisideStep
+			if (0.25 > squared_distance)					// heavisideStep
 				pt_iR += pt_j;
 		}
 
-		if (pt_iR - pt_cut > 0)						// heavisideStep
+		if (pt_iR > pt_cut)						// heavisideStep
 			N_tilde_current_event += pt_i / pt_iR;
 	}
 

@@ -96,6 +96,7 @@
 ./fractional_multiplicities_cc.so: /home/aashish/CMS/root/include/TCanvasImp.h
 ./fractional_multiplicities_cc.so: /home/aashish/CMS/root/include/TLatex.h
 ./fractional_multiplicities_cc.so: /home/aashish/CMS/root/include/TText.h
+./fractional_multiplicities_cc.so: /home/aashish/CMS/root/include/TH1F.h
 ./fractional_multiplicities_cc.so: /home/aashish/CMS/root/include/TH1.h
 ./fractional_multiplicities_cc.so: /home/aashish/CMS/root/include/TAxis.h
 ./fractional_multiplicities_cc.so: /home/aashish/CMS/root/include/TAttAxis.h
@@ -103,7 +104,6 @@
 ./fractional_multiplicities_cc.so: /home/aashish/CMS/root/include/TArrayS.h
 ./fractional_multiplicities_cc.so: /home/aashish/CMS/root/include/TArrayF.h
 ./fractional_multiplicities_cc.so: /home/aashish/CMS/root/include/Foption.h
-./fractional_multiplicities_cc.so: /home/aashish/CMS/root/include/TH1F.h
 ./fractional_multiplicities_cc.so: /home/aashish/CMS/root/include/TH2F.h
 ./fractional_multiplicities_cc.so: /home/aashish/CMS/root/include/TH2.h
 ./fractional_multiplicities_cc.so: /home/aashish/CMS/root/include/TStyle.h
