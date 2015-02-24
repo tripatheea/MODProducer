@@ -1,5 +1,4 @@
 #include <iostream>
-#include <unordered_map>
 
 #include "fastjet/ClusterSequence.hh"
 #include "csv.cc"
@@ -34,6 +33,7 @@ int main() {
 	// string last_event_id = "644980277";
 
 	JetDefinition jet_def(antikt_algorithm, R);
+	int zero_jets = 0;
 	while(file >> row) {
 
 		event_id = row[1];
@@ -51,10 +51,11 @@ int main() {
 			// So calculate everything from this vector before emptying it for the next event.
 			double N_tilde_current_event = calculate_N_tilde(particles_current_event, R, pt_cut);
 
-			cout << N_tilde_current_event << ", ";
+			// cout << N_tilde_current_event << ", ";
 
 			if (N_tilde_current_event == 0.00) {
 				zeros_file << event_id << endl;
+				zero_jets++;
 			}
 			else {
 				nonzeros_file << event_id << endl;
@@ -98,8 +99,7 @@ int main() {
 	// Write results from N_tilde and fastjet to a file.
 	fmatch << N_tilde_current_event << "\t" << jets.size() << endl;
 
-	// We've calculated all we need. Now empty the vector particles_current_event.
-	vector<PseudoJet>().swap(particles_current_event);
+	cout << endl << "Total number of jets with 0 Ntilde = " << zero_jets << endl;
 
 }
 

@@ -154,7 +154,8 @@ bool AK5PFJetsFilter::filter(edm::Event& event, const edm::EventSetup& eventSetu
     energy = it->energy();
     pt = it->pt();
     
-    csvOut_ << event.id().run() << "," << event.id().event() << "," << px << "," << py << "," << pz << "," << energy << "," << pt << std::endl;
+    // csvOut_ << event.id().run() << "," << event.id().event() << "," << px << "," << py << "," << pz << "," << energy << "," << pt << std::endl;
+    csvOut_ << event.id().run() << "," << event.id().event() << "," << px << "," << py << "," << pz << "," << energy << std::endl;
     AK5PFJetsTree_->Fill();
   }
 
