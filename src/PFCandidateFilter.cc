@@ -162,7 +162,8 @@ bool PFCandidateFilter::filter(edm::Event& event, const edm::EventSetup& eventSe
     eta = it->eta();
     phi = it->phi();
     
-    csvOut_ << runNum << "," << eventNum << "," << px << "," << py << "," << pz << "," << energy << "," << pt << "," << eta << "," << phi << "," << particleType << std::endl;
+    // csvOut_ << runNum << "," << eventNum << "," << px << "," << py << "," << pz << "," << energy << "," << pt << "," << eta << "," << phi << "," << particleType << std::endl;
+    csvOut_ << runNum << "," << eventNum << "," << px << "," << py << "," << pz << "," << energy << std::endl;
     pfCandidateTree_->Fill();
   }
     
