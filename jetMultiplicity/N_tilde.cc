@@ -7,46 +7,59 @@
 
 using namespace std;
 
-double string_to_double(string s);
-
 int main() {
 	ifstream file("../PFCandidate.csv");
 	CSVRow row;
 
-	double Run, px, py, pz, energy;	
+	double px, py, pz, energy;	
 	double R = 0.5;
 	double pt_cut = 50.00;
-	double particleType;
 
-	string event_id;
+	int run_number, event_number;
+	
+	int last_event_number = 644983557;
+	Event * current_event = new Event(149291, 644983557);
 
-	int i = 1;
+	remove("banana.csv");
 
-	Event apple = Event(149291, 644983557);
-
+	int i = 0;
 	while(file >> row) {
 
-		event_id = row[1];
-		px = string_to_double(row[2]);
-		py = string_to_double(row[3]);
-		pz = string_to_double(row[4]);
-		energy = string_to_double(row[5]);
+		run_number = stoi(row[0]);
+		event_number = stoi(row[1]);
+		px = stod(row[2]);
+		py = stod(row[3]);
+		pz = stod(row[4]);
+		energy = stod(row[5]);
 
 		PseudoJet current_particle = PseudoJet(px, py, pz, energy);
 
-		if ("644983557" == event_id) {
-			apple.add_particle(px, py, pz, energy);
+		current_event->add_particle(px, py, pz, energy);
+
+		if (last_event_number != event_number) {
+			
+			// We've moved on to a different event.
+			// That means, the class current_event contains all the particles that it's supposed to.
+			
+			// Calculate N_tilde.
+			double N_tilde = current_event->calculate_N_tilde(0.5, 50.00);
+			if (N_tilde == 0.0)
+				i++;
+
+			// Write current event to a file.
+			current_event->write_to_file("banana.csv");
+
+			// We've calculated all we need. Now delete the pointer and create a new one.
+			delete current_event;
+			Event * current_event = new Event(run_number, event_number);
+
+			last_event_number = event_number;
 		}
+
 	}
 
-	cout << apple.get_size() << endl;
-	apple.write_to_file("banana.csv", false);
+	cout << endl << "Total jets for which N_tilde = 0 is: " << i << endl;
+
 }
 
-double string_to_double(string s) {
-  double d;
-  stringstream ss(s); // Turn the string into a stream
-  ss >> d; 			  // Convert
-  return d;
-}
 
