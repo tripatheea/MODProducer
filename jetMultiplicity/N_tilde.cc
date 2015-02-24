@@ -37,21 +37,20 @@ int main() {
 
 		if (last_event_number != event_number) {
 
-			// cout << "Processing event #: " << event_count << endl;
-			
-			cout << current_event->size() << endl;
+			cout << "Processing event #: " << event_count << endl;
 
 			// We've moved on to a different event.
 			// That means, the class current_event contains all the particles that it's supposed to.
 			
 			// Calculate N_tilde.
 			double N_tilde = current_event->calculate_N_tilde(0.5, 50.00);
-			if (N_tilde == 0.0)
+			if (N_tilde == 0.0) {
 				i++;
+			}
 
 			// Write current event to a file.
 			current_event->write_to_file("banana.csv");
-
+			
 			// We've calculated all we need. Now delete the old pointer (for the previous instance of event) and create a new one.
 			delete current_event;
 			Event * current_event = new Event(run_number, event_number);
@@ -63,7 +62,10 @@ int main() {
 		current_event->add_particle(px, py, pz, energy);
 	}
 
-	// Need to do all this one last time for the final event.
+	// Need to do all these stuff one last time for the final event.
+
+	// Write current event to a file.
+	current_event->write_to_file("banana.csv");
 
 	cout << endl << "Total jets for which N_tilde = 0 is: " << i << endl;
 
