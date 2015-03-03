@@ -49,7 +49,7 @@ int main() {
 			JetDefinition jet_def(antikt_algorithm, R);
 			vector<PseudoJet> jets = current_event->get_jets(jet_def, pt_cut);
 			
-			fmatch << N_tilde << "\t" << jets.size() << endl;
+			fmatch << N_tilde << "," << jets.size() << endl;
 
 			// We've calculated all we need. Now delete the old pointer (for the previous instance of event) and create a new one.
 			delete current_event;
@@ -71,7 +71,7 @@ int main() {
 	JetDefinition jet_def(antikt_algorithm, R);
 	vector<PseudoJet> jets = current_event->get_jets(jet_def, pt_cut);
 
-	fmatch << N_tilde << "\t" << jets.size() << endl;
+	fmatch << N_tilde << "," << jets.size() << endl;
 
 }
 
