@@ -20,8 +20,10 @@
 
 #include "TMath.h"
 
+#include "THStack.h"
+
 // void fractional_multiplicities() {
-//   std::ifstream infile("antikt_multiplicities.dat");
+//   std::ifstream infile("antikt_multiplicities.csv");
 
 //   TFile * rootFile_;
 //   TTree * multiplicityTree_;
@@ -29,19 +31,17 @@
 //   TCanvas *c2e = new TCanvas("ntilde_antikt", "Ntilde and Antikt Multiplicity", 1000, 600);
   
 //   gStyle->SetOptStat(false);
-//   TH1F *h1 = new TH1F("Antikt Multiplicity", "", 1001, -0.5, 6.0);
-//   TH1F *h2 = new TH1F("Ntilde", "", 1001, -0.5, 6.0);
+//   TH1F *h1 = new TH1F("Antikt Multiplicity", "", 50, -0.5, 6.0);
+//   TH1F *h2 = new TH1F("Ntilde", "", 50, -0.5, 6.0);
 
-//   double mul;
-//   int antikt;
+//   double N_tilde;
+//   double antikt;
 
-//   while(infile >> mul >> antikt) {
+//   while(infile >> N_tilde >> antikt) {
 //     h1->Fill(antikt);
-//     h2->Fill(mul);
+//     h2->Fill(N_tilde);
 //   }
 
-
-  
 //   h1->Draw();
 //   c2e->Update();
 
@@ -53,6 +53,8 @@
 //   h2->Scale(scale);
 //   h2->Draw("same");
 
+//   gPad->SetLogy();
+
 //   // Draw an axis on the right side.
 //   TGaxis *axis = new TGaxis(gPad->GetUxmax(), gPad->GetUymin(), gPad->GetUxmax(), gPad->GetUymax(), 0, rightmax, 510, "+L");
 //   axis->SetLineColor(kRed);
@@ -62,7 +64,6 @@
 //   c2e->Update();
 
 //   TLegend *leg = new TLegend(0.1, 0.7, 0.48, 0.9);
-//   // leg->SetHeader("Legend");
 //   leg->AddEntry(h1, "Antikt");
 //   leg->AddEntry(h2, "Ntilde");
 //   leg->Draw();
@@ -71,40 +72,90 @@
 
 
 
-void fractional_multiplicities() {
-  std::ifstream infile("antikt_multiplicities.dat");
+// void fractional_multiplicities() {
+//   std::ifstream infile("antikt_multiplicities.csv");
 
-  TFile * rootFile_;
-  TTree * multiplicityTree_;
+//   TFile * rootFile_;
+//   TTree * multiplicityTree_;
 
-  // Create, fill and project a 2D histogram.
-  TCanvas *c2e = new TCanvas("c2e", "c2e", 600, 400);
-  TH2F *h2 = new TH2F("Antikt Multiplicity and Ntilde", "", 1001, -0.5, 6.0, 1001, -0.5, 6.0);
+//   // Create, fill and project a 2D histogram.
+//   TCanvas *c2e = new TCanvas("c2e", "c2e", 600, 400);
+//   TH2F *h2 = new TH2F("Antikt Multiplicity and Ntilde", "", 50, -0.5, 6.0, 50, -0.5, 6.0);
 
-  rootFile_ = new TFile("antikt_multiplicities.root", "RECREATE");
-  multiplicityTree_ = new TTree("Multiplicity", "Multiplicity");
+//   rootFile_ = new TFile("antikt_multiplicities.root", "RECREATE");
+//   multiplicityTree_ = new TTree("Multiplicity", "Multiplicity");
   
-  double mul;
-  int antikt;
+//   double N_tilde;
+//   int antikt;
 
-  multiplicityTree_->Branch("multiplicity", &mul, "mul/D");
-  multiplicityTree_->Branch("antikt", &antikt, "antikt/I");
+//   multiplicityTree_->Branch("multiplicity", &N_tilde, "N_tilde/D");
+//   multiplicityTree_->Branch("antikt", &antikt, "antikt/I");
 
-  while(infile >> mul >> antikt) {
-    multiplicityTree_->Fill();
-    h2->Fill(log(mul), log(antikt));
-  }
+//   while(infile >> N_tilde >> antikt) {
+//     multiplicityTree_->Fill();
+//     h2->Fill(N_tilde, antikt);
+//   }
 
-  rootFile_->cd();
+//   rootFile_->cd();
   
-  multiplicityTree_->Write();
+//   multiplicityTree_->Write();
 
-  rootFile_->Close();
+//   rootFile_->Close();
 
-  // Draw.
-  TH1D * projh2X = h2->ProjectionX();
-  TH1D * projh2Y = h2->ProjectionY();
+
+
+//   // Draw.
+//   TH1D * projh2X = h2->ProjectionX();
+//   TH1D * projh2Y = h2->ProjectionY();
   
-  h2->Draw("LEGO");
+//   h2->Draw();
 
-}
+// }
+
+
+
+// void fractional_multiplicities() {
+//   std::ifstream infile("antikt_multiplicities.csv");
+
+//   TFile * rootFile_;
+//   TTree * multiplicityTree_;
+
+//   TH1F *h1st = new TH1F("h1st","antikt",50, -0.25, 4);
+//   TH1F *h2st = new TH1F("h2st","N_tilde",50, -0.25, 4); 
+
+//   double N_tilde;
+//   double antikt;
+
+//   while(infile >> N_tilde >> antikt) {
+//     h1st->Fill(antikt);
+//     h2st->Fill(N_tilde);
+//   }
+
+//   THStack *hs = new THStack("ntilde_antikt","Ntilde and AntikT Multiplicity");
+
+
+
+//   h1st->SetFillColor(kRed);
+//   h1st->SetMarkerStyle(21);
+//   h1st->SetMarkerColor(kRed);
+//   hs->Add(h1st);
+
+//   h2st->SetFillColor(kBlue);
+//   h2st->SetMarkerStyle(21);
+//   h2st->SetMarkerColor(kBlue);
+//   hs->Add(h2st);
+
+
+//   gStyle->SetOptStat(false);
+//   TCanvas *cst = new TCanvas("cst","N_tilde and AntikT", 1000, 600);
+
+//     gPad->SetLogy();
+
+//   hs->Draw();
+
+//   TLegend *leg = new TLegend(0.1, 0.7, 0.48, 0.9);
+//   leg->AddEntry(h1st, "Antikt");
+//   leg->AddEntry(h2st, "N_tilde");
+//   leg->Draw();  
+// }
+

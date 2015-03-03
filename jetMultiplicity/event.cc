@@ -56,9 +56,11 @@ double Event::calculate_N_tilde(double R, double pt_cut) {
 }
 
 vector<PseudoJet> Event::get_jets(JetDefinition jet_def, double pt_cut) {
+	vector<PseudoJet> particles = get_all_particles();
+
 	// Run the clustering, extract the jets using fastjet.
 	ClusterSequence cs(particles, jet_def);
-	return cs.inclusive_jets(pt_cut);	 
+	return cs.inclusive_jets(pt_cut);
 }
 
 vector<PseudoJet> Event::get_all_particles() {
@@ -81,3 +83,4 @@ void Event::write_to_file(string filename) {
 		file_to_write << run_number << "," << event_number << "," << particles[i].px() << "," << particles[i].py() << "," << particles[i].pz() << "," << particles[i].E() << endl;
 	}
 }
+
