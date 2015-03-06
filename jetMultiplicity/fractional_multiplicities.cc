@@ -22,6 +22,7 @@
 
 #include "THStack.h"
 
+
 // void fractional_multiplicities() {
 //   std::ifstream infile("antikt_multiplicities.csv");
 
@@ -159,3 +160,45 @@
 //   leg->Draw();  
 // }
 
+
+
+void fractional_multiplicities() {
+  std::ifstream infile("antikt_multiplicities.csv");
+
+  TFile * rootFile_;
+  TTree * multiplicityTree_;
+
+
+  THStack *hs = new THStack("ntilde_antikt","Ntilde and AntikT Multiplicity");
+
+  vector<TH1F * > N_tildes = vector<TH1F *>();
+  EColor colors[6] = {kRed, kBlue, kGreen, kYellow, kPink, kMagenta};
+  
+
+  for (int i = 0; i < 6; i++) {
+    TH1F * N_tilde_temp = new TH1F("a", "", 50, -0.5, 6.0);
+    N_tildes.push_back(N_tilde_temp);
+  }
+  
+  double N_tilde;
+  double antikt;
+
+  while(infile >> N_tilde >> antikt) {
+    N_tildes[antikt]->Fill(N_tilde);
+  }
+
+  for(int i = 0; i < 6; i++) {
+    N_tildes[i]->SetFillColorAlpha(colors[i], 0.5);
+    N_tildes[i]->SetMarkerStyle(21);
+    N_tildes[i]->SetMarkerColor(colors[i]);
+    hs->Add(N_tildes[i]);
+  }
+
+  hs->Draw();
+
+
+
+
+
+
+}
