@@ -174,6 +174,7 @@ void fractional_multiplicities() {
   vector<TH1F * > N_tildes = vector<TH1F *>();
   EColor colors[6] = {kRed, kBlue, kGreen, kYellow, kPink, kMagenta};
   
+  gStyle->SetOptStat(false);
 
   for (int i = 0; i < 6; i++) {
     TH1F * N_tilde_temp = new TH1F("a", "", 50, -0.5, 6.0);
@@ -194,11 +195,10 @@ void fractional_multiplicities() {
     hs->Add(N_tildes[i]);
   }
 
+  TCanvas *c2e = new TCanvas("c2e", "c2e", 600, 400);
+
+  gPad->SetLogy();
+
   hs->Draw();
-
-
-
-
-
 
 }
