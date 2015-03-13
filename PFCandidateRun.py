@@ -16,8 +16,8 @@ indices_file = 'CMS_Run2010B_Jet_AOD_Apr21ReReco-v1_000'	# Should append "_" + i
 
 mylist = FileUtils.loadListFromFile (indices_file + '0_file_index.txt') 
 
-for i in range(1, 6):	
-	mylist.extend ( FileUtils.loadListFromFile ("{}{}_file_index.txt".format(indices_file, i)) )
+
+#mylist.extend(FileUtils.loadListFromFile(indices_file + '1_file_index.txt") )
 
 readFiles = cms.untracked.vstring( *mylist)
 
