@@ -19,6 +19,13 @@
 #include <TFile.h>
 #include <TTree.h>
 
+
+
+
+
+#include "DataFormats/PatCandidates/interface/TriggerFilter.h"
+
+
 class PFCandidateFilter : public edm::EDFilter 
 {
 public: 
@@ -80,11 +87,54 @@ bool PFCandidateFilter::filter(edm::Event& event, const edm::EventSetup& eventSe
   edm::Handle<reco::PFCandidateCollection> collection;
   event.getByLabel(pfCandidateInputTag_, collection);
 
+  // Triggers and Prescale Factors.
+
+  edm::Handle< std::vector<int> > trigPreScalesHandle;
+  event.getByLabel(edm::InputTag("dijetTriggerFilter", "prescales"), trigPreScalesHandle);
+
+  edm::Handle< std::vector<std::string> > trigNamesHandle;
+  event.getByLabel( edm::InputTag("dijetTriggerFilter", "jetPaths"), trigNamesHandle );
+
+  double prescaleJet30U = 1;
+  double prescaleJet50U = 1;
+  double prescaleJet70U = 1;
+  double prescaleJet100U = 1;
+  
+  // Jet30U
+  std::vector<std::string>::const_iterator jet30U = find( trigNamesHandle->begin(), trigNamesHandle->end(), "HLT_Jet30U" );
+  if ( jet30U != trigNamesHandle->end() ) {
+    prescaleJet30U = trigPreScalesHandle->at( jet30U - trigNamesHandle->begin() );
+    std::cout << prescaleJet30U << std::endl;
+  }
+
+  // Jet50U
+  std::vector<std::string>::const_iterator jet50U = find( trigNamesHandle->begin(), trigNamesHandle->end(), "HLT_Jet50U" );
+  if ( jet50U != trigNamesHandle->end() ) {
+    prescaleJet50U = trigPreScalesHandle->at( jet50U - trigNamesHandle->begin() );
+    std::cout << prescaleJet50U << std::endl;
+  }
+
+  // Jet70U
+  std::vector<std::string>::const_iterator jet70U = find( trigNamesHandle->begin(), trigNamesHandle->end(), "HLT_Jet70U" );
+  if ( jet70U != trigNamesHandle->end() ) {
+    prescaleJet70U = trigPreScalesHandle->at( jet70U - trigNamesHandle->begin() );
+    std::cout << prescaleJet70U << std::endl;
+  }
+
+  // Jet100U
+  std::vector<std::string>::const_iterator jet100U = find( trigNamesHandle->begin(), trigNamesHandle->end(), "HLT_Jet100U" );
+  if ( jet100U != trigNamesHandle->end() ) {
+    prescaleJet100U = trigPreScalesHandle->at( jet100U - trigNamesHandle->begin() );
+    std::cout << prescaleJet100U << std::endl;
+  }
+
   if ( ! collection.isValid()){
     std::cerr << "PFCandidateFilter: Invalid collection." << std::endl;
     return false;
   }
 
+
+  
   runNum = event.id().run();
   eventNum = event.id().event();
   
@@ -106,7 +156,7 @@ bool PFCandidateFilter::filter(edm::Event& event, const edm::EventSetup& eventSe
     csvOut_ << runNum << "," << eventNum << "," << px << "," << py << "," << pz << "," << energy << std::endl;
     pfCandidateTree_->Fill();
   }
-    
+
   return true;
 }
 
