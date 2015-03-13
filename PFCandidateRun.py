@@ -12,10 +12,13 @@ process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 process.GlobalTag.globaltag = 'GR_R_42_V25::All'
 
 # Need to split into 3 separate files because there's a limit of 255 values for a set of parameters and thereby for the indices files too.
-indices_file = 'CMS_Run2010B_MultiJet_AOD_Apr21ReReco-v1_0002_file_index'	# Should append "_" + indexNumber + ".txt" to this.
-mylist = FileUtils.loadListFromFile (indices_file + '_1.txt') 
-mylist.extend ( FileUtils.loadListFromFile (indices_file + '_2.txt') )
-mylist.extend ( FileUtils.loadListFromFile (indices_file + '_3.txt') )
+indices_file = 'CMS_Run2010B_Jet_AOD_Apr21ReReco-v1_000'	# Should append "_" + indexNumber + ".txt" to this.
+
+mylist = FileUtils.loadListFromFile (indices_file + '0_file_index.txt') 
+
+for i in range(1, 6):	
+	mylist.extend ( FileUtils.loadListFromFile ("{}{}_file_index.txt".format(indices_file, i)) )
+
 readFiles = cms.untracked.vstring( *mylist)
 
 process.source = cms.Source ("PoolSource", fileNames=readFiles)
