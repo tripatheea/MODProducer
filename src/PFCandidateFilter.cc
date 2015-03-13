@@ -20,10 +20,43 @@
 #include <TTree.h>
 
 
-
-
-
 #include "DataFormats/PatCandidates/interface/TriggerFilter.h"
+
+
+
+
+// Trial run for trigger stuff.
+
+#include "L1Trigger/GlobalTriggerAnalyzer/interface/L1GtAnalyzer.h"
+
+
+#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutSetupFwd.h"
+#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutSetup.h"
+
+#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutRecord.h"
+#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerRecord.h"
+#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerObjectMapRecord.h"
+#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerObjectMaps.h"
+
+#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerObjectMap.h"
+
+#include "DataFormats/L1GlobalTrigger/interface/L1GtTriggerMenuLite.h"
+
+#include "DataFormats/Common/interface/ConditionsInEdm.h"
+
+#include "DataFormats/L1GlobalMuonTrigger/interface/L1MuGMTReadoutCollection.h"
+
+#include "L1Trigger/GlobalTrigger/interface/L1GlobalTriggerPSB.h"
+#include "L1Trigger/GlobalTrigger/interface/L1GlobalTriggerGTL.h"
+#include "L1Trigger/GlobalTrigger/interface/L1GlobalTriggerFDL.h"
+
+#include "FWCore/Framework/interface/ESHandle.h"
+#include "FWCore/Framework/interface/LuminosityBlock.h"
+
+#include "CondFormats/L1TObjects/interface/L1GtTriggerMenu.h"
+#include "CondFormats/DataRecord/interface/L1GtTriggerMenuRcd.h"
+
+
 
 
 class PFCandidateFilter : public edm::EDFilter 
