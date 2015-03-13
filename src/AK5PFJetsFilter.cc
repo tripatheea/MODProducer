@@ -1,4 +1,8 @@
 #include <memory>
+#include <iostream>
+#include <string>
+#include <fstream>
+#include <vector>
 
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/EDFilter.h"
@@ -9,79 +13,11 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/Utilities/interface/InputTag.h"
 
-#include <iostream>
-#include <string>
+#include "DataFormats/JetReco/interface/PFJet.h"
+#include "DataFormats/ParticleFlowReco/interface/PFBlockFwd.h"
 
-#include <TH1.h>
 #include <TFile.h>
 #include <TTree.h>
-
-
-#include <fstream>
-
-#include "FWCore/Utilities/interface/InputTag.h"
-
-#include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
-#include "DataFormats/ParticleFlowCandidate/interface/PFCandidateFwd.h"
-#include "DataFormats/ParticleFlowReco/interface/PFBlockElement.h"
-#include "DataFormats/JetReco/interface/PFJet.h"
-#include "DataFormats/Candidate/interface/CompositeCandidate.h"
-#include "DataFormats/ParticleFlowReco/interface/PFBlockFwd.h"
-#include "DataFormats/TrackReco/interface/TrackFwd.h"
-#include "DataFormats/GsfTrackReco/interface/GsfTrack.h"
-#include "DataFormats/GsfTrackReco/interface/GsfTrackFwd.h"
-
-
-#include "DataFormats/Common/interface/Ptr.h"
-#include "DataFormats/Common/interface/PtrVector.h"
-#include "DataFormats/Common/interface/RefProd.h"
-#include "DataFormats/Common/interface/Ref.h"
-#include "DataFormats/Common/interface/RefVector.h"
-
-
-#include "RecoParticleFlow/PFProducer/interface/PFMuonAlgo.h"
-#include "DataFormats/ParticleFlowReco/interface/PFBlock.h"
-#include "DataFormats/ParticleFlowReco/interface/PFBlockElement.h"
-#include "DataFormats/ParticleFlowReco/interface/PFBlockElementTrack.h"
-#include "DataFormats/ParticleFlowReco/interface/PFBlockElementGsfTrack.h"
-#include "DataFormats/TrackReco/interface/Track.h"
-#include "DataFormats/MuonReco/interface/Muon.h"
-#include "DataFormats/MuonReco/interface/MuonSelectors.h"
-#include "DataFormats/MuonReco/interface/MuonCocktails.h"
-
-
-#include "DataFormats/MuonReco/interface/MuonFwd.h"
-#include "DataFormats/ParticleFlowCandidate/interface/PFCandidateElectronExtraFwd.h"
-#include "DataFormats/EgammaCandidates/interface/GsfElectronFwd.h"
-#include "DataFormats/ParticleFlowReco/interface/PFDisplacedVertexFwd.h"
-#include "DataFormats/EgammaCandidates/interface/ConversionFwd.h"
-#include "DataFormats/Candidate/interface/VertexCompositeCandidate.h"
-#include "DataFormats/ParticleFlowCandidate/interface/PFCandidatePhotonExtraFwd.h"
-#include "DataFormats/EgammaCandidates/interface/PhotonFwd.h"
-
-#include "DataFormats/Math/interface/LorentzVector.h"
-#include "DataFormats/Candidate/interface/Candidate.h"
-
-#include "PhysicsTools/SelectorUtils/interface/PFJetIDSelectionFunctor.h"
-#include "PhysicsTools/SelectorUtils/interface/strbitset.h"
-#include "FWCore/Framework/interface/EDAnalyzer.h"
-
-#include "FWCore/Framework/interface/Event.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/ServiceRegistry/interface/Service.h"
-#include "FWCore/Utilities/interface/InputTag.h"
-#include "FWCore/Utilities/interface/EDMException.h"
-#include "CommonTools/UtilAlgos/interface/TFileService.h"
-
-#include "TH1D.h"
-#include "TMath.h"
-#include <vector>
-#include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
-#include "DataFormats/ParticleFlowCandidate/interface/IsolatedPFCandidate.h"
-#include <DataFormats/TrackReco/interface/Track.h>
-#include <DataFormats/MuonReco/interface/Muon.h>
-
-
 
 class AK5PFJetsFilter : public edm::EDFilter 
 {
