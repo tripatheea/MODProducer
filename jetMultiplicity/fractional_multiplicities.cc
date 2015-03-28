@@ -184,8 +184,10 @@ void fractional_multiplicities() {
   double N_tilde;
   double antikt;
 
-  while(infile >> N_tilde >> antikt) {
-    N_tildes[antikt]->Fill(N_tilde);
+  double prescale_1, prescale_2;
+
+  while(infile >> N_tilde >> antikt >> prescale_1 >> prescale_2) {
+    N_tildes[antikt]->Fill(N_tilde, prescale_2);
   }
 
   for(int i = 0; i < 6; i++) {
@@ -197,7 +199,7 @@ void fractional_multiplicities() {
 
   TCanvas *c2e = new TCanvas("c2e", "c2e", 600, 400);
 
-  gPad->SetLogy();
+  // gPad->SetLogy();
 
   hs->Draw();
 
