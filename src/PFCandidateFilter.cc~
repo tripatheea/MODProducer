@@ -20,6 +20,15 @@
 #include <TTree.h>
 
 
+#include "DataFormats/PatCandidates/interface/TriggerFilter.h"
+
+
+
+
+
+
+
+
 class PFCandidateFilter : public edm::EDFilter 
 {
 public: 
@@ -78,35 +87,35 @@ PFCandidateFilter::~PFCandidateFilter() {}
 
 bool PFCandidateFilter::filter(edm::Event& event, const edm::EventSetup& eventSetup) {
 
-  edm::Handle<reco::PFCandidateCollection> collection;
-  event.getByLabel(pfCandidateInputTag_, collection);
+  // edm::Handle<reco::PFCandidateCollection> collection;
+//   event.getByLabel(pfCandidateInputTag_, collection);
 
-  if ( ! collection.isValid()){
-    std::cerr << "PFCandidateFilter: Invalid collection." << std::endl;
-    return false;
-  }
+//   if ( ! collection.isValid()){
+//     std::cerr << "PFCandidateFilter: Invalid collection." << std::endl;
+//     return false;
+//   }
   
-  runNum = event.id().run();
-  eventNum = event.id().event();
+//   runNum = event.id().run();
+//   eventNum = event.id().event();
   
-  std::cout << "Event number: " << eventSerialNumber << " being processed." << std::endl;
-  eventSerialNumber++;
+//   std::cout << "Event number: " << eventSerialNumber << " being processed." << std::endl;
+//   eventSerialNumber++;
 
-  for(reco::PFCandidateCollection::const_iterator it = collection->begin(), end = collection->end(); it != end; it++) {
-    particleType = (int) (*it).particleId();
-    px = it->px();
-    py = it->py();
-    pz = it->pz();
-    energy = it->energy();
+//   for(reco::PFCandidateCollection::const_iterator it = collection->begin(), end = collection->end(); it != end; it++) {
+//     particleType = (int) (*it).particleId();
+//     px = it->px();
+//     py = it->py();
+//     pz = it->pz();
+//     energy = it->energy();
 
-    pt = it->pt();
-    eta = it->eta();
-    phi = it->phi();
+//     pt = it->pt();
+//     eta = it->eta();
+//     phi = it->phi();
     
-    // csvOut_ << runNum << "," << eventNum << "," << px << "," << py << "," << pz << "," << energy << "," << pt << "," << eta << "," << phi << "," << particleType << std::endl;
-    csvOut_ << runNum << "," << eventNum << "," << px << "," << py << "," << pz << "," << energy << std::endl;
-    pfCandidateTree_->Fill();
-  }
+//     // csvOut_ << runNum << "," << eventNum << "," << px << "," << py << "," << pz << "," << energy << "," << pt << "," << eta << "," << phi << "," << particleType << std::endl;
+//     csvOut_ << runNum << "," << eventNum << "," << px << "," << py << "," << pz << "," << energy << std::endl;
+//     pfCandidateTree_->Fill();
+//   }
 
   return true;
 }

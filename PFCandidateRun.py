@@ -14,10 +14,10 @@ process.GlobalTag.globaltag = 'GR_R_42_V25::All'
 # Need to split into 3 separate files because there's a limit of 255 values for a set of parameters and thereby for the indices files too.
 indices_file = 'CMS_Run2010B_Jet_AOD_Apr21ReReco-v1_000'	# Should append "_" + indexNumber + ".txt" to this.
 
-mylist = FileUtils.loadListFromFile (indices_file + '0_file_index.txt') 
-
+mylist = FileUtils.loadListFromFile (indices_file + '0_file_index.txt')
 
 #mylist.extend(FileUtils.loadListFromFile(indices_file + '1_file_index.txt") )
+
 
 readFiles = cms.untracked.vstring( *mylist)
 
