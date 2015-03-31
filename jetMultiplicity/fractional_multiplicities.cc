@@ -187,7 +187,7 @@ void fractional_multiplicities() {
   double prescale_1, prescale_2;
 
   while(infile >> N_tilde >> antikt >> prescale_1 >> prescale_2) {
-    N_tildes[antikt]->Fill(N_tilde, prescale_2);
+    N_tildes[antikt]->Fill(N_tilde, prescale_1);
   }
 
   for(int i = 0; i < 6; i++) {
