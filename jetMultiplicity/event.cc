@@ -13,7 +13,6 @@ class Event {
 	int run_number, event_number;
 	vector<PseudoJet> particles;
 	unordered_map<string, vector<string > > triggers;	// The key is name of the trigger. The vector must have three elements- fired (boolean), prescale 1 (int) and prescale 2 (int). 
-	vector<PseudoJet> clustered_jets;
 
 	public:
 		Event(int, int);
@@ -21,8 +20,7 @@ class Event {
 		int size();
 		double calculate_N_tilde(double R, double pt_cut);	// R, pt_cut. R is the cone radius.
 
-		void calculate_jets(JetDefinition jet_def, double pt_cut);	// JetDefinition, pt_cut (Fastjet)
-		vector<PseudoJet> get_jets();
+		vector<PseudoJet> get_jets(JetDefinition jet_def, double pt_cut);	// JetDefinition, pt_cut (Fastjet)
 		vector<PseudoJet> get_particles();
 
 		void add_particle(double px, double py, double pz, double energy);	// px, py, pz, energy.
@@ -62,16 +60,12 @@ double Event::calculate_N_tilde(double R, double pt_cut) {
 	return N_tilde_current_event;
 }
 
-void Event::calculate_jets(JetDefinition jet_def, double pt_cut) {
+vector<PseudoJet> Event::get_jets(JetDefinition jet_def, double pt_cut) {
 	vector<PseudoJet> particles = Event::get_particles();
 
 	// Run the clustering, extract the jets using fastjet.
 	ClusterSequence cs(particles, jet_def);
-	Event::clustered_jets = cs.inclusive_jets(pt_cut);
-}
-
-vector<PseudoJet> Event::get_jets() {
-	return Event::clustered_jets;
+	return cs.inclusive_jets(pt_cut);
 }
 
 vector<PseudoJet> Event::get_particles() {
@@ -102,14 +96,21 @@ void Event::write_to_file(string filename) {
 vector<string> Event::get_assigned_trigger() {
 
 	// Find the hardest jet first.
-	double hardest_pt = 0.0;
-	vector<PseudoJet> clustered_jets = Event::get_jets();
-	// cout << "Jet size is: " << clustered_jets.size() << endl;
+	
 
+	vector<PseudoJet> particles = Event::get_particles();
+
+	JetDefinition jet_def(antikt_algorithm, 0.5);
+	ClusterSequence cs(particles, jet_def);
+	vector<PseudoJet> clustered_jets = cs.inclusive_jets();;
+
+	double hardest_pt = 0.0;
 	for (unsigned int i = 0; i < clustered_jets.size(); i++) {
 		if (hardest_pt < clustered_jets[i].pt())
 			hardest_pt = clustered_jets[i].pt();
 	}
+
+
 	
 	// Next, lookup which trigger to use based on the pt value of the hardest jet.
 	
@@ -120,6 +121,8 @@ vector<string> Event::get_assigned_trigger() {
 	114-153 GeV => 50U
 	>153 GeV => 70U
 	*/
+
+	
 
 	string trigger_to_use;
 	if (hardest_pt > 153) {
@@ -135,17 +138,18 @@ vector<string> Event::get_assigned_trigger() {
 		trigger_to_use = "HLT_Jet15U";
 	}
 	else if (hardest_pt > 37) {
-		trigger_to_use = "HLT_Jet6U";
+		trigger_to_use = "HLT_L1Jet6U";
 	}
 
+	cout << "Hardest pt is: " << hardest_pt << endl;
 	cout << "Trigger to use: " << trigger_to_use << endl;
-	cout << "Hardest pt val: " << hardest_pt << endl;
 
 	// vector<string> triggersThatMatter {"HLT_L1Jet6U", "HLT_L1Jet10U", "HLT_Jet15U", "HLT_Jet30U", "HLT_Jet50U", "HLT_Jet70U", "HLT_Jet100U"};
 
 	// Next, just see if the trigger_to_use fired or not.
 
 	if (trigger_to_use.length() != 0) {
+		
 		vector<string> selected_trigger = Event::triggers[trigger_to_use]; // This vector holds {fired, prescale_1, prescale_2}.
 		
 		if (stoi(selected_trigger[0]) == 1) {

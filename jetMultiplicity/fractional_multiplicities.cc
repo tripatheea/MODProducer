@@ -37,11 +37,13 @@
 
 //   double N_tilde;
 //   double antikt;
+//   double prescale_1, prescale_2;
 
-//   while(infile >> N_tilde >> antikt) {
-//     h1->Fill(antikt);
-//     h2->Fill(N_tilde);
+//   while(infile >> N_tilde >> antikt >> prescale_1 >> prescale_2) {
+//     h1->Fill(antikt, prescale_1 * prescale_2);
+//     h2->Fill(N_tilde, prescale_1 * prescale_2);
 //   }
+
 
 //   h1->Draw();
 //   c2e->Update();
@@ -89,12 +91,14 @@
 //   double N_tilde;
 //   int antikt;
 
+//   double prescale_1, prescale_2;
+
 //   multiplicityTree_->Branch("multiplicity", &N_tilde, "N_tilde/D");
 //   multiplicityTree_->Branch("antikt", &antikt, "antikt/I");
 
-//   while(infile >> N_tilde >> antikt) {
+//   while(infile >> N_tilde >> antikt >> prescale_1 >> prescale_2) {
 //     multiplicityTree_->Fill();
-//     h2->Fill(N_tilde, antikt);
+//     h2->Fill(N_tilde, antikt, prescale_1 * prescale_2);
 //   }
 
 //   rootFile_->cd();
@@ -124,12 +128,13 @@
 //   TH1F *h1st = new TH1F("h1st","antikt",50, -0.25, 4);
 //   TH1F *h2st = new TH1F("h2st","N_tilde",50, -0.25, 4); 
 
-//   double N_tilde;
+//    double N_tilde;
 //   double antikt;
-
-//   while(infile >> N_tilde >> antikt) {
-//     h1st->Fill(antikt);
-//     h2st->Fill(N_tilde);
+//   double prescale_1, prescale_2;
+  
+//   while(infile >> N_tilde >> antikt >> prescale_1 >> prescale_2) {
+//     h1st->Fill(antikt, prescale_1 * prescale_2);
+//     h2st->Fill(N_tilde, prescale_1 * prescale_2);
 //   }
 
 //   THStack *hs = new THStack("ntilde_antikt","Ntilde and AntikT Multiplicity");
@@ -187,7 +192,7 @@ void fractional_multiplicities() {
   double prescale_1, prescale_2;
 
   while(infile >> N_tilde >> antikt >> prescale_1 >> prescale_2) {
-    N_tildes[antikt]->Fill(N_tilde, prescale_1);
+    N_tildes[antikt]->Fill(N_tilde, prescale_1 * prescale_2);
   }
 
   for(int i = 0; i < 6; i++) {

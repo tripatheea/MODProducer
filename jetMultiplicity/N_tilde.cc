@@ -56,14 +56,10 @@ int main() {
 
 			// Now retrieve the assigned trigger and use that to determine:
 			// a) whether to record the current event or not.
-			// b) what prescale to use.
-
-			// Calculate jet size (fastjet)
-			JetDefinition jet_def(antikt_algorithm, R);
-			current_event->calculate_jets(jet_def, pt_cut);
+			// b) what prescale to use.		
 
 			vector<string> assigned_trigger = current_event->get_assigned_trigger();
-
+			
 			if (assigned_trigger.size() > 0) {
 
 				// Record things only if at least one trigger was fired.
@@ -72,11 +68,12 @@ int main() {
 				int prescale_2 = stoi(assigned_trigger[2]);
 
 				// Calculate N_tilde.
-				double N_tilde = current_event->calculate_N_tilde(0.5, 50.00);
+				double N_tilde = current_event->calculate_N_tilde(R, pt_cut);
+				
+				// Calculate jet size (fastjet)
+				JetDefinition jet_def(antikt_algorithm, R);
+				vector<PseudoJet> jets = current_event->get_jets(jet_def, pt_cut);
 
-				
-				vector<PseudoJet> jets = current_event->get_jets();
-				
 				fmatch << N_tilde << " " << jets.size() << " " << prescale_1 << " " << prescale_2 << endl;
 			}
 
@@ -107,9 +104,6 @@ int main() {
 	// a) whether to record the current event or not.
 	// b) what prescale to use.
 
-	// Calculate jet size (fastjet)
-	JetDefinition jet_def(antikt_algorithm, R);
-	current_event->calculate_jets(jet_def, pt_cut);
 
 	vector<string> assigned_trigger = current_event->get_assigned_trigger();
 
@@ -121,11 +115,11 @@ int main() {
 		int prescale_2 = stoi(assigned_trigger[2]);
 
 		// Calculate N_tilde.
-		double N_tilde = current_event->calculate_N_tilde(0.5, 50.00);
+		double N_tilde = current_event->calculate_N_tilde(R, pt_cut);
 
 		// Calculate jet size (fastjet)
 		JetDefinition jet_def(antikt_algorithm, R);
-		vector<PseudoJet> jets = current_event->get_jets();
+		vector<PseudoJet> jets = current_event->get_jets(jet_def, pt_cut);
 		
 		fmatch << event_number << "," << N_tilde << "," << jets.size() << "," << assigned_trigger[0] << "," << prescale_1 << "," << prescale_2 << endl;
 	}
