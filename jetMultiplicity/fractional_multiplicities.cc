@@ -177,7 +177,7 @@ void fractional_multiplicities() {
   THStack *hs = new THStack("ntilde_antikt","Ntilde and AntikT Multiplicity");
 
   vector<TH1F * > N_tildes = vector<TH1F *>();
-  EColor colors[6] = {kRed, kBlue, kGreen, kYellow, kPink, kMagenta};
+  EColor colors[6] = {kRed, kBlue, kGreen, kYellow, kMagenta, kOrange};
   
   gStyle->SetOptStat(false);
 
@@ -190,8 +190,10 @@ void fractional_multiplicities() {
   double antikt;
 
   double prescale_1, prescale_2;
+  string name;
 
   while(infile >> N_tilde >> antikt >> prescale_1 >> prescale_2) {
+    // cout << N_tilde << endl;
     N_tildes[antikt]->Fill(N_tilde, prescale_1 * prescale_2);
   }
 

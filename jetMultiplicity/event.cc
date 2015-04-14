@@ -2,6 +2,7 @@
 #include <unordered_map>
 #include <exception>
 
+#include "trigger.cc"
 #include "fastjet/ClusterSequence.hh"
 #include "csv.cc"
 
@@ -12,31 +13,42 @@ class Event {
 	
 	int run_number, event_number;
 	vector<PseudoJet> particles;
-	unordered_map<string, vector<string > > triggers;	// The key is name of the trigger. The vector must have three elements- fired (boolean), prescale 1 (int) and prescale 2 (int). 
+	vector<Trigger> triggers;
 
 	public:
 		Event(int, int);
 
 		int size();
-		double calculate_N_tilde(double R, double pt_cut);	// R, pt_cut. R is the cone radius.
+		double calculate_N_tilde(int event_number, double R, double pt_cut);	// R, pt_cut. R is the cone radius.
 
-		vector<PseudoJet> get_jets(JetDefinition jet_def, double pt_cut);	// JetDefinition, pt_cut (Fastjet)
+		vector<PseudoJet> get_jets(int event_number, JetDefinition jet_def, double pt_cut);	// JetDefinition, pt_cut (Fastjet)
 		vector<PseudoJet> get_particles();
 
 		void add_particle(double px, double py, double pz, double energy);	// px, py, pz, energy.
-		void add_triggers(unordered_map<string, vector< string> > triggers);	// px, py, pz, energy.
+		void add_triggers(vector<Trigger> triggers);	
 		void write_to_file(string filename);	// Will append if file already exists.
 
-		vector<string> get_assigned_trigger();
+		Trigger get_assigned_trigger();
+		Trigger get_trigger_by_name(string name);
+
+		void print_particles();
 };
 
 Event::Event(int run_number, int event_number) : run_number(run_number), event_number(event_number) {}
+
+
+void Event::print_particles() {
+	for(unsigned int i = 0; i < particles.size(); i++) {
+		// cout << particles[i].pt() << ", ";
+	}
+	cout << endl;
+}
 
 int Event::size() {
 	return Event::particles.size();
 }
 
-double Event::calculate_N_tilde(double R, double pt_cut) {
+double Event::calculate_N_tilde(int event_number, double R, double pt_cut) {
 	vector<PseudoJet> particles = this->get_particles();
 
 	double N_tilde_current_event = 0.00;
@@ -53,19 +65,22 @@ double Event::calculate_N_tilde(double R, double pt_cut) {
 				pt_iR += pt_j;
 		}
 
-		if (pt_iR > pt_cut)								// heavisideStep
+		if (pt_iR > pt_cut)	{							// heavisideStep
 			N_tilde_current_event += pt_i / pt_iR;
+		}
 	}
 
 	return N_tilde_current_event;
 }
 
-vector<PseudoJet> Event::get_jets(JetDefinition jet_def, double pt_cut) {
+vector<PseudoJet> Event::get_jets(int event_number, JetDefinition jet_def, double pt_cut) {
 	vector<PseudoJet> particles = Event::get_particles();
 
 	// Run the clustering, extract the jets using fastjet.
 	ClusterSequence cs(particles, jet_def);
-	return cs.inclusive_jets(pt_cut);
+	vector<PseudoJet> clustered_jets = cs.inclusive_jets(pt_cut);
+
+	return clustered_jets;
 }
 
 vector<PseudoJet> Event::get_particles() {
@@ -76,8 +91,19 @@ void Event::add_particle(double px, double py, double pz, double energy) {
 	Event::particles.push_back(PseudoJet(px, py, pz, energy));
 }
 
-void Event::add_triggers(unordered_map<string, vector< string> > triggers) {
+void Event::add_triggers(vector<Trigger> triggers) {
 	Event::triggers = triggers;
+}
+
+Trigger Event::get_trigger_by_name(string name) {
+	for(int i = 0; i < Event::triggers.size(); i++) {
+		if (Event::triggers[i].get_name() == name) {
+			return triggers[i];
+		}
+	}
+
+	Trigger * empty_trigger = new Trigger();
+	return * empty_trigger;
 }
 
 void Event::write_to_file(string filename) {
@@ -93,7 +119,7 @@ void Event::write_to_file(string filename) {
 	}
 }
 
-vector<string> Event::get_assigned_trigger() {
+Trigger Event::get_assigned_trigger() {
 
 	// Find the hardest jet first.
 	
@@ -102,8 +128,10 @@ vector<string> Event::get_assigned_trigger() {
 
 	JetDefinition jet_def(antikt_algorithm, 0.5);
 	ClusterSequence cs(particles, jet_def);
-	vector<PseudoJet> clustered_jets = cs.inclusive_jets();;
+	vector<PseudoJet> clustered_jets = cs.inclusive_jets(0.0);;
 
+
+	
 	double hardest_pt = 0.0;
 	for (unsigned int i = 0; i < clustered_jets.size(); i++) {
 		if (hardest_pt < clustered_jets[i].pt())
@@ -122,8 +150,6 @@ vector<string> Event::get_assigned_trigger() {
 	>153 GeV => 70U
 	*/
 
-	
-
 	string trigger_to_use;
 	if (hardest_pt > 153) {
 		trigger_to_use = "HLT_Jet70U";
@@ -141,26 +167,23 @@ vector<string> Event::get_assigned_trigger() {
 		trigger_to_use = "HLT_L1Jet6U";
 	}
 
-	cout << "Hardest pt is: " << hardest_pt << endl;
-	cout << "Trigger to use: " << trigger_to_use << endl;
 
-	// vector<string> triggersThatMatter {"HLT_L1Jet6U", "HLT_L1Jet10U", "HLT_Jet15U", "HLT_Jet30U", "HLT_Jet50U", "HLT_Jet70U", "HLT_Jet100U"};
+
+	vector<string> triggersThatMatter {"HLT_L1Jet6U", "HLT_L1Jet10U", "HLT_Jet15U", "HLT_Jet30U", "HLT_Jet50U", "HLT_Jet70U", "HLT_Jet100U"};
 
 	// Next, just see if the trigger_to_use fired or not.
 
+
+
 	if (trigger_to_use.length() != 0) {
-		
-		vector<string> selected_trigger = Event::triggers[trigger_to_use]; // This vector holds {fired, prescale_1, prescale_2}.
-		
-		if (stoi(selected_trigger[0]) == 1) {
-			// This trigger was fired. Pack it into a vector and return it.
-			// Does not include fired because we only return those triggers which were fired
-			
-			vector<string> assigned_trigger {trigger_to_use, selected_trigger[1], selected_trigger[2]};		// {trigger_name, prescale_1, prescale_2}
-			return assigned_trigger;
-		}
+
+		Trigger selected_trigger = Event::get_trigger_by_name(trigger_to_use);
+
+		if (selected_trigger.fired())
+			return selected_trigger;
 	}
 
 	// No trigger was fired for this event.
-	return vector<string>();
+	Trigger * empty_trigger = new Trigger();
+	return * empty_trigger;
 }
