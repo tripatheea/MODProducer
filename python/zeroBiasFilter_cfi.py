@@ -7,5 +7,5 @@ zeroBiasFilter = cms.EDFilter('zeroBiasFilter' ,
                             zeroBiasInputTag = cms.InputTag("particleFlow"),
                             csvFileName = cms.string("zeroBias.csv"),
                             rootFileName = cms.string("zeroBias.root"),
-                            maxNEvents = cms.int32(1000)
+                            maxNEvents = cms.int32(10)
                             )
