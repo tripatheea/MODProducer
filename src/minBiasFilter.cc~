@@ -15,18 +15,15 @@
 
 #include "JetMETCorrections/MinBias/interface/MinBias.h"
 
-#include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
-#include "DataFormats/ParticleFlowCandidate/interface/PFCandidateFwd.h"
-
 #include <TFile.h>
 #include <TTree.h>
 
 
-class minBiasFilter : public edm::EDFilter 
+class PFCandidateFilter : public edm::EDFilter 
 {
 public: 
-  explicit minBiasFilter(const edm::ParameterSet&);
-  ~minBiasFilter();
+  explicit PFCandidateFilter(const edm::ParameterSet&);
+  ~PFCandidateFilter();
 
 private:
   virtual void beginJob() ;
@@ -62,7 +59,7 @@ private:
   int eventSerialNumber;
 };
 
-minBiasFilter::minBiasFilter(const edm::ParameterSet& iConfig)
+PFCandidateFilter::PFCandidateFilter(const edm::ParameterSet& iConfig)
   : minBiasInputTag_(iConfig.getParameter<edm::InputTag>("minBiasInputTag")),
     rootFileName_(iConfig.getParameter<std::string>("rootFileName")),
     csvFileName_(iConfig.getParameter<std::string>("csvFileName")),
@@ -76,9 +73,9 @@ minBiasFilter::minBiasFilter(const edm::ParameterSet& iConfig)
 }
 
 
-minBiasFilter::~minBiasFilter() {}
+PFCandidateFilter::~PFCandidateFilter() {}
 
-bool minBiasFilter::filter(edm::Event& event, const edm::EventSetup& eventSetup) {
+bool PFCandidateFilter::filter(edm::Event& event, const edm::EventSetup& eventSetup) {
 
   edm::Handle<reco::PFCandidateCollection> collection;
   event.getByLabel(minBiasInputTag_, collection);
@@ -107,15 +104,15 @@ bool minBiasFilter::filter(edm::Event& event, const edm::EventSetup& eventSetup)
     eta = it->eta();
     phi = it->phi();
     
-    //std::cout << runNum << "," << eventNum << "," << px << "," << py << "," << pz << "," << energy << "," << pt << "," << eta << "," << phi << "," << particleType << std::endl;
-    csvOut_ << runNum << "," << eventNum << "," << px << "," << py << "," << pz << "," << energy << std::endl;
+    std::cout << runNum << "," << eventNum << "," << px << "," << py << "," << pz << "," << energy << "," << pt << "," << eta << "," << phi << "," << particleType << std::endl;
+    // csvOut_ << runNum << "," << eventNum << "," << px << "," << py << "," << pz << "," << energy << std::endl;
     // pfCandidateTree_->Fill();
   }
 
   return true;
 }
 
-void minBiasFilter::beginJob() {
+void PFCandidateFilter::beginJob() {
   std::cout << "Started my analysis job!" << std::endl;
 
   // csvOut_ << "Run, Event, px, py, pz, energy, pt, eta, phi, particleType" << std::endl;
@@ -134,7 +131,7 @@ void minBiasFilter::beginJob() {
   eventSerialNumber = 1;
 }
 
-void minBiasFilter::endJob() {
+void PFCandidateFilter::endJob() {
   rootFile_->cd();
   pfCandidateTree_->Write();
   rootFile_->Close();
@@ -143,4 +140,4 @@ void minBiasFilter::endJob() {
 }
 
 
-DEFINE_FWK_MODULE(minBiasFilter);
+DEFINE_FWK_MODULE(PFCandidateFilter);
