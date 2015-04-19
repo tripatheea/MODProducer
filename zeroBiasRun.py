@@ -33,7 +33,7 @@ process.zeroBiasFilter.csvFileName = cms.string("zeroBias.csv")
 
 # Change this to set the maximum number of events to process
 # -1 means all of them
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))
 
 process.Filter = cms.Path(process.zeroBiasFilter)
 process.schedule = cms.Schedule(process.Filter)
