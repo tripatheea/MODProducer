@@ -83,7 +83,7 @@ bool zeroBiasFilter::filter(edm::Event& event, const edm::EventSetup& eventSetup
   edm::Handle<reco::PFCandidateCollection> collection;
   event.getByLabel(zeroBiasInputTag_, collection);
 
-  std::cout << zeroBiasInputTag_ << std::endl;
+  std::cout << "Working on event #" << eventSerialNumber << std::endl;
 
   if ( ! collection.isValid()){
     std::cerr << "PFCandidateFilter: Invalid collection." << std::endl;
@@ -107,7 +107,7 @@ bool zeroBiasFilter::filter(edm::Event& event, const edm::EventSetup& eventSetup
     eta = it->eta();
     phi = it->phi();
     
-    //std::cout << runNum << "," << eventNum << "," << px << "," << py << "," << pz << "," << energy << "," << pt << "," << eta << "," << phi << "," << particleType << std::endl;
+    std::cout << runNum << "," << eventNum << "," << px << "," << py << "," << pz << "," << energy << "," << pt << "," << eta << "," << phi << "," << particleType << std::endl;
     csvOut_ << runNum << "," << eventNum << "," << px << "," << py << "," << pz << "," << energy << std::endl;
     // pfCandidateTree_->Fill();
   }
