@@ -174,7 +174,7 @@ void fractional_multiplicities() {
   TTree * multiplicityTree_;
 
 
-  THStack *hs = new THStack("ntilde_antikt","Ntilde and AntikT Multiplicity");
+  THStack *hs = new THStack("ntilde_antikt","N_tilde and antikT Multiplicity (PFCandidates)");
 
   vector<TH1F * > N_tildes = vector<TH1F *>();
   EColor colors[6] = {kRed, kBlue, kGreen, kYellow, kMagenta, kOrange};
@@ -206,7 +206,7 @@ void fractional_multiplicities() {
 
   TCanvas *c2e = new TCanvas("c2e", "c2e", 600, 400);
 
-  // gPad->SetLogy();
+  gPad->SetLogy();
 
   hs->Draw();
 
