@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/EDFilter.h"
+#include "FWCore/Framework/interface/EDProducer.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/ESHandle.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
@@ -14,37 +14,51 @@
 #include "FWCore/Utilities/interface/InputTag.h"
 
 #include "JetMETCorrections/MinBias/interface/MinBias.h"
-
 #include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
 #include "DataFormats/ParticleFlowCandidate/interface/PFCandidateFwd.h"
 
-#include <TFile.h>
-#include <TTree.h>
+#include "CommonTools/UtilAlgos/interface/TFileService.h"
+#include "DataFormats/Common/interface/HLTGlobalStatus.h"
+#include "DataFormats/Provenance/interface/ParameterSetID.h"
+#include "DataFormats/Common/interface/TriggerResults.h"
+#include "FWCore/ServiceRegistry/interface/Service.h"
+#include "FWCore/Common/interface/TriggerNames.h"
+#include "FWCore/Common/interface/TriggerResultsByName.h"
+#include "HLTrigger/HLTcore/interface/HLTConfigProvider.h"
 
 
-class minBiasFilter : public edm::EDFilter 
+using namespace std;
+using namespace edm;
+using namespace trigger;
+
+class minBiasFilter : public EDProducer 
 {
 public: 
-  explicit minBiasFilter(const edm::ParameterSet&);
+  explicit minBiasFilter(const ParameterSet&);
   ~minBiasFilter();
 
 private:
-  virtual void beginJob() ;
-  virtual bool filter(edm::Event&, const edm::EventSetup&);
-  virtual void endJob() ;
+  virtual void beginJob();
+  virtual bool produce(Event&, const EventSetup&);
+  virtual void endJob();
+
+  virtual void beginRun(Run&, EventSetup const&);
+  virtual void endRun(Run&, EventSetup const&);
+  virtual void beginLuminosityBlock(LuminosityBlock&, EventSetup const&);
+  virtual void endLuminosityBlock(LuminosityBlock&, EventSetup const&);
+
+  bool triggerFired(const string& triggerWildCard, const TriggerResults& triggerResults);
+  unsigned int findTrigger(const string& triggerWildCard);
  
-  edm::InputTag minBiasInputTag_;
-
-  std::string rootFileName_;
+  InputTag inputTag_;
   
-  TFile * rootFile_;
-  TTree * pfCandidateTree_;
-  
-  std::ofstream csvOut_;
-  std::string csvFileName_;
+  ofstream fileOutput_;
+  string outputFilename_;
 
-  int maxNEvents_;
-  int nEvents_;
+  ofstream triggersOutput_;
+
+  HLTConfigProvider hltConfig_;
+  InputTag hltInputTag_;
 
   int runNum;
   int eventNum;
@@ -59,42 +73,37 @@ private:
   double eta;
   double phi;
 
-  int eventSerialNumber;
+  int eventSerialNumber_;
 };
 
-minBiasFilter::minBiasFilter(const edm::ParameterSet& iConfig)
-  : minBiasInputTag_(iConfig.getParameter<edm::InputTag>("minBiasInputTag")),
-    rootFileName_(iConfig.getParameter<std::string>("rootFileName")),
-    csvFileName_(iConfig.getParameter<std::string>("csvFileName")),
-    maxNEvents_(iConfig.getParameter<int>("maxNEvents")),
-    nEvents_(0)
+minBiasFilter::minBiasFilter(const ParameterSet& iConfig)
+  : inputTag_(iConfig.getParameter<InputTag>("inputTag")),
+    outputFilename_(iConfig.getParameter<string>("outputFilename")),
 {
-  rootFile_ = new TFile(rootFileName_.c_str(), "RECREATE");
-  pfCandidateTree_ = new TTree("PF Candidates", "ParticleFlow Candidates ");
-
-  csvOut_.open(csvFileName_.c_str());
+  fileOutput_.open(outputFilename_.c_str());
+  triggersOutput_.open("triggers_" << outputFilename_.c_str());
 }
 
 
 minBiasFilter::~minBiasFilter() {}
 
-bool minBiasFilter::filter(edm::Event& event, const edm::EventSetup& eventSetup) {
+bool minBiasFilter::produce(Event& event, const EventSetup& eventSetup) {
 
-  edm::Handle<reco::PFCandidateCollection> collection;
-  event.getByLabel(minBiasInputTag_, collection);
+  Handle<reco::PFCandidateCollection> collection;
+  event.getByLabel(inputTag_, collection);
 
-  std::cout << minBiasInputTag_ << std::endl;
+  cout << inputTag_ << endl;
 
   if ( ! collection.isValid()){
-    std::cerr << "PFCandidateFilter: Invalid collection." << std::endl;
+    cerr << "Invalid collection." << endl;
     return false;
   }
   
   runNum = event.id().run();
   eventNum = event.id().event();
   
-  std::cout << "Event number: " << eventSerialNumber << " being processed." << std::endl;
-  eventSerialNumber++;
+  cout << "Event number: " << eventSerialNumber_ << " being processed." << endl;
+  eventSerialNumber_++;
 
   for(reco::PFCandidateCollection::const_iterator it = collection->begin(), end = collection->end(); it != end; it++) {
     particleType = (int) (*it).particleId();
@@ -107,39 +116,98 @@ bool minBiasFilter::filter(edm::Event& event, const edm::EventSetup& eventSetup)
     eta = it->eta();
     phi = it->phi();
     
-    //std::cout << runNum << "," << eventNum << "," << px << "," << py << "," << pz << "," << energy << "," << pt << "," << eta << "," << phi << "," << particleType << std::endl;
-    csvOut_ << runNum << "," << eventNum << "," << px << "," << py << "," << pz << "," << energy << std::endl;
-    // pfCandidateTree_->Fill();
+    fileOutput_ << runNum << "," << eventNum << "," << px << "," << py << "," << pz << "," << energy << endl;
   }
+
+
+  // Jets info recorded
+  // Now record trigger information.
+
+  Handle<TriggerResults> trigResults; 
+  iEvent.getByLabel(hltInputTag_, trigResults);
+
+  const vector<string> triggerNames = hltConfig_.triggerNames();
+
+  string triggers[1] = {"HLT_MinBiasPixel_SingleTrack"}; // Only these trigger info will be stored.
+  vector<string> triggersThatMatter(triggers, triggers + sizeof triggers / sizeof triggers[0]);
+
+  for (unsigned int i = 0; i < triggersThatMatter.size(); i++) {
+    string name = triggersThatMatter[i];
+
+    pair<int, int> prescale = hltConfig_.prescaleValues(iEvent, iSetup, name);
+    bool fired = triggerFired(name, ( * trigResults));
+    cout << eventNum << "," << runNum << "," << name << "," << fired << "," << prescale.first << "," << prescale.second << endl;
+    triggersOutput_ << eventNum << "," << runNum << "," << name << "," << fired << "," << prescale.first << "," << prescale.second << endl;
+  }
+
 
   return true;
 }
 
 void minBiasFilter::beginJob() {
-  std::cout << "Started my analysis job!" << std::endl;
-
-  // csvOut_ << "Run, Event, px, py, pz, energy, pt, eta, phi, particleType" << std::endl;
-  
-  pfCandidateTree_->Branch("runNum", &runNum, "runNum/I"); // TTree::Branch(name, address, leaflist. leaflist is the concatenation of all variable names and types. The variable name and variable type (1 character) are separated by a slash.
-  pfCandidateTree_->Branch("eventNum", &eventNum, "eventNum/I");
-  pfCandidateTree_->Branch("px", &px, "px/D");
-  pfCandidateTree_->Branch("py", &py, "py/D");
-  pfCandidateTree_->Branch("pz", &pz, "pz/D");
-  pfCandidateTree_->Branch("energy", &energy, "energy/D");
-  pfCandidateTree_->Branch("pt", &pt, "pt/D");
-  pfCandidateTree_->Branch("eta", &eta, "eta/D");
-  pfCandidateTree_->Branch("phi", &phi, "phi/D");
-  pfCandidateTree_->Branch("particleType", &particleType, "particleType/I");
-  
-  eventSerialNumber = 1;
+  cout << "Started my analysis job!" << endl;
+  // fileOutput_ << "Run, Event, px, py, pz, energy, pt, eta, phi, particleType" << endl;
+  eventSerialNumber_ = 1;
 }
 
 void minBiasFilter::endJob() {
-  rootFile_->cd();
-  pfCandidateTree_->Write();
-  rootFile_->Close();
+  fileOutput_.close();
+}
 
-  csvOut_.close();
+void minBiasFilter::beginRun(Run & iRun, EventSetup const & iSetup){
+
+  bool changed = true;
+  if ( hltConfig_.init(iRun, iSetup, hltInputTag_.process(), changed) ) {
+    // if init returns TRUE, initialisation has succeeded!
+    LogInfo("TopPairElectronPlusJetsSelectionFilter") << "HLT config with process name "
+        << hltInputTag_.process() << " successfully extracted";
+  }
+  else {
+    LogError("TopPairElectronPlusJetsSelectionFilter_Error")
+        << "Error! HLT config extraction with process name " << hltInputTag_.process() << " failed";
+  }
+
+}
+
+void minBiasFilter::endRun(Run&, EventSetup const&) {
+
+}
+
+void minBiasFilter::beginLuminosityBlock(LuminosityBlock&, EventSetup const&) {
+
+}
+
+void minBiasFilter::endLuminosityBlock(LuminosityBlock&, EventSetup const&) {
+
+}
+
+bool minBiasFilter::triggerFired(const string& triggerWildCard, const TriggerResults& triggerResults) {
+  bool fired = false;
+  unsigned int index = findTrigger(triggerWildCard);
+
+  if (index < triggerResults.size()) {
+    if (triggerResults.accept(index)) {
+      fired = true;
+    }
+  }
+
+  return fired;
+
+}
+
+unsigned int minBiasFilter::findTrigger(const string& triggerWildCard) {
+  const vector<string>& triggers = hltConfig_.triggerNames();
+  unsigned int found = 9999;
+
+  size_t length = triggerWildCard.size();
+  for (unsigned int index = 0; index < triggers.size(); ++index) {
+    if (length <= triggers[index].size() && triggerWildCard == triggers[index].substr(0, length)) {
+      found = index;
+      break;
+    }
+  }
+
+  return found;
 }
 
 
