@@ -26,7 +26,7 @@ and input the commands as explained below.
 * Clone the source code:
 
 ```
-    git clone https://github.com/tripatheea/PFCandidate-Filter PFCandidateFilter/PFCandidateFilter
+    git clone https://github.com/tripatheea/CMSOpenDataProducer.git CMSOpenDataProducer/CMSOpenDataProducer
 ````
 * Compile the code with the command:
 
@@ -36,7 +36,7 @@ and input the commands as explained below.
 * Go to the source directory:
 
 ```
-    cd PFCandidate/PFCandidate
+    cd CMSOpenDataProducer/CMSOpenDataProducer
 ```
 * Run the example configuration file (see comments in the file on changing parameters):
 
