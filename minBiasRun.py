@@ -12,7 +12,7 @@ process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 process.GlobalTag.globaltag = 'GR_R_42_V25::All'
 
 # Need to split into multiple separate files because there's a limit of 255 values for a set of parameters and thereby for the indices files too.
-indices_file = 'file_paths/CMS_Run2010B_MinimumBias_AOD_Apr21ReReco-v1_000'	# Should append "_" + indexNumber + ".txt" to this.
+indices_file = 'file_paths/MinimumBias/CMS_Run2010B_MinimumBias_AOD_Apr21ReReco-v1_000'	# Should append "_" + indexNumber + ".txt" to this.
 
 mylist = FileUtils.loadListFromFile (indices_file + '1_file_index.txt')
 
@@ -29,7 +29,7 @@ myLumis = LumiList.LumiList(filename = goodJSON).getCMSSWString().split(',')
 process.source.lumisToProcess = cms.untracked.VLuminosityBlockRange() 
 process.source.lumisToProcess.extend(myLumis)
 
-process_load = process.load("CMSOpenDataProducer.CMSOpenDataProducer.minBiasProducer_cfi")
+process_load = process.load("CMSOpenDataProducer.CMSOpenDataProducer.minbiasproducer_cfi")
 
 
 # Change this to set the maximum number of events to process
