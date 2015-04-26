@@ -55,8 +55,6 @@ private:
   ofstream fileOutput_;
   string outputFilename_;
 
-  ofstream triggersOutput_;
-
   HLTConfigProvider hltConfig_;
   InputTag hltInputTag_;
 
@@ -83,7 +81,6 @@ minBiasProducer::minBiasProducer(const ParameterSet& iConfig)
     hltInputTag_("TriggerResults","","HLT")
 {
   fileOutput_.open(outputFilename_.c_str());
-  triggersOutput_.open("triggers_minBias");
 }
 
 
@@ -94,8 +91,6 @@ void minBiasProducer::produce(Event& iEvent, const EventSetup& iSetup) {
   Handle<reco::PFCandidateCollection> collection;
   iEvent.getByLabel(inputTag_, collection);
 
-  cout << inputTag_ << endl;
-
   if ( ! collection.isValid()){
     cerr << "Invalid collection." << endl;
     return;
@@ -105,6 +100,19 @@ void minBiasProducer::produce(Event& iEvent, const EventSetup& iSetup) {
   eventNum = iEvent.id().event();
   
   cout << "Event number: " << eventSerialNumber_ << " being processed." << endl;
+
+  if (pf_current_event_number != 1) {
+    fileOutput_ << endl << endl << endl;
+    fileOutput_ << "********************  New Event  ********************" << endl << endl;
+    fileOutput_ << endl << endl << endl;
+  }
+  
+  fileOutput_ << "Run Number: " << pf_run_number << endl;
+  fileOutput_ << "Event Number: " << pf_event_number << endl << endl;
+
+  fileOutput_ << "####################  PFCandidates  ####################" << endl << endl;
+  fileOutput_ << "    px             py             pz           energy" << fixed << endl;
+
   eventSerialNumber_++;
 
   for(reco::PFCandidateCollection::const_iterator it = collection->begin(), end = collection->end(); it != end; it++) {
@@ -118,12 +126,16 @@ void minBiasProducer::produce(Event& iEvent, const EventSetup& iSetup) {
     eta = it->eta();
     phi = it->phi();
     
-    fileOutput_ << runNum << "," << eventNum << "," << px << "," << py << "," << pz << "," << energy << endl;
+    fileOutput_ << setprecision(7) << std::showpos << px << "     " << std::showpos << py << "     " << setprecision(7) << std::showpos << pz << "     " << setprecision(7) << std::showpos << energy << endl;
   }
 
 
   // Jets info recorded
   // Now record trigger information.
+
+  fileOutput_ << endl << endl;
+  fileOutput_ << "####################  PFCandidate Triggers  ####################" << endl << endl;
+  fileOutput_ << "Fired?   Prescale 1   Prescale 2       Name" << fixed << endl;
 
   Handle<TriggerResults> trigResults; 
   iEvent.getByLabel(hltInputTag_, trigResults);
@@ -138,7 +150,7 @@ void minBiasProducer::produce(Event& iEvent, const EventSetup& iSetup) {
 
     pair<int, int> prescale = hltConfig_.prescaleValues(iEvent, iSetup, name);
     bool fired = triggerFired(name, ( * trigResults));
-    triggersOutput_ << eventNum << "," << runNum << "," << name << "," << fired << "," << prescale.first << "," << prescale.second << endl;
+    fileOutput_ << "  " << fired <<  "         " << std::setw(3) << std::setfill('0') << prescale.first << std::setw(3) << std::setfill('0') << "          " << std::setw(3) << std::setfill('0') << prescale.second << "        " << name << endl;
   }
 
 
@@ -146,8 +158,6 @@ void minBiasProducer::produce(Event& iEvent, const EventSetup& iSetup) {
 }
 
 void minBiasProducer::beginJob() {
-  cout << "Started my analysis job!" << endl;
-  // fileOutput_ << "Run, Event, px, py, pz, energy, pt, eta, phi, particleType" << endl;
   eventSerialNumber_ = 1;
 }
 
