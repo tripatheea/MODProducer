@@ -29,7 +29,7 @@ myLumis = LumiList.LumiList(filename = goodJSON).getCMSSWString().split(',')
 process.source.lumisToProcess = cms.untracked.VLuminosityBlockRange() 
 process.source.lumisToProcess.extend(myLumis)
 
-process_load = process.load("CMSOpenDataProducer.CMSOpenDataProducer.PFCandidateProducer_cfi")
+process_load = process.load("CMSOpenDataProducer.CMSOpenDataProducer.pfcandidateproducer_cfi")
 
 
 # Change this to set the maximum number of events to process
