@@ -100,14 +100,14 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
   
   cout << "Event number: " << eventSerialNumber_ << " being processed." << endl;
 
-  if (pf_current_event_number != 1) {
+  if (eventSerialNumber_ != 1) {
     fileOutput_ << endl << endl << endl;
     fileOutput_ << "********************  New Event  ********************" << endl << endl;
     fileOutput_ << endl << endl << endl;
   }
   
-  fileOutput_ << "Run Number: " << pf_run_number << endl;
-  fileOutput_ << "Event Number: " << pf_event_number << endl << endl;
+  fileOutput_ << "Run Number: " << runNum << endl;
+  fileOutput_ << "Event Number: " << eventNum << endl << endl;
 
   fileOutput_ << "####################  PFCandidates  ####################" << endl << endl;
   fileOutput_ << "    px             py             pz           energy" << fixed << endl;
@@ -148,7 +148,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
 
     pair<int, int> prescale = hltConfig_.prescaleValues(iEvent, iSetup, name);
     bool fired = triggerFired(name, ( * trigResults));
-    fileOutput_ << "  " << fired <<  "         " << std::setw(3) << std::setfill('0') << prescale.first << std::setw(3) << std::setfill('0') << "          " << std::setw(3) << std::setfill('0') << prescale.second << "        " << name << endl;
+    fileOutput_ << "  " << std::noshowpos << fired <<  "         " << std::setw(3) << std::setfill('0') << std::noshowpos << prescale.first << std::setw(3) << std::setfill('0') << "          " << std::setw(3) << std::setfill('0') << std::noshowpos << prescale.second << "        " << name << endl;
   }
 }
 
