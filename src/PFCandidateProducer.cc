@@ -103,7 +103,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
 
   fileOutput_ << "BeginEvent Run " << runNum << " Event " << eventNum << endl;
   
-  fileOutput_ << "#PFC    px             py             pz           energy           mass           pdgId" << fixed << endl;
+  fileOutput_ << "#PFC               px               py               pz               energy               mass               pdgId" << fixed << endl;
 
   eventSerialNumber_++;
 
@@ -120,7 +120,14 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
     eta = it->eta();
     phi = it->phi();
     
-    fileOutput_ << "PFC " << setprecision(7) << std::showpos << px << "     " << std::showpos << py << "     " << setprecision(7) << std::showpos << pz << "     " << setprecision(7) << std::showpos << energy << "     " << std::showpos << mass << "          " << std::noshowpos << pdgId << endl;
+    fileOutput_ << "PFC "
+		<< setw(12) << setprecision(7) << showpos << px 
+		<< setw(12) << setprecision(7) << showpos << py 
+		<< setw(12) << setprecision(7) << showpos << pz 
+		<< setw(12) << setprecision(7) << showpos << energy 
+		<< setw(12) << setprecision(7) << showpos << mass 
+		<< setw(12) << setprecision(7) << noshowpos << pdgId 
+		<< endl;
   }
 
   // Jets info recorded
