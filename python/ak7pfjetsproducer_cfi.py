@@ -1,6 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
-AK8PFJetsProducer = cms.EDProducer('AK8PFJetsProducer' ,
+AK7PFJetsProducer = cms.EDProducer('AK7PFJetsProducer' ,
                             inputTag = cms.InputTag("ak7PFJets"),
-                            outputFilename = cms.string("AK8PFJets.dat"),
+                            outputFilename = cms.string("AK7PFJets.dat"),
                             )
