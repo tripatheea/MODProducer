@@ -119,21 +119,22 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
     pt = it->pt();
     eta = it->eta();
     phi = it->phi();
-    
-    fileOutput_ << "PFC "
-		<< setw(12) << setprecision(7) << showpos << px 
-		<< setw(12) << setprecision(7) << showpos << py 
-		<< setw(12) << setprecision(7) << showpos << pz 
-		<< setw(12) << setprecision(7) << showpos << energy 
-		<< setw(12) << setprecision(7) << showpos << mass 
-		<< setw(12) << setprecision(7) << noshowpos << pdgId 
+
+    fileOutput_ << "PFC " 
+		<< setw(21) << setprecision(8) << px
+		<< setw(17) << setprecision(8) << py
+		<< setw(18) << setprecision(8) << pz
+		<< setw(18) << setprecision(8) << energy
+		<< setw(19) << setprecision(5) << mass
+		<< setw(18) << noshowpos << pdgId
 		<< endl;
+
   }
 
   // Jets info recorded
   // Now record trigger information.
 
-  fileOutput_ << "#Trig     Name        Prescale 1   Prescale 2   Fired?" << fixed << endl;
+  fileOutput_ << "#Trig          Name          Prescale_1          Prescale_2          Fired?" << endl;
 
   Handle<TriggerResults> trigResults; 
   iEvent.getByLabel(hltInputTag_, trigResults);
@@ -148,7 +149,14 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
 
     pair<int, int> prescale = hltConfig_.prescaleValues(iEvent, iSetup, name);
     bool fired = triggerFired(name, ( * trigResults));
-    fileOutput_ << "trig   " << name << "         " << std::setw(3) << std::setfill('0') << std::noshowpos << prescale.first << std::setw(3) << std::setfill('0') << "          " << std::setw(3) << std::setfill('0') << std::noshowpos << prescale.second << std::noshowpos << "          " << fired << endl;
+    
+    fileOutput_ << "trig" 
+		<< setw(16) << name
+		<< setw(15) << prescale.first 
+		<< setw(20) << prescale.second 
+		<< setw(17) << fired 
+		<< endl;
+
   }
 
   fileOutput_ << "EndEvent" << endl;
