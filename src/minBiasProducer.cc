@@ -66,6 +66,7 @@ private:
   double py;
   double pz;
   double energy;
+  double mass;
 
   double pt;
   double eta;
@@ -101,17 +102,8 @@ void minBiasProducer::produce(Event& iEvent, const EventSetup& iSetup) {
   
   cout << "Event number: " << eventSerialNumber_ << " being processed." << endl;
 
-  if (eventSerialNumber_ != 1) {
-    fileOutput_ << endl << endl << endl;
-    fileOutput_ << "********************  New Event  ********************" << endl << endl;
-    fileOutput_ << endl << endl << endl;
-  }
-  
-  fileOutput_ << "Run Number: " << runNum << endl;
-  fileOutput_ << "Event Number: " << eventNum << endl << endl;
-
-  fileOutput_ << "####################  PFCandidates  ####################" << endl << endl;
-  fileOutput_ << "    px             py             pz           energy" << fixed << endl;
+  fileOutput_ << "BeginEvent Run " << runNum << " Event " << eventNum << endl;  
+  fileOutput_ << "#PFC               px               py               pz               energy               mass               pdgId" << fixed << endl;
 
   eventSerialNumber_++;
 
@@ -121,21 +113,28 @@ void minBiasProducer::produce(Event& iEvent, const EventSetup& iSetup) {
     py = it->py();
     pz = it->pz();
     energy = it->energy();
+    mass = it->mass();
+    int pdgId = it->pdgId();
 
     pt = it->pt();
     eta = it->eta();
     phi = it->phi();
     
-    fileOutput_ << setprecision(7) << std::showpos << px << "     " << std::showpos << py << "     " << setprecision(7) << std::showpos << pz << "     " << setprecision(7) << std::showpos << energy << endl;
+    fileOutput_ << "PFC " 
+		<< setw(21) << setprecision(8) << px
+		<< setw(17) << setprecision(8) << py
+		<< setw(18) << setprecision(8) << pz
+		<< setw(18) << setprecision(8) << energy
+		<< setw(19) << setprecision(5) << mass
+		<< setw(18) << noshowpos << pdgId
+		<< endl;
   }
 
 
   // Jets info recorded
   // Now record trigger information.
 
-  fileOutput_ << endl << endl;
-  fileOutput_ << "####################  PFCandidate Triggers  ####################" << endl << endl;
-  fileOutput_ << "Fired?   Prescale 1   Prescale 2       Name" << fixed << endl;
+  fileOutput_ << "#Trig          Name          Prescale_1          Prescale_2          Fired?" << endl;
 
   Handle<TriggerResults> trigResults; 
   iEvent.getByLabel(hltInputTag_, trigResults);
@@ -150,10 +149,17 @@ void minBiasProducer::produce(Event& iEvent, const EventSetup& iSetup) {
 
     pair<int, int> prescale = hltConfig_.prescaleValues(iEvent, iSetup, name);
     bool fired = triggerFired(name, ( * trigResults));
-    fileOutput_ << "  " << std::noshowpos << fired <<  "         " << std::setw(3) << std::setfill('0') << std::noshowpos << prescale.first << std::setw(3) << std::setfill('0') << "          " << std::setw(3) << std::setfill('0') << std::noshowpos << prescale.second << "        " << name << endl;
+    
+    fileOutput_ << "trig" 
+		<< setw(16) << name
+		<< setw(15) << prescale.first 
+		<< setw(20) << prescale.second 
+		<< setw(17) << fired 
+		<< endl;
+
   }
 
-
+  fileOutput_ << "EndEvent" << endl;
   
 }
 

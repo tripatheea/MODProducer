@@ -12,11 +12,12 @@ process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 process.GlobalTag.globaltag = 'GR_R_42_V25::All'
 
 # Need to split into multiple separate files because there's a limit of 255 values for a set of parameters and thereby for the indices files too.
-indices_file = 'file_paths/Jet/CMS_Run2010B_MultiJet_AOD_Apr21ReReco-v1_0002_file_index'	# Should append "_" + indexNumber + ".txt" to this.
+indices_file = 'file_paths/Jet/CMS_Run2010B_Jet_AOD_Apr21ReReco-v1_000'	# Should append "_" + indexNumber + ".txt" to this.
 
-mylist = FileUtils.loadListFromFile (indices_file + '_1.txt') 
-
-# mylist.extend ( FileUtils.loadListFromFile (indices_file + '_2.txt') )
+mylist = FileUtils.loadListFromFile (indices_file + '0_file_index.txt')
+mylist.extend(FileUtils.loadListFromFile(indices_file + '1_file_index.txt') )
+mylist.extend(FileUtils.loadListFromFile(indices_file + '2_file_index.txt') )
+mylist.extend(FileUtils.loadListFromFile(indices_file + '3_file_index.txt') )
 
 
 readFiles = cms.untracked.vstring( *mylist)
@@ -34,7 +35,7 @@ process_load = process.load("CMSOpenDataProducer.CMSOpenDataProducer.ak5pfjetspr
 
 # Change this to set the maximum number of events to process
 # -1 means all of them
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))
 
-process.Producer = cms.Path(process.Ak5PFJetsProducer)
+process.Producer = cms.Path(process.AK5PFJetsProducer)
 process.schedule = cms.Schedule(process.Producer)
