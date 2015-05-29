@@ -21,11 +21,11 @@
 using namespace std;
 using namespace edm;
 
-class AK5PFJetsProducer : public edm::EDProducer {
+class AK8PFJetsProducer : public edm::EDProducer {
 
 public: 
-  explicit AK5PFJetsProducer(const edm::ParameterSet&);
-  ~AK5PFJetsProducer();
+  explicit AK8PFJetsProducer(const edm::ParameterSet&);
+  ~AK8PFJetsProducer();
 
 private:
   virtual void beginJob() ;
@@ -57,7 +57,7 @@ private:
   int eventSerialNumber_;
 };
 
-AK5PFJetsProducer::AK5PFJetsProducer(const edm::ParameterSet& iConfig)
+AK8PFJetsProducer::AK8PFJetsProducer(const edm::ParameterSet& iConfig)
   : inputTag_(iConfig.getParameter<edm::InputTag>("inputTag")),
     outputFilename_(iConfig.getParameter<std::string>("outputFilename"))
 { 
@@ -65,9 +65,9 @@ AK5PFJetsProducer::AK5PFJetsProducer(const edm::ParameterSet& iConfig)
 }
 
 
-AK5PFJetsProducer::~AK5PFJetsProducer() {}
+AK8PFJetsProducer::~AK8PFJetsProducer() {}
 
-void AK5PFJetsProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {  
+void AK8PFJetsProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {  
   
   edm::Handle<reco::PFJetCollection> collection;
   iEvent.getByLabel(inputTag_, collection);
@@ -83,7 +83,7 @@ void AK5PFJetsProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetu
   cout << "Event number: " << eventSerialNumber_ << " being processed." << endl;
 
   fileOutput_ << "BeginEvent Run " << runNum << " Event " << eventNum << endl;
-  fileOutput_ << "#AK5               px               py               pz               energy               mass               pdgId" << fixed << endl;
+  fileOutput_ << "#AK8               px               py               pz               energy               mass               pdgId" << fixed << endl;
 
   eventSerialNumber_++;
 
@@ -97,7 +97,7 @@ void AK5PFJetsProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetu
     mass = 0.0;
     int pdgId = 0;
 
-    fileOutput_ << "AK5 " 
+    fileOutput_ << "AK8 " 
 		<< setw(21) << setprecision(8) << px
 		<< setw(17) << setprecision(8) << py
 		<< setw(18) << setprecision(8) << pz
@@ -113,30 +113,30 @@ void AK5PFJetsProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetu
 
 }
 
-void AK5PFJetsProducer::beginJob() {
+void AK8PFJetsProducer::beginJob() {
   eventSerialNumber_ = 1;
 }
 
-void AK5PFJetsProducer::endJob() {
+void AK8PFJetsProducer::endJob() {
   fileOutput_.close();
 }
 
-void AK5PFJetsProducer::beginRun(edm::Run & iRun, edm::EventSetup const & iSetup){
+void AK8PFJetsProducer::beginRun(edm::Run & iRun, edm::EventSetup const & iSetup){
 
 }
 
-void AK5PFJetsProducer::endRun(edm::Run&, edm::EventSetup const&) {
+void AK8PFJetsProducer::endRun(edm::Run&, edm::EventSetup const&) {
 
 }
 
-void AK5PFJetsProducer::beginLuminosityBlock(edm::LuminosityBlock&, edm::EventSetup const&) {
+void AK8PFJetsProducer::beginLuminosityBlock(edm::LuminosityBlock&, edm::EventSetup const&) {
 
 }
 
-void AK5PFJetsProducer::endLuminosityBlock(edm::LuminosityBlock&, edm::EventSetup const&) {
+void AK8PFJetsProducer::endLuminosityBlock(edm::LuminosityBlock&, edm::EventSetup const&) {
 
 }
 
 
 
-DEFINE_FWK_MODULE(AK5PFJetsProducer);
+DEFINE_FWK_MODULE(AK8PFJetsProducer);
