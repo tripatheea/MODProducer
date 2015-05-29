@@ -3,6 +3,7 @@
 #include <string>
 #include <fstream>
 #include <vector>
+#include <iomanip> 
 
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/EDProducer.h"
@@ -17,8 +18,11 @@
 #include "DataFormats/ParticleFlowReco/interface/PFBlockFwd.h"
 
 
-class AK5PFJetsProducer : public edm::EDProducer 
-{
+using namespace std;
+using namespace edm;
+
+class AK5PFJetsProducer : public edm::EDProducer {
+
 public: 
   explicit AK5PFJetsProducer(const edm::ParameterSet&);
   ~AK5PFJetsProducer();
@@ -28,12 +32,18 @@ private:
   virtual void produce(edm::Event&, const edm::EventSetup&);
   virtual void endJob() ;
  
+  virtual void beginRun(edm::Run&, edm::EventSetup const&);
+  virtual void endRun(edm::Run&, edm::EventSetup const&);
+  virtual void beginLuminosityBlock(edm::LuminosityBlock&, edm::EventSetup const&);
+  virtual void endLuminosityBlock(edm::LuminosityBlock&, edm::EventSetup const&);
+
+  
   edm::InputTag inputTag_;
 
   std::ofstream fileOutput_;
   std::string outputFilename_;
 
-  
+  InputTag hltInputTag_;
 
   int runNum;
   int eventNum;
@@ -42,9 +52,9 @@ private:
   double py;
   double pz;
   double energy;
+  double mass;
 
-  double pt;
-
+  int eventSerialNumber_;
 };
 
 AK5PFJetsProducer::AK5PFJetsProducer(const edm::ParameterSet& iConfig)
@@ -67,25 +77,66 @@ void AK5PFJetsProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetu
     return;
   }
 
+  runNum = iEvent.id().run();
+  eventNum = iEvent.id().event();
+  
+  cout << "Event number: " << eventSerialNumber_ << " being processed." << endl;
+
+  fileOutput_ << "BeginEvent Run " << runNum << " Event " << eventNum << endl;
+  fileOutput_ << "#AK5               px               py               pz               energy               mass               pdgId" << fixed << endl;
+
+  eventSerialNumber_++;
+
   for(reco::PFJetCollection::const_iterator it = collection->begin(), end = collection->end(); it != end; it++) {
     px = it->px();
     py = it->py();
     pz = it->pz();
     energy = it->energy();
-    pt = it->pt();
-    
-    fileOutput_ << iEvent.id().run() << "," << iEvent.id().event() << "," << px << "," << py << "," << pz << "," << energy << std::endl;
+    //mass = it->mass();
+    //int pdgId = it->pdgId();
+    mass = 0.0;
+    int pdgId = 0;
+
+    fileOutput_ << "AK5 " 
+		<< setw(21) << setprecision(8) << px
+		<< setw(17) << setprecision(8) << py
+		<< setw(18) << setprecision(8) << pz
+		<< setw(18) << setprecision(8) << energy
+		<< setw(19) << setprecision(5) << mass
+		<< setw(18) << noshowpos << pdgId
+		<< endl;
   }
+
+  // Jets info recorded
+
+  fileOutput_ << "EndEvent" << endl;
 
 }
 
 void AK5PFJetsProducer::beginJob() {
-  // fileOutput_ << "Run, Event, px, py, pz, energy, pt" << std::endl;
+  eventSerialNumber_ = 1;
 }
 
 void AK5PFJetsProducer::endJob() {
   fileOutput_.close();
 }
+
+void AK5PFJetsProducer::beginRun(edm::Run & iRun, edm::EventSetup const & iSetup){
+
+}
+
+void AK5PFJetsProducer::endRun(edm::Run&, edm::EventSetup const&) {
+
+}
+
+void AK5PFJetsProducer::beginLuminosityBlock(edm::LuminosityBlock&, edm::EventSetup const&) {
+
+}
+
+void AK5PFJetsProducer::endLuminosityBlock(edm::LuminosityBlock&, edm::EventSetup const&) {
+
+}
+
 
 
 DEFINE_FWK_MODULE(AK5PFJetsProducer);

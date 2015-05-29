@@ -102,7 +102,6 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
   cout << "Event number: " << eventSerialNumber_ << " being processed." << endl;
 
   fileOutput_ << "BeginEvent Run " << runNum << " Event " << eventNum << endl;
-  
   fileOutput_ << "#PFC               px               py               pz               energy               mass               pdgId" << fixed << endl;
 
   eventSerialNumber_++;
