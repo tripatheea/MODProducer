@@ -1,6 +1,7 @@
-This package is a filter that selects events from the Mu primary dataset from the CMS open
-data release. In particular, the event is selected if (for simplicity) there are precisely two muons
-in the event and at least one is a global muon. A csv file containing the four-vector information, charge, and invariant mass of the two muons is produced.
+#CMS Open Data Producer
+
+This package selects events from the CMS open
+data release. A custom DAT file containing the four-vector information, mass, PdgId and trigger information of the particles is produced.
 
 See http://opendata.cern.ch for more information and for context on the instructions below.
 
@@ -25,24 +26,20 @@ and input the commands as explained below.
 ```
 * Clone the source code:
 
-```
-    git clone https://github.com/tripatheea/CMSOpenDataProducer.git CMSOpenDataProducer/CMSOpenDataProducer
-````
-* Compile the code with the command:
 
-```
-    scram b
-```
+```    git clone  https://github.com/tripatheea/CMSOpenDataProducer.git CMSOpenDataProducer/CMSOpenDataProducer```
+
+
 * Go to the source directory:
 
 ```
     cd CMSOpenDataProducer/CMSOpenDataProducer
 ```
-* Run the example configuration file (see comments in the file on changing parameters):
+* Run the shell file `run_producers.sh`:
 
 ```
-    cmsRun PFCandidateRun.py
+    ./run_producers.sh
 ```
-which will produce a csv file: PFCandidate.csv
+which will produce the data files-  `pfcandidate.dat`, `minBias.dat`, `ak5pfjets.dat` and `ak7pfjets.dat`.
 
 Enjoy!
