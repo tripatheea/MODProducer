@@ -27,7 +27,7 @@ and input the commands as explained below.
 * Clone the source code:
 
 
-```    git clone  https://github.com/tripatheea/CMSOpenDataProducer.git CMSOpenDataProducer/CMSOpenDataProducer```
+```git clone https://github.com/tripatheea/CMSOpenDataProducer.git CMSOpenDataProducer/CMSOpenDataProducer```
 
 
 * Go to the source directory:
