@@ -13,3 +13,5 @@ echo "Now running all producers."
 #Run all the producers.
 cmsRun PFCandidateRun.py
 cmsRun minBiasRun.py
+cmsRun AK5PFJetsRun.py
+cmsRun AK7PFJetsRun.py
