@@ -103,7 +103,7 @@ void minBiasProducer::produce(Event& iEvent, const EventSetup& iSetup) {
   cout << "Event number: " << eventSerialNumber_ << " being processed." << endl;
 
   fileOutput_ << "BeginEvent Run " << runNum << " Event " << eventNum << endl;  
-  fileOutput_ << "#PFC               px               py               pz               energy               mass               pdgId" << fixed << endl;
+  fileOutput_ << "#PFC" << "          px          py          pz     energy       mass   pdgId" << endl;  
 
   eventSerialNumber_++;
 
@@ -120,21 +120,21 @@ void minBiasProducer::produce(Event& iEvent, const EventSetup& iSetup) {
     eta = it->eta();
     phi = it->phi();
     
-    fileOutput_ << "PFC " 
-		<< setw(21) << setprecision(5) << px
-		<< setw(17) << setprecision(5) << py
-		<< setw(18) << setprecision(5) << pz
-		<< setw(18) << setprecision(5) << energy
-		<< setw(19) << setprecision(5) << mass
-		<< setw(18) << noshowpos << pdgId
-		<< endl;
+  fileOutput_ << " PFC"
+        << setw(12) << fixed << setprecision(5) << px
+        << setw(12) << fixed << setprecision(5) << py
+        << setw(12) << fixed << setprecision(5) << pz
+        << setw(11) << fixed << setprecision(5) << energy
+        << setw(11) << fixed << setprecision(5) << mass
+        << setw(8) << noshowpos << pdgId
+        << endl;
   }
 
 
   // Jets info recorded
   // Now record trigger information.
 
-  fileOutput_ << "#Trig          Name          Prescale_1          Prescale_2          Fired?" << endl;
+  fileOutput_ << "#Trig            Name     Prescale_1          Prescale_2           Fired?" << endl;  
 
   Handle<TriggerResults> trigResults; 
   iEvent.getByLabel(hltInputTag_, trigResults);
@@ -150,12 +150,12 @@ void minBiasProducer::produce(Event& iEvent, const EventSetup& iSetup) {
     pair<int, int> prescale = hltConfig_.prescaleValues(iEvent, iSetup, name);
     bool fired = triggerFired(name, ( * trigResults));
     
-    fileOutput_ << "trig" 
-		<< setw(16) << name
-		<< setw(15) << prescale.first 
-		<< setw(20) << prescale.second 
-		<< setw(17) << fired 
-		<< endl;
+    fileOutput_ << " trig" 
+        << setw(16) <<  name 
+        << setw(15) << prescale.first 
+        << setw(20) << prescale.second 
+        << setw(17) << fired
+        << endl;
 
   }
 
