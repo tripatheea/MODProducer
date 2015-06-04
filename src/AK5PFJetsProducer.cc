@@ -83,7 +83,7 @@ void AK5PFJetsProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetu
   cout << "Event number: " << eventSerialNumber_ << " being processed." << endl;
 
   fileOutput_ << "BeginEvent Run " << runNum << " Event " << eventNum << endl;
-  fileOutput_ << "#AK5               px               py               pz               energy               mass               pdgId" << fixed << endl;
+  fileOutput_ << "#AK5" << "          px          py          pz     energy" << endl;  
 
   eventSerialNumber_++;
 
@@ -97,14 +97,12 @@ void AK5PFJetsProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetu
     mass = 0.0;
     int pdgId = 0;
 
-    fileOutput_ << "AK5 " 
-		<< setw(21) << setprecision(5) << px
-		<< setw(17) << setprecision(5) << py
-		<< setw(18) << setprecision(5) << pz
-		<< setw(18) << setprecision(5) << energy
-		<< setw(19) << setprecision(5) << mass
-		<< setw(18) << noshowpos << pdgId
-		<< endl;
+  fileOutput_ << " AK5"
+        << setw(12) << fixed << setprecision(5) << px
+        << setw(12) << fixed << setprecision(5) << py
+        << setw(12) << fixed << setprecision(5) << pz
+        << setw(11) << fixed << setprecision(5) << energy
+        << endl;
   }
 
   // Jets info recorded
