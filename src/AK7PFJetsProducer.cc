@@ -98,10 +98,10 @@ void AK7PFJetsProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetu
     int pdgId = 0;
 
     fileOutput_ << "AK7 " 
-		<< setw(21) << setprecision(8) << px
-		<< setw(17) << setprecision(8) << py
-		<< setw(18) << setprecision(8) << pz
-		<< setw(18) << setprecision(8) << energy
+		<< setw(21) << setprecision(5) << px
+		<< setw(17) << setprecision(5) << py
+		<< setw(18) << setprecision(5) << pz
+		<< setw(18) << setprecision(5) << energy
 		<< setw(19) << setprecision(5) << mass
 		<< setw(18) << noshowpos << pdgId
 		<< endl;
