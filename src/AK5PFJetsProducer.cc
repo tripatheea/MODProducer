@@ -92,10 +92,6 @@ void AK5PFJetsProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetu
     py = it->py();
     pz = it->pz();
     energy = it->energy();
-    //mass = it->mass();
-    //int pdgId = it->pdgId();
-    mass = 0.0;
-    int pdgId = 0;
 
   fileOutput_ << " AK5"
         << setw(12) << fixed << setprecision(5) << px

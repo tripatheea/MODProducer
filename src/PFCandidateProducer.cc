@@ -67,9 +67,6 @@ private:
   double energy;
   double mass;
 
-  double pt;
-  double eta;
-  double phi;
 
   int eventSerialNumber_;
 };
@@ -115,9 +112,6 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
     mass = it->mass();
     int pdgId = it->pdgId();
 
-    pt = it->pt();
-    eta = it->eta();
-    phi = it->phi();
 
   fileOutput_ << " PFC"
         << setw(12) << fixed << setprecision(5) << px
