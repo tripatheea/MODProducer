@@ -36,7 +36,7 @@ process_load = process.load("CMSOpenDataProducer.CMSOpenDataProducer.minbiasprod
 
 # Change this to set the maximum number of events to process
 # -1 means all of them
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(5000))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(500))
 
 process.Producer = cms.Path(process.minBiasProducer)
 process.schedule = cms.Schedule(process.Producer)

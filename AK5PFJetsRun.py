@@ -35,7 +35,7 @@ process_load = process.load("CMSOpenDataProducer.CMSOpenDataProducer.ak5pfjetspr
 
 # Change this to set the maximum number of events to process
 # -1 means all of them
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(500))
 
 process.Producer = cms.Path(process.AK5PFJetsProducer)
 process.schedule = cms.Schedule(process.Producer)
