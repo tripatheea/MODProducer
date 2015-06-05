@@ -36,44 +36,44 @@ using namespace trigger;
 class PFCandidateProducer : public EDProducer 
 {
 public: 
-  explicit PFCandidateProducer(const ParameterSet&);
-  ~PFCandidateProducer();
+   explicit PFCandidateProducer(const ParameterSet&);
+   ~PFCandidateProducer();
 
 private:
-  virtual void beginJob() ;
-  virtual void produce(Event&, const EventSetup&);
-  virtual void endJob() ;
+   virtual void beginJob() ;
+   virtual void produce(Event&, const EventSetup&);
+   virtual void endJob() ;
 
-  virtual void beginRun(edm::Run&, edm::EventSetup const&);
-  virtual void endRun(edm::Run&, edm::EventSetup const&);
-  virtual void beginLuminosityBlock(edm::LuminosityBlock&, edm::EventSetup const&);
-  virtual void endLuminosityBlock(edm::LuminosityBlock&, edm::EventSetup const&);
+   virtual void beginRun(edm::Run&, edm::EventSetup const&);
+   virtual void endRun(edm::Run&, edm::EventSetup const&);
+   virtual void beginLuminosityBlock(edm::LuminosityBlock&, edm::EventSetup const&);
+   virtual void endLuminosityBlock(edm::LuminosityBlock&, edm::EventSetup const&);
 
-  bool triggerFired(const string& triggerWildCard, const TriggerResults& triggerResults);
-  unsigned int findTrigger(const string& triggerWildCard);
- 
-  InputTag PFCandidateInputTag_;
-  InputTag AK5PFInputTag_;
-  InputTag AK7PFInputTag_;
-  
-  ofstream fileOutput_;
-  string outputFilename_;
+   bool triggerFired(const string& triggerWildCard, const TriggerResults& triggerResults);
+   unsigned int findTrigger(const string& triggerWildCard);
 
-  HLTConfigProvider hltConfig_;
-  InputTag hltInputTag_;
+   InputTag PFCandidateInputTag_;
+   InputTag AK5PFInputTag_;
+   InputTag AK7PFInputTag_;
 
-  int runNum;
-  int eventNum;
+   ofstream fileOutput_;
+   string outputFilename_;
 
-  int particleType;
-  double px;
-  double py;
-  double pz;
-  double energy;
-  double mass;
+   HLTConfigProvider hltConfig_;
+   InputTag hltInputTag_;
+
+   int runNum;
+   int eventNum;
+
+   int particleType;
+   double px;
+   double py;
+   double pz;
+   double energy;
+   double mass;
 
 
-  int eventSerialNumber_;
+   int eventSerialNumber_;  
 };
 
 PFCandidateProducer::PFCandidateProducer(const ParameterSet& iConfig)
@@ -92,27 +92,27 @@ PFCandidateProducer::~PFCandidateProducer() {}
 
 void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
 
-  // Get PFCandidates first.
+   // Get PFCandidates first.
 
-  Handle<reco::PFCandidateCollection> PFCollection;
-  iEvent.getByLabel(PFCandidateInputTag_, PFCollection);
+   Handle<reco::PFCandidateCollection> PFCollection;
+   iEvent.getByLabel(PFCandidateInputTag_, PFCollection);
 
-  if ( ! PFCollection.isValid()){
+   if ( ! PFCollection.isValid()){
     cerr << "Invalid collection." << endl;
     return;
-  }
-  
-  runNum = iEvent.id().run();
-  eventNum = iEvent.id().event();
-  
-  cout << "Event number: " << eventSerialNumber_ << " being processed." << endl;
+   }
 
-  fileOutput_ << "BeginEvent Run " << runNum << " Event " << eventNum << endl;
-  fileOutput_ << "#PFC" << "          px          py          pz     energy       mass   pdgId" << endl;  
+   runNum = iEvent.id().run();
+   eventNum = iEvent.id().event();
 
-  eventSerialNumber_++;
+   cout << "Event number: " << eventSerialNumber_ << " being processed." << endl;
 
-  for(reco::PFCandidateCollection::const_iterator it = PFCollection->begin(), end = PFCollection->end(); it != end; it++) {
+   fileOutput_ << "BeginEvent Run " << runNum << " Event " << eventNum << endl;
+   fileOutput_ << "#PFC" << "          px          py          pz     energy       mass   pdgId" << endl;  
+
+   eventSerialNumber_++;
+
+   for(reco::PFCandidateCollection::const_iterator it = PFCollection->begin(), end = PFCollection->end(); it != end; it++) {
     particleType = (int) (*it).particleId();
     px = it->px();
     py = it->py();
@@ -122,7 +122,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
     int pdgId = it->pdgId();
 
 
-  fileOutput_ << " PFC"
+   fileOutput_ << " PFC"
         << setw(12) << fixed << setprecision(5) << px
         << setw(12) << fixed << setprecision(5) << py
         << setw(12) << fixed << setprecision(5) << pz
@@ -131,77 +131,77 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
         << setw(8) << noshowpos << pdgId
         << endl;
 
-  }
+   }
 
-  // Jets info recorded
+   // Jets info recorded
 
-  // Get AK5PFJets.
-  edm::Handle<reco::PFJetCollection> AK5Collection;
-  iEvent.getByLabel(AK5PFInputTag_, AK5Collection);
+   // Get AK5PFJets.
+   edm::Handle<reco::PFJetCollection> AK5Collection;
+   iEvent.getByLabel(AK5PFInputTag_, AK5Collection);
 
-  if ( ! AK5Collection.isValid()){
+   if ( ! AK5Collection.isValid()){
     std::cerr << "Invalid collection." << std::endl;
     return;
-  }
+   }
 
-  //fileOutput_ << "#AK5" << "          px          py          pz     energy" << endl;  
+   //fileOutput_ << "#AK5" << "          px          py          pz     energy" << endl;  
 
-  eventSerialNumber_++;
+   eventSerialNumber_++;
 
-  for(reco::PFJetCollection::const_iterator it = AK5Collection->begin(), end = AK5Collection->end(); it != end; it++) {
+   for(reco::PFJetCollection::const_iterator it = AK5Collection->begin(), end = AK5Collection->end(); it != end; it++) {
     px = it->px();
     py = it->py();
     pz = it->pz();
     energy = it->energy();
 
-  fileOutput_ << " AK5"
+   fileOutput_ << " AK5"
         << setw(12) << fixed << setprecision(5) << px
         << setw(12) << fixed << setprecision(5) << py
         << setw(12) << fixed << setprecision(5) << pz
         << setw(11) << fixed << setprecision(5) << energy
         << endl;
-  }
+   }
 
-  // Get AK7PFJets.
-  edm::Handle<reco::PFJetCollection> AK7Collection;
-  iEvent.getByLabel(AK7PFInputTag_, AK7Collection);
+   // Get AK7PFJets.
+   edm::Handle<reco::PFJetCollection> AK7Collection;
+   iEvent.getByLabel(AK7PFInputTag_, AK7Collection);
 
-  if ( ! AK7Collection.isValid()){
+   if ( ! AK7Collection.isValid()){
     std::cerr << "Invalid collection." << std::endl;
     return;
-  }
+   }
 
-  //fileOutput_ << "#AK7" << "          px          py          pz     energy" << endl;  
+   //fileOutput_ << "#AK7" << "          px          py          pz     energy" << endl;  
 
-  eventSerialNumber_++;
+   eventSerialNumber_++;
 
-  for(reco::PFJetCollection::const_iterator it = AK7Collection->begin(), end = AK7Collection->end(); it != end; it++) {
+   for(reco::PFJetCollection::const_iterator it = AK7Collection->begin(), end = AK7Collection->end(); it != end; it++) {
     px = it->px();
     py = it->py();
     pz = it->pz();
     energy = it->energy();
 
-  fileOutput_ << " AK7"
+   fileOutput_ << " AK7"
         << setw(12) << fixed << setprecision(5) << px
         << setw(12) << fixed << setprecision(5) << py
         << setw(12) << fixed << setprecision(5) << pz
         << setw(11) << fixed << setprecision(5) << energy
         << endl;
-  }
+   }
 
-  // Now record trigger information.
+   // Now record trigger information.
 
-  fileOutput_ << "#Trig            Name     Prescale_1          Prescale_2           Fired?" << endl;  
+   fileOutput_ << "#Trig            Name     Prescale_1          Prescale_2           Fired?" << endl;  
 
-  Handle<TriggerResults> trigResults; 
-  iEvent.getByLabel(hltInputTag_, trigResults);
+   Handle<TriggerResults> trigResults; 
+   iEvent.getByLabel(hltInputTag_, trigResults);
 
-  const vector<string> triggerNames = hltConfig_.triggerNames();
+   const vector<string> triggerNames = hltConfig_.triggerNames();
 
-  string triggers[7] = {"HLT_L1Jet6U", "HLT_L1Jet10U", "HLT_Jet15U", "HLT_Jet30U", "HLT_Jet50U", "HLT_Jet70U", "HLT_Jet100U"}; // Only these trigger info will be stored.
-  vector<string> triggersThatMatter(triggers, triggers + sizeof triggers / sizeof triggers[0]);
+   string triggers[7] = {"HLT_L1Jet6U", "HLT_L1Jet10U", "HLT_Jet15U", "HLT_Jet30U", "HLT_Jet50U", "HLT_Jet70U", "HLT_Jet100U"}; // Only these trigger info will be stored.
+   vector<string> triggersThatMatter(triggers, triggers + sizeof triggers / sizeof triggers[0]);
 
-  for (unsigned int i = 0; i < triggersThatMatter.size(); i++) {
+   for (unsigned int i = 0; i < triggersThatMatter.size(); i++) {
     string name = triggersThatMatter[i];
 
     pair<int, int> prescale = hltConfig_.prescaleValues(iEvent, iSetup, name);
@@ -214,32 +214,32 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
         << setw(17) << fired
         << endl;
 
-  }
+   }
 
-  fileOutput_ << "EndEvent" << endl;
+   fileOutput_ << "EndEvent" << endl;
 }
 
 void PFCandidateProducer::beginJob() {
-  eventSerialNumber_ = 1;
-  std::cout << "Processing PFCandidates." << std::endl;
+   eventSerialNumber_ = 1;
+   std::cout << "Processing PFCandidates." << std::endl;
 }
 
 void PFCandidateProducer::endJob() {
-  fileOutput_.close();
+   fileOutput_.close();
 }
 
 void PFCandidateProducer::beginRun(edm::Run & iRun, edm::EventSetup const & iSetup){
 
-  bool changed = true;
-  if ( hltConfig_.init(iRun, iSetup, hltInputTag_.process(), changed) ) {
-    // if init returns TRUE, initialisation has succeeded!
-    edm::LogInfo("TopPairElectronPlusJetsSelectionFilter") << "HLT config with process name "
+   bool changed = true;
+   if ( hltConfig_.init(iRun, iSetup, hltInputTag_.process(), changed) ) {
+      // if init returns TRUE, initialisation has succeeded!
+      edm::LogInfo("TopPairElectronPlusJetsSelectionFilter") << "HLT config with process name "
         << hltInputTag_.process() << " successfully extracted";
-  }
-  else {
-    edm::LogError("TopPairElectronPlusJetsSelectionFilter_Error")
-        << "Error! HLT config extraction with process name " << hltInputTag_.process() << " failed";
-  }
+   }
+   else {
+      edm::LogError("TopPairElectronPlusJetsSelectionFilter_Error")
+      << "Error! HLT config extraction with process name " << hltInputTag_.process() << " failed";
+   }
 
 }
 
@@ -256,32 +256,32 @@ void PFCandidateProducer::endLuminosityBlock(edm::LuminosityBlock&, edm::EventSe
 }
 
 bool PFCandidateProducer::triggerFired(const std::string& triggerWildCard, const edm::TriggerResults& triggerResults) {
-  bool fired = false;
-  unsigned int index = findTrigger(triggerWildCard);
+   bool fired = false;
+   unsigned int index = findTrigger(triggerWildCard);
 
-  if (index < triggerResults.size()) {
-    if (triggerResults.accept(index)) {
-      fired = true;
-    }
-  }
+   if (index < triggerResults.size()) {
+      if (triggerResults.accept(index)) {
+         fired = true;
+      }
+   }
 
-  return fired;
+   return fired;
 
 }
 
 unsigned int PFCandidateProducer::findTrigger(const std::string& triggerWildCard) {
-  const std::vector<std::string>& triggers = hltConfig_.triggerNames();
-  unsigned int found = 9999;
+   const std::vector<std::string>& triggers = hltConfig_.triggerNames();
+   unsigned int found = 9999;
 
-  size_t length = triggerWildCard.size();
-  for (unsigned int index = 0; index < triggers.size(); ++index) {
-    if (length <= triggers[index].size() && triggerWildCard == triggers[index].substr(0, length)) {
-      found = index;
-      break;
-    }
-  }
+   size_t length = triggerWildCard.size();
+   for (unsigned int index = 0; index < triggers.size(); ++index) {
+      if (length <= triggers[index].size() && triggerWildCard == triggers[index].substr(0, length)) {
+         found = index;
+         break;
+      }
+   }
 
-  return found;
+   return found;
 }
 
 
