@@ -26,6 +26,9 @@
 #include "FWCore/Common/interface/TriggerResultsByName.h"
 #include "HLTrigger/HLTcore/interface/HLTConfigProvider.h"
 
+#include "DataFormats/JetReco/interface/PFJet.h"
+#include "DataFormats/ParticleFlowReco/interface/PFBlockFwd.h"
+
 using namespace std;
 using namespace edm;
 using namespace trigger;
@@ -49,7 +52,9 @@ private:
   bool triggerFired(const string& triggerWildCard, const TriggerResults& triggerResults);
   unsigned int findTrigger(const string& triggerWildCard);
  
-  InputTag inputTag_;
+  InputTag PFCandidateInputTag_;
+  InputTag AK5PFInputTag_;
+  InputTag AK7PFInputTag_;
   
   ofstream fileOutput_;
   string outputFilename_;
@@ -72,7 +77,9 @@ private:
 };
 
 PFCandidateProducer::PFCandidateProducer(const ParameterSet& iConfig)
-  : inputTag_(iConfig.getParameter<InputTag>("inputTag")),
+  : PFCandidateInputTag_(iConfig.getParameter<InputTag>("PFCandidateInputTag")),
+    AK5PFInputTag_(iConfig.getParameter<InputTag>("AK5PFInputTag")),
+    AK7PFInputTag_(iConfig.getParameter<InputTag>("AK7PFInputTag")),
     outputFilename_(iConfig.getParameter<string>("outputFilename")),
     hltConfig_(),
     hltInputTag_("TriggerResults","","HLT")
@@ -85,10 +92,12 @@ PFCandidateProducer::~PFCandidateProducer() {}
 
 void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
 
-  Handle<reco::PFCandidateCollection> collection;
-  iEvent.getByLabel(inputTag_, collection);
+  // Get PFCandidates first.
 
-  if ( ! collection.isValid()){
+  Handle<reco::PFCandidateCollection> PFCollection;
+  iEvent.getByLabel(PFCandidateInputTag_, PFCollection);
+
+  if ( ! PFCollection.isValid()){
     cerr << "Invalid collection." << endl;
     return;
   }
@@ -103,7 +112,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
 
   eventSerialNumber_++;
 
-  for(reco::PFCandidateCollection::const_iterator it = collection->begin(), end = collection->end(); it != end; it++) {
+  for(reco::PFCandidateCollection::const_iterator it = PFCollection->begin(), end = PFCollection->end(); it != end; it++) {
     particleType = (int) (*it).particleId();
     px = it->px();
     py = it->py();
@@ -152,11 +161,66 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
 
   }
 
+  // Get AK5PFJets.
+  edm::Handle<reco::PFJetCollection> AK5Collection;
+  iEvent.getByLabel(AK5PFInputTag_, AK5Collection);
+
+  if ( ! AK5Collection.isValid()){
+    std::cerr << "Invalid collection." << std::endl;
+    return;
+  }
+
+  fileOutput_ << "#AK5" << "          px          py          pz     energy" << endl;  
+
+  eventSerialNumber_++;
+
+  for(reco::PFJetCollection::const_iterator it = AK5Collection->begin(), end = AK5Collection->end(); it != end; it++) {
+    px = it->px();
+    py = it->py();
+    pz = it->pz();
+    energy = it->energy();
+
+  fileOutput_ << " AK5"
+        << setw(12) << fixed << setprecision(5) << px
+        << setw(12) << fixed << setprecision(5) << py
+        << setw(12) << fixed << setprecision(5) << pz
+        << setw(11) << fixed << setprecision(5) << energy
+        << endl;
+  }
+
+  // Get AK7PFJets.
+  edm::Handle<reco::PFJetCollection> AK7Collection;
+  iEvent.getByLabel(AK7PFInputTag_, AK7Collection);
+
+  if ( ! AK7Collection.isValid()){
+    std::cerr << "Invalid collection." << std::endl;
+    return;
+  }
+
+  fileOutput_ << "#AK7" << "          px          py          pz     energy" << endl;  
+
+  eventSerialNumber_++;
+
+  for(reco::PFJetCollection::const_iterator it = AK7Collection->begin(), end = AK7Collection->end(); it != end; it++) {
+    px = it->px();
+    py = it->py();
+    pz = it->pz();
+    energy = it->energy();
+
+  fileOutput_ << " AK7"
+        << setw(12) << fixed << setprecision(5) << px
+        << setw(12) << fixed << setprecision(5) << py
+        << setw(12) << fixed << setprecision(5) << pz
+        << setw(11) << fixed << setprecision(5) << energy
+        << endl;
+  }
+
   fileOutput_ << "EndEvent" << endl;
 }
 
 void PFCandidateProducer::beginJob() {
   eventSerialNumber_ = 1;
+  std::cout << "Processing PFCandidates." << std::endl;
 }
 
 void PFCandidateProducer::endJob() {
