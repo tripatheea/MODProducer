@@ -144,7 +144,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
     return;
   }
 
-  fileOutput_ << "#AK5" << "          px          py          pz     energy" << endl;  
+  //fileOutput_ << "#AK5" << "          px          py          pz     energy" << endl;  
 
   eventSerialNumber_++;
 
@@ -171,7 +171,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
     return;
   }
 
-  fileOutput_ << "#AK7" << "          px          py          pz     energy" << endl;  
+  //fileOutput_ << "#AK7" << "          px          py          pz     energy" << endl;  
 
   eventSerialNumber_++;
 
