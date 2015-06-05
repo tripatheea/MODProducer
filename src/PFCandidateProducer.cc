@@ -134,32 +134,6 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
   }
 
   // Jets info recorded
-  // Now record trigger information.
-
-  fileOutput_ << "#Trig            Name     Prescale_1          Prescale_2           Fired?" << endl;  
-
-  Handle<TriggerResults> trigResults; 
-  iEvent.getByLabel(hltInputTag_, trigResults);
-
-  const vector<string> triggerNames = hltConfig_.triggerNames();
-
-  string triggers[7] = {"HLT_L1Jet6U", "HLT_L1Jet10U", "HLT_Jet15U", "HLT_Jet30U", "HLT_Jet50U", "HLT_Jet70U", "HLT_Jet100U"}; // Only these trigger info will be stored.
-  vector<string> triggersThatMatter(triggers, triggers + sizeof triggers / sizeof triggers[0]);
-
-  for (unsigned int i = 0; i < triggersThatMatter.size(); i++) {
-    string name = triggersThatMatter[i];
-
-    pair<int, int> prescale = hltConfig_.prescaleValues(iEvent, iSetup, name);
-    bool fired = triggerFired(name, ( * trigResults));
-    
-    fileOutput_ << " trig" 
-        << setw(16) <<  name 
-        << setw(15) << prescale.first 
-        << setw(20) << prescale.second 
-        << setw(17) << fired
-        << endl;
-
-  }
 
   // Get AK5PFJets.
   edm::Handle<reco::PFJetCollection> AK5Collection;
@@ -213,6 +187,33 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
         << setw(12) << fixed << setprecision(5) << pz
         << setw(11) << fixed << setprecision(5) << energy
         << endl;
+  }
+
+  // Now record trigger information.
+
+  fileOutput_ << "#Trig            Name     Prescale_1          Prescale_2           Fired?" << endl;  
+
+  Handle<TriggerResults> trigResults; 
+  iEvent.getByLabel(hltInputTag_, trigResults);
+
+  const vector<string> triggerNames = hltConfig_.triggerNames();
+
+  string triggers[7] = {"HLT_L1Jet6U", "HLT_L1Jet10U", "HLT_Jet15U", "HLT_Jet30U", "HLT_Jet50U", "HLT_Jet70U", "HLT_Jet100U"}; // Only these trigger info will be stored.
+  vector<string> triggersThatMatter(triggers, triggers + sizeof triggers / sizeof triggers[0]);
+
+  for (unsigned int i = 0; i < triggersThatMatter.size(); i++) {
+    string name = triggersThatMatter[i];
+
+    pair<int, int> prescale = hltConfig_.prescaleValues(iEvent, iSetup, name);
+    bool fired = triggerFired(name, ( * trigResults));
+    
+    fileOutput_ << " trig" 
+        << setw(16) <<  name 
+        << setw(15) << prescale.first 
+        << setw(20) << prescale.second 
+        << setw(17) << fired
+        << endl;
+
   }
 
   fileOutput_ << "EndEvent" << endl;
