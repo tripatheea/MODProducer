@@ -158,6 +158,7 @@ void minBiasProducer::produce(Event& iEvent, const EventSetup& iSetup) {
 
 void minBiasProducer::beginJob() {
   eventSerialNumber_ = 1;
+  std::cout << "Processing minBias" << std::endl;
 }
 
 void minBiasProducer::endJob() {

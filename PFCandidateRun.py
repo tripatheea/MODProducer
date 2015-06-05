@@ -35,7 +35,7 @@ process_load = process.load("CMSOpenData.MODProducer.pfcandidateproducer_cfi")
 
 # Change this to set the maximum number of events to process
 # -1 means all of them
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(500))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(250))
 
 process.Producer = cms.Path(process.PFCandidateProducer)
 process.schedule = cms.Schedule(process.Producer)
