@@ -99,35 +99,11 @@ void minBiasProducer::produce(Event& iEvent, const EventSetup& iSetup) {
   
   cout << "Event number: " << eventSerialNumber_ << " being processed." << endl;
 
-  fileOutput_ << "BeginEvent Run " << runNum << " Event " << eventNum << endl;  
-  fileOutput_ << "#PFC" << "          px          py          pz     energy       mass   pdgId" << endl;  
+  fileOutput_ << "BeginEvent Run " << runNum << " Event " << eventNum << endl;
 
-  eventSerialNumber_++;
-
-  for(reco::PFCandidateCollection::const_iterator it = collection->begin(), end = collection->end(); it != end; it++) {
-    particleType = (int) (*it).particleId();
-    px = it->px();
-    py = it->py();
-    pz = it->pz();
-    energy = it->energy();
-    mass = it->mass();
-    int pdgId = it->pdgId();
-    
-  fileOutput_ << " PFC"
-        << setw(12) << fixed << setprecision(5) << px
-        << setw(12) << fixed << setprecision(5) << py
-        << setw(12) << fixed << setprecision(5) << pz
-        << setw(11) << fixed << setprecision(5) << energy
-        << setw(11) << fixed << setprecision(5) << mass
-        << setw(8) << noshowpos << pdgId
-        << endl;
-  }
-
-
-  // Jets info recorded
   // Now record trigger information.
 
-  fileOutput_ << "#Trig            Name     Prescale_1          Prescale_2           Fired?" << endl;  
+  fileOutput_ << "# Trig            Name     Prescale_1          Prescale_2           Fired?" << endl;  
 
   Handle<TriggerResults> trigResults; 
   iEvent.getByLabel(hltInputTag_, trigResults);
@@ -143,7 +119,7 @@ void minBiasProducer::produce(Event& iEvent, const EventSetup& iSetup) {
     pair<int, int> prescale = hltConfig_.prescaleValues(iEvent, iSetup, name);
     bool fired = triggerFired(name, ( * trigResults));
     
-    fileOutput_ << " trig" 
+    fileOutput_ << "  trig" 
         << setw(16) <<  name 
         << setw(15) << prescale.first 
         << setw(20) << prescale.second 
@@ -151,6 +127,32 @@ void minBiasProducer::produce(Event& iEvent, const EventSetup& iSetup) {
         << endl;
 
   }
+
+  // Next PFCandidates.
+  
+  fileOutput_ << "# PFC" << "          px          py          pz     energy       mass   pdgId" << endl;  
+
+  eventSerialNumber_++;
+
+  for(reco::PFCandidateCollection::const_iterator it = collection->begin(), end = collection->end(); it != end; it++) {
+    particleType = (int) (*it).particleId();
+    px = it->px();
+    py = it->py();
+    pz = it->pz();
+    energy = it->energy();
+    mass = it->mass();
+    int pdgId = it->pdgId();
+    
+  fileOutput_ << "  PFC"
+        << setw(12) << fixed << setprecision(5) << px
+        << setw(12) << fixed << setprecision(5) << py
+        << setw(12) << fixed << setprecision(5) << pz
+        << setw(11) << fixed << setprecision(5) << energy
+        << setw(11) << fixed << setprecision(5) << mass
+        << setw(8) << noshowpos << pdgId
+        << endl;
+  }
+
 
   fileOutput_ << "EndEvent" << endl;
   

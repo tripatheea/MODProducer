@@ -108,32 +108,35 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
   cout << "Event number: " << eventSerialNumber_ << " being processed." << endl;
 
   fileOutput_ << "BeginEvent Run " << runNum << " Event " << eventNum << endl;
-  fileOutput_ << "#PFC" << "          px          py          pz     energy       mass   pdgId" << endl;  
 
-  eventSerialNumber_++;
+  // Now record trigger information.
 
-  for(reco::PFCandidateCollection::const_iterator it = PFCollection->begin(), end = PFCollection->end(); it != end; it++) {
-    particleType = (int) (*it).particleId();
-    px = it->px();
-    py = it->py();
-    pz = it->pz();
-    energy = it->energy();
-    mass = it->mass();
-    int pdgId = it->pdgId();
+  fileOutput_ << "# Trig            Name     Prescale_1          Prescale_2           Fired?" << endl;  
 
+  Handle<TriggerResults> trigResults; 
+  iEvent.getByLabel(hltInputTag_, trigResults);
 
-  fileOutput_ << " PFC"
-        << setw(12) << fixed << setprecision(5) << px
-        << setw(12) << fixed << setprecision(5) << py
-        << setw(12) << fixed << setprecision(5) << pz
-        << setw(11) << fixed << setprecision(5) << energy
-        << setw(11) << fixed << setprecision(5) << mass
-        << setw(8) << noshowpos << pdgId
+  const vector<string> triggerNames = hltConfig_.triggerNames();
+
+  string triggers[7] = {"HLT_L1Jet6U", "HLT_L1Jet10U", "HLT_Jet15U", "HLT_Jet30U", "HLT_Jet50U", "HLT_Jet70U", "HLT_Jet100U"}; // Only these trigger info will be stored.
+  vector<string> triggersThatMatter(triggers, triggers + sizeof triggers / sizeof triggers[0]);
+
+  for (unsigned int i = 0; i < triggersThatMatter.size(); i++) {
+    string name = triggersThatMatter[i];
+
+    pair<int, int> prescale = hltConfig_.prescaleValues(iEvent, iSetup, name);
+    bool fired = triggerFired(name, ( * trigResults));
+    
+    fileOutput_ << "  trig" 
+        << setw(16) <<  name 
+        << setw(15) << prescale.first 
+        << setw(20) << prescale.second 
+        << setw(17) << fired
         << endl;
 
   }
 
-  // Jets info recorded
+  // Next, record jet info.
 
   // Get AK5PFJets.
   edm::Handle<reco::PFJetCollection> AK5Collection;
@@ -144,7 +147,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
     return;
   }
 
-  //fileOutput_ << "#AK5" << "          px          py          pz     energy" << endl;  
+  fileOutput_ << "# AK5" << "          px          py          pz     energy" << endl;  
 
   eventSerialNumber_++;
 
@@ -154,7 +157,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
     pz = it->pz();
     energy = it->energy();
 
-  fileOutput_ << " AK5"
+  fileOutput_ << "  AK5"
         << setw(12) << fixed << setprecision(5) << px
         << setw(12) << fixed << setprecision(5) << py
         << setw(12) << fixed << setprecision(5) << pz
@@ -171,7 +174,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
     return;
   }
 
-  //fileOutput_ << "#AK7" << "          px          py          pz     energy" << endl;  
+  fileOutput_ << "# AK7" << "          px          py          pz     energy" << endl;  
 
   eventSerialNumber_++;
 
@@ -181,7 +184,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
     pz = it->pz();
     energy = it->energy();
 
-  fileOutput_ << " AK7"
+  fileOutput_ << "  AK7"
         << setw(12) << fixed << setprecision(5) << px
         << setw(12) << fixed << setprecision(5) << py
         << setw(12) << fixed << setprecision(5) << pz
@@ -189,32 +192,34 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
         << endl;
   }
 
-  // Now record trigger information.
+  fileOutput_ << "# PFC" << "          px          py          pz     energy       mass   pdgId" << endl;  
 
-  fileOutput_ << "#Trig            Name     Prescale_1          Prescale_2           Fired?" << endl;  
+  eventSerialNumber_++;
 
-  Handle<TriggerResults> trigResults; 
-  iEvent.getByLabel(hltInputTag_, trigResults);
+  for(reco::PFCandidateCollection::const_iterator it = PFCollection->begin(), end = PFCollection->end(); it != end; it++) {
+    particleType = (int) (*it).particleId();
+    px = it->px();
+    py = it->py();
+    pz = it->pz();
+    energy = it->energy();
+    mass = it->mass();
+    int pdgId = it->pdgId();
 
-  const vector<string> triggerNames = hltConfig_.triggerNames();
 
-  string triggers[7] = {"HLT_L1Jet6U", "HLT_L1Jet10U", "HLT_Jet15U", "HLT_Jet30U", "HLT_Jet50U", "HLT_Jet70U", "HLT_Jet100U"}; // Only these trigger info will be stored.
-  vector<string> triggersThatMatter(triggers, triggers + sizeof triggers / sizeof triggers[0]);
-
-  for (unsigned int i = 0; i < triggersThatMatter.size(); i++) {
-    string name = triggersThatMatter[i];
-
-    pair<int, int> prescale = hltConfig_.prescaleValues(iEvent, iSetup, name);
-    bool fired = triggerFired(name, ( * trigResults));
-    
-    fileOutput_ << " trig" 
-        << setw(16) <<  name 
-        << setw(15) << prescale.first 
-        << setw(20) << prescale.second 
-        << setw(17) << fired
+  fileOutput_ << "  PFC"
+        << setw(12) << fixed << setprecision(5) << px
+        << setw(12) << fixed << setprecision(5) << py
+        << setw(12) << fixed << setprecision(5) << pz
+        << setw(11) << fixed << setprecision(5) << energy
+        << setw(11) << fixed << setprecision(5) << mass
+        << setw(8) << noshowpos << pdgId
         << endl;
 
   }
+
+  
+
+  
 
   fileOutput_ << "EndEvent" << endl;
 }
