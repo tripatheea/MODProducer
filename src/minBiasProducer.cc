@@ -3,6 +3,8 @@
 #include <string>
 #include <fstream>
 #include <vector>
+#include <limits>
+#include <cmath>
 
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/EDProducer.h"
@@ -103,7 +105,7 @@ void minBiasProducer::produce(Event& iEvent, const EventSetup& iSetup) {
 
   // Now record trigger information.
 
-  fileOutput_ << "# Trig            Name     Prescale_1          Prescale_2           Fired?" << endl;  
+  
 
   Handle<TriggerResults> trigResults; 
   iEvent.getByLabel(hltInputTag_, trigResults);
@@ -114,41 +116,49 @@ void minBiasProducer::produce(Event& iEvent, const EventSetup& iSetup) {
   vector<string> triggersThatMatter(triggers, triggers + sizeof triggers / sizeof triggers[0]);
 
   for (unsigned int i = 0; i < triggersThatMatter.size(); i++) {
+    if (i == 0)
+       fileOutput_ << "# Trig                         Name  Prescale_1  Prescale_2  Fired?" << endl;  
+    
     string name = triggersThatMatter[i];
 
     pair<int, int> prescale = hltConfig_.prescaleValues(iEvent, iSetup, name);
     bool fired = triggerFired(name, ( * trigResults));
     
-    fileOutput_ << "  trig" 
-        << setw(16) <<  name 
-        << setw(15) << prescale.first 
-        << setw(20) << prescale.second 
-        << setw(17) << fired
+    fileOutput_ << "  Trig" 
+        << setw(29) << name 
+        << setw(12) << prescale.first 
+        << setw(12) << prescale.second 
+        << setw(8) << fired
         << endl;
 
   }
 
   // Next PFCandidates.
   
-  fileOutput_ << "# PFC" << "          px          py          pz     energy       mass   pdgId" << endl;  
+  
 
   eventSerialNumber_++;
 
   for(reco::PFCandidateCollection::const_iterator it = collection->begin(), end = collection->end(); it != end; it++) {
+    if (it == collection->begin())
+       fileOutput_ << "# PFC" << "          px          py          pz      energy        mass   pdgId" << endl;  
+   
     particleType = (int) (*it).particleId();
     px = it->px();
     py = it->py();
     pz = it->pz();
     energy = it->energy();
     mass = it->mass();
+    mass = (abs(mass) <= std::numeric_limits<double>::epsilon()) ? +0.00 : mass;
+    
     int pdgId = it->pdgId();
     
   fileOutput_ << "  PFC"
         << setw(12) << fixed << setprecision(5) << px
         << setw(12) << fixed << setprecision(5) << py
         << setw(12) << fixed << setprecision(5) << pz
-        << setw(11) << fixed << setprecision(5) << energy
-        << setw(11) << fixed << setprecision(5) << mass
+        << setw(12) << fixed << setprecision(5) << energy
+        << setw(12) << fixed << setprecision(5) << mass
         << setw(8) << noshowpos << pdgId
         << endl;
   }
