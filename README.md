@@ -27,13 +27,13 @@ and input the commands as explained below.
 * Clone the source code:
 
 
-```git clone https://github.com/tripatheea/CMSOpenDataProducer.git CMSOpenData/MODProducer```
+```git clone https://github.com/tripatheea/MODProducer.git CMSOpenData/MODProducer```
 
 
 * Go to the source directory:
 
 ```
-    cd CMSOpenDataProducer/CMSOpenDataProducer
+    cd CMSOpenData/MODProducer
 ```
 * Run the shell file `run_producers.sh`:
 
