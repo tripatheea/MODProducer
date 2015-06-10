@@ -30,10 +30,21 @@
 
 #include "DataFormats/JetReco/interface/PFJet.h"
 #include "DataFormats/ParticleFlowReco/interface/PFBlockFwd.h"
+#include "DataFormats/JetReco/interface/PFJetCollection.h"
+
+#include "JetMETCorrections/Objects/interface/JetCorrector.h"
+
+#include "JetMETCorrections/Algorithms/interface/L1FastjetCorrector.h"
+
+
+
+
 
 using namespace std;
 using namespace edm;
 using namespace trigger;
+using namespace reco;
+
 
 class PFCandidateProducer : public EDProducer 
 {
@@ -57,12 +68,14 @@ private:
    InputTag PFCandidateInputTag_;
    InputTag AK5PFInputTag_;
    InputTag AK7PFInputTag_;
+   
+   InputTag srcCorrJets_;
 
    ofstream fileOutput_;
    string outputFilename_;
 
    HLTConfigProvider hltConfig_;
-   InputTag hltInputTag_;
+   
 
    int runNum;
    int eventNum;
@@ -74,6 +87,9 @@ private:
    double energy;
    double mass;
 
+   const string& correctorLabel_;
+   
+   InputTag hltInputTag_;
 
    int eventSerialNumber_;  
 };
@@ -84,7 +100,9 @@ PFCandidateProducer::PFCandidateProducer(const ParameterSet& iConfig)
     AK7PFInputTag_(iConfig.getParameter<InputTag>("AK7PFInputTag")),
     outputFilename_(iConfig.getParameter<string>("outputFilename")),
     hltConfig_(),
-    hltInputTag_("TriggerResults","","HLT")
+    hltInputTag_("TriggerResults","","HLT"),
+    srcCorrJets_(iConfig.getParameter<InputTag>("srcCorrJets")),
+    correctorLabel_(iConfig.getParameter<string>("corrector"))
 {
   fileOutput_.open(outputFilename_.c_str());
 }
@@ -95,7 +113,7 @@ PFCandidateProducer::~PFCandidateProducer() {}
 void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
 
    // Get PFCandidates first.
-
+   /*
    Handle<reco::PFCandidateCollection> PFCollection;
    iEvent.getByLabel(PFCandidateInputTag_, PFCollection);
 
@@ -140,10 +158,11 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
 
    }
 
+   */
+   // Next, record jet info.
 
-  // Next, record jet info.
 
-
+   /*
    // Get AK5PFJets.
    edm::Handle<reco::PFJetCollection> AK5Collection;
    iEvent.getByLabel(AK5PFInputTag_, AK5Collection);
@@ -153,12 +172,14 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
     return;
    }
 
-
-  
-
+   */
+   
+   //const JetCorrector* corrector = JetCorrector::getJetCorrector(JetCorrectorName_, iSetup);   //Get the jet corrector from the event setup
+   
+   /*
    for(reco::PFJetCollection::const_iterator it = AK5Collection->begin(), end = AK5Collection->end(); it != end; it++) {
     if (it == AK5Collection->begin())
-       fileOutput_ << "# AK5" << "          px          py          pz      energy        mass" << endl;  
+       fileOutput_ << "# AK5" << "          px          py          pz      energy        mass          jec          corrected_px          corrected_py          corrected_pz          corrected_energy          corrected_mass" << endl;  
     
     px = it->px();
     py = it->py();
@@ -166,6 +187,13 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
     energy = it->energy();
     mass = it->mass();
     mass = (abs(mass) <= std::numeric_limits<double>::epsilon()) ? +0.00 : mass;
+    
+    //PFJet correctedJet = * it;                                 //copy original jet
+    //int index = it -  AK5Collection->begin();
+    //edm::RefToBase<reco::Jet> jetRef(edm::Ref<PFJetCollection>(AK5Collection,index));
+    //double jec = corrector->correction(*it,jetRef,iEvent,iSetup);
+  
+    //correctedJet.scaleEnergy(jec);                        // apply the correction
 
   fileOutput_ << "  AK5"
         << setw(12) << fixed << setprecision(5) << px
@@ -175,7 +203,40 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
         << setw(12) << fixed << setprecision(5) << mass
         << endl;
    }
+   */
+   
+   // Get corrected AK5Jets.
+   //edm::Handle<reco::PFJetCollection> corrJets;
+   //iEvent.getByLabel(srcCorrJets_, corrJets);
+   
+   const JetCorrector* corrector = JetCorrector::getJetCorrector(correctorLabel_, iSetup);
+   
+   /*
+   for(reco::PFJetCollection::const_iterator it = corrJets->begin(), end = corrJets->end(); it != end; it++) {
+      PFJet correctedJet = * it;                                 //copy original jet
+      int index = it -  corrJets->begin();
+      edm::RefToBase<reco::Jet> jetRef(edm::Ref<PFJetCollection>(corrJets, index));
+      double jec = corrector->correction(*it, jetRef, iEvent, iSetup);
+      
+      correctedJet.scaleEnergy(jec);     
+      cout << "The correction factor is: " << jec << endl;
+   }
+   */
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
 
+   /*
    // Get AK7PFJets.
    edm::Handle<reco::PFJetCollection> AK7Collection;
    iEvent.getByLabel(AK7PFInputTag_, AK7Collection);
@@ -185,9 +246,6 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
     return;
    }
 
-  
-
-   
    
    for(reco::PFJetCollection::const_iterator it = AK7Collection->begin(), end = AK7Collection->end(); it != end; it++) {
     if (it == AK7Collection->begin())
@@ -247,6 +305,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
   eventSerialNumber_++;
 
   fileOutput_ << "EndEvent" << endl;
+  */
 
 }
 

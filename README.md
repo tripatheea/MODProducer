@@ -1,4 +1,4 @@
-#CMS Open Data Producer
+#MIT Open Data Producer
 
 This package selects events from the CMS open
 data release. A custom DAT file containing the four-vector information, mass, PdgId and trigger information of the particles is produced.
@@ -40,6 +40,6 @@ and input the commands as explained below.
 ```
     ./run_producers.sh
 ```
-which will produce the data files-  `pfcandidate.dat`, `minBias.dat`, `ak5pfjets.dat` and `ak7pfjets.dat`.
+which will produce the data files-  `CMS_JetSample.dat` and `CMS_MinBiasSample.dat`.
 
 Enjoy!
