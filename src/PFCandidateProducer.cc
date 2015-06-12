@@ -32,19 +32,28 @@
 #include "DataFormats/ParticleFlowReco/interface/PFBlockFwd.h"
 #include "DataFormats/JetReco/interface/PFJetCollection.h"
 
-#include "JetMETCorrections/Objects/interface/JetCorrector.h"
+#include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
+#include "CondFormats/JetMETObjects/interface/FactorizedJetCorrector.h"
 
-#include "JetMETCorrections/Algorithms/interface/L1FastjetCorrector.h"
+#include "DataFormats/Common/interface/Handle.h"
+#include "FWCore/FWLite/interface/AutoLibraryLoader.h"
 
+#include "DataFormats/PatCandidates/interface/Jet.h"
 
+#include "DataFormats/JetReco/interface/CaloJet.h" 
+#include "DataFormats/JetReco/interface/GenJet.h"
 
+#include "RecoJets/JetProducers/interface/BackgroundEstimator.h"
+
+#include <fastjet/PseudoJet.hh>
+#include <fastjet/ClusterSequenceAreaBase.hh>
+#include <fastjet/RangeDefinition.hh>
 
 
 using namespace std;
 using namespace edm;
-using namespace trigger;
 using namespace reco;
-
+using namespace fastjet;
 
 class PFCandidateProducer : public EDProducer 
 {
@@ -53,283 +62,120 @@ public:
    ~PFCandidateProducer();
 
 private:
-   virtual void beginJob() ;
-   virtual void produce(Event&, const EventSetup&);
+   virtual void beginJob();
+   virtual void produce(edm::Event&, const edm::EventSetup&);
    virtual void endJob() ;
-
    virtual void beginRun(edm::Run&, edm::EventSetup const&);
    virtual void endRun(edm::Run&, edm::EventSetup const&);
    virtual void beginLuminosityBlock(edm::LuminosityBlock&, edm::EventSetup const&);
    virtual void endLuminosityBlock(edm::LuminosityBlock&, edm::EventSetup const&);
 
-   bool triggerFired(const string& triggerWildCard, const TriggerResults& triggerResults);
-   unsigned int findTrigger(const string& triggerWildCard);
-
-   InputTag PFCandidateInputTag_;
    InputTag AK5PFInputTag_;
-   InputTag AK7PFInputTag_;
-   
-   InputTag srcCorrJets_;
-
-   ofstream fileOutput_;
-   string outputFilename_;
-
-   HLTConfigProvider hltConfig_;
-   
-
-   int runNum;
-   int eventNum;
-
-   int particleType;
-   double px;
-   double py;
-   double pz;
-   double energy;
-   double mass;
-
-   const string& correctorLabel_;
-   
-   InputTag hltInputTag_;
-
-   int eventSerialNumber_;  
+   InputTag rhoTag_;
+   InputTag PFCandidateInputTag_;
 };
 
-PFCandidateProducer::PFCandidateProducer(const ParameterSet& iConfig)
-  : PFCandidateInputTag_(iConfig.getParameter<InputTag>("PFCandidateInputTag")),
-    AK5PFInputTag_(iConfig.getParameter<InputTag>("AK5PFInputTag")),
-    AK7PFInputTag_(iConfig.getParameter<InputTag>("AK7PFInputTag")),
-    outputFilename_(iConfig.getParameter<string>("outputFilename")),
-    hltConfig_(),
-    hltInputTag_("TriggerResults","","HLT"),
-    srcCorrJets_(iConfig.getParameter<InputTag>("srcCorrJets")),
-    correctorLabel_(iConfig.getParameter<string>("corrector"))
-{
-  fileOutput_.open(outputFilename_.c_str());
+PFCandidateProducer::PFCandidateProducer(const ParameterSet& iConfig) {
+  //correctorLabel_ = iConfig.getParameter<InputTag>("JetCorrector");
+  AK5PFInputTag_ = iConfig.getParameter<edm::InputTag>("JetCollectionName");
+  rhoTag_ = iConfig.getParameter<edm::InputTag>("rho");
+  PFCandidateInputTag_ = iConfig.getParameter<InputTag>("PFCandidateInputTag");
 }
 
 
-PFCandidateProducer::~PFCandidateProducer() {}
+PFCandidateProducer::~PFCandidateProducer() {
+
+}
 
 void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
+   
+
+   
+   
 
    // Get PFCandidates first.
-   /*
    Handle<reco::PFCandidateCollection> PFCollection;
    iEvent.getByLabel(PFCandidateInputTag_, PFCollection);
-
-   if ( ! PFCollection.isValid()){
-    cerr << "Invalid collection." << endl;
-    return;
+   
+   vector<PseudoJet> PFCForFastJet;
+   
+   double rapmin = std::numeric_limits<double>::min();
+   double rapmax = std::numeric_limits<double>::max();
+   for(reco::PFCandidateCollection::const_iterator it = PFCollection->begin(), end = PFCollection->end(); it != end; it++) {
+      PFCForFastJet.push_back(PseudoJet(it->px(), it->py(), it->pz(), it->energy()));
+      
+      if (it->rapidity() < rapmin)
+      	rapmin = it->rapidity();
+      if (it->rapidity() > rapmax)
+      	rapmax = it->rapidity();
    }
+   
 
-   runNum = iEvent.id().run();
-   eventNum = iEvent.id().event();
-
-   //cout << "Event number: " << eventSerialNumber_ << " being processed." << endl;
-
-
-  fileOutput_ << "BeginEvent Run " << runNum << " Event " << eventNum << endl;
-
-  // Now record trigger information.
-
-  Handle<TriggerResults> trigResults; 
-  iEvent.getByLabel(hltInputTag_, trigResults);
-
-  const vector<string> triggerNames = hltConfig_.triggerNames();
-
-  string triggers[7] = {"HLT_L1Jet6U", "HLT_L1Jet10U", "HLT_Jet15U", "HLT_Jet30U", "HLT_Jet50U", "HLT_Jet70U", "HLT_Jet100U"}; // Only these trigger info will be stored.
-  vector<string> triggersThatMatter(triggers, triggers + sizeof triggers / sizeof triggers[0]);
-
-  for (unsigned int i = 0; i < triggersThatMatter.size(); i++) {
-    if (i == 0)
-       fileOutput_ << "# Trig                         Name  Prescale_1  Prescale_2  Fired?" << endl;  
-       
-    string name = triggersThatMatter[i];
-
-    pair<int, int> prescale = hltConfig_.prescaleValues(iEvent, iSetup, name);
-    bool fired = triggerFired(name, ( * trigResults));
-    
-    fileOutput_ << "  Trig" 
-        << setw(29) <<  name 
-        << setw(12) << prescale.first 
-        << setw(12) << prescale.second 
-        << setw(8) << fired
-        << endl;
-
-   }
-
-   */
-   // Next, record jet info.
-
-
+   double R = 0.6;
+   fastjet::JetDefinition jet_def(fastjet::kt_algorithm, R);
+   ClusterSequenceAreaBase clust_seq(PFCForFastJet, jet_def);
+   
+   fastjet::RangeDefinition range = fastjet::RangeDefinition(rapmin, rapmax);
+   BackgroundEstimator bckg = BackgroundEstimator(clust_seq, range);
+   
+   double rho = bckg.median_rho();
+   
    /*
-   // Get AK5PFJets.
+   JetMedianBackgroundEstimator jetMedian = JetMedianBackgroundEstimator();
+   jetMedian.setParticles(PFCForFastJet);
+   jetMedian.set_cluster_sequence(clust_seq);
+   
+   double rho = jetMedian.rho();
+   */
+   
+   
+
+   
+   // Create the JetCorrectorParameter objects, the order does not matter.
+   // YYYY is the first part of the txt files: usually the global tag from which they are retrieved
+   JetCorrectorParameters *ResJetPar = new JetCorrectorParameters("GR_R_41_V0_AK5PF_L2L3Residual.txt"); 
+   JetCorrectorParameters *L3JetPar  = new JetCorrectorParameters("GR_R_41_V0_AK5PF_L3Absolute.txt");
+   JetCorrectorParameters *L2JetPar  = new JetCorrectorParameters("GR_R_41_V0_AK5PF_L2Relative.txt");
+   JetCorrectorParameters *L1JetPar  = new JetCorrectorParameters("GR_R_41_V0_AK5PF_L1FastJet.txt");
+   //  Load the JetCorrectorParameter objects into a vector, IMPORTANT: THE ORDER MATTERS HERE !!!! 
+   vector<JetCorrectorParameters> vPar;
+   vPar.push_back(*L1JetPar);
+   vPar.push_back(*L2JetPar);
+   vPar.push_back(*L3JetPar);
+   vPar.push_back(*ResJetPar);
+   
+   FactorizedJetCorrector *JetCorrector = new FactorizedJetCorrector(vPar);
+  
    edm::Handle<reco::PFJetCollection> AK5Collection;
    iEvent.getByLabel(AK5PFInputTag_, AK5Collection);
 
-   if ( ! AK5Collection.isValid()){
-    std::cerr << "Invalid collection." << std::endl;
-    return;
-   }
-
-   */
-   
-   //const JetCorrector* corrector = JetCorrector::getJetCorrector(JetCorrectorName_, iSetup);   //Get the jet corrector from the event setup
-   
-   /*
-   for(reco::PFJetCollection::const_iterator it = AK5Collection->begin(), end = AK5Collection->end(); it != end; it++) {
-    if (it == AK5Collection->begin())
-       fileOutput_ << "# AK5" << "          px          py          pz      energy        mass          jec          corrected_px          corrected_py          corrected_pz          corrected_energy          corrected_mass" << endl;  
-    
-    px = it->px();
-    py = it->py();
-    pz = it->pz();
-    energy = it->energy();
-    mass = it->mass();
-    mass = (abs(mass) <= std::numeric_limits<double>::epsilon()) ? +0.00 : mass;
-    
-    //PFJet correctedJet = * it;                                 //copy original jet
-    //int index = it -  AK5Collection->begin();
-    //edm::RefToBase<reco::Jet> jetRef(edm::Ref<PFJetCollection>(AK5Collection,index));
-    //double jec = corrector->correction(*it,jetRef,iEvent,iSetup);
+   	
   
-    //correctedJet.scaleEnergy(jec);                        // apply the correction
+  for(reco::PFJetCollection::const_iterator it = AK5Collection->begin(), end = AK5Collection->end(); it != end; it++) {
+    
+    JetCorrector->setJetEta(it->eta());
+    JetCorrector->setJetPt(it->pt());
+    JetCorrector->setJetA(it->jetArea());
+    JetCorrector->setRho(rho);
 
-  fileOutput_ << "  AK5"
-        << setw(12) << fixed << setprecision(5) << px
-        << setw(12) << fixed << setprecision(5) << py
-        << setw(12) << fixed << setprecision(5) << pz
-        << setw(12) << fixed << setprecision(5) << energy
-        << setw(12) << fixed << setprecision(5) << mass
-        << endl;
-   }
-   */
-   
-   // Get corrected AK5Jets.
-   //edm::Handle<reco::PFJetCollection> corrJets;
-   //iEvent.getByLabel(srcCorrJets_, corrJets);
-   
-   const JetCorrector* corrector = JetCorrector::getJetCorrector(correctorLabel_, iSetup);
-   
-   /*
-   for(reco::PFJetCollection::const_iterator it = corrJets->begin(), end = corrJets->end(); it != end; it++) {
-      PFJet correctedJet = * it;                                 //copy original jet
-      int index = it -  corrJets->begin();
-      edm::RefToBase<reco::Jet> jetRef(edm::Ref<PFJetCollection>(corrJets, index));
-      double jec = corrector->correction(*it, jetRef, iEvent, iSetup);
-      
-      correctedJet.scaleEnergy(jec);     
-      cout << "The correction factor is: " << jec << endl;
-   }
-   */
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-
-   /*
-   // Get AK7PFJets.
-   edm::Handle<reco::PFJetCollection> AK7Collection;
-   iEvent.getByLabel(AK7PFInputTag_, AK7Collection);
-
-   if ( ! AK7Collection.isValid()){
-    std::cerr << "Invalid collection." << std::endl;
-    return;
-   }
-
-   
-   for(reco::PFJetCollection::const_iterator it = AK7Collection->begin(), end = AK7Collection->end(); it != end; it++) {
-    if (it == AK7Collection->begin())
-       fileOutput_ << "# AK7" << "          px          py          pz      energy        mass" << endl;  
-       
-    px = it->px();
-    py = it->py();
-    pz = it->pz();
-    energy = it->energy();
-    mass = it->mass();
-    mass = (abs(mass) <= std::numeric_limits<double>::epsilon()) ? +0.00 : mass;
-
-    fileOutput_ << "  AK7"
-        << setw(12) << fixed << setprecision(5) << px
-        << setw(12) << fixed << setprecision(5) << py
-        << setw(12) << fixed << setprecision(5) << pz
-        << setw(12) << fixed << setprecision(5) << energy
-        << setw(12) << fixed << setprecision(5) << mass
-        << endl;
-   }
-
-  // Finally, record PFCandidates.
-
+    
+    double correction = JetCorrector->getCorrection();
+    cout << correction << endl;
+  }
   
 
-  eventSerialNumber_++;
-
-
-  for(reco::PFCandidateCollection::const_iterator it = PFCollection->begin(), end = PFCollection->end(); it != end; it++) {
-    if (it == PFCollection->begin())
-       fileOutput_ << "# PFC" << "          px          py          pz      energy        mass   pdgId" << endl;  
-    
-    particleType = (int) (*it).particleId();
-    px = it->px();
-    py = it->py();
-    pz = it->pz();
-    energy = it->energy();
-    mass = it->mass();
-    mass = (abs(mass) <= std::numeric_limits<double>::epsilon()) ? +0.00 : mass;
-    
-    int pdgId = it->pdgId();
-
-    fileOutput_ << "  PFC"
-        << setw(12) << fixed << setprecision(5) << px
-        << setw(12) << fixed << setprecision(5) << py
-        << setw(12) << fixed << setprecision(5) << pz
-        << setw(12) << fixed << setprecision(5) << energy
-        << setw(12) << fixed << setprecision(5) << mass
-        << setw(8) << noshowpos << pdgId
-        << endl;
-
-   }
-
-
   
-
-  eventSerialNumber_++;
-
-  fileOutput_ << "EndEvent" << endl;
-  */
-
 }
 
 void PFCandidateProducer::beginJob() {
-   eventSerialNumber_ = 1;
-   std::cout << "Processing PFCandidates." << std::endl;
+
 }
 
 void PFCandidateProducer::endJob() {
-   fileOutput_.close();
+
 }
 
 void PFCandidateProducer::beginRun(edm::Run & iRun, edm::EventSetup const & iSetup){
-
-   bool changed = true;
-   if ( hltConfig_.init(iRun, iSetup, hltInputTag_.process(), changed) ) {
-      // if init returns TRUE, initialisation has succeeded!
-      edm::LogInfo("TopPairElectronPlusJetsSelectionFilter") << "HLT config with process name "
-        << hltInputTag_.process() << " successfully extracted";
-   }
-   else {
-      edm::LogError("TopPairElectronPlusJetsSelectionFilter_Error")
-      << "Error! HLT config extraction with process name " << hltInputTag_.process() << " failed";
-   }
 
 }
 
@@ -344,35 +190,5 @@ void PFCandidateProducer::beginLuminosityBlock(edm::LuminosityBlock&, edm::Event
 void PFCandidateProducer::endLuminosityBlock(edm::LuminosityBlock&, edm::EventSetup const&) {
 
 }
-
-bool PFCandidateProducer::triggerFired(const std::string& triggerWildCard, const edm::TriggerResults& triggerResults) {
-   bool fired = false;
-   unsigned int index = findTrigger(triggerWildCard);
-
-   if (index < triggerResults.size()) {
-      if (triggerResults.accept(index)) {
-         fired = true;
-      }
-   }
-
-   return fired;
-
-}
-
-unsigned int PFCandidateProducer::findTrigger(const std::string& triggerWildCard) {
-   const std::vector<std::string>& triggers = hltConfig_.triggerNames();
-   unsigned int found = 9999;
-
-   size_t length = triggerWildCard.size();
-   for (unsigned int index = 0; index < triggers.size(); ++index) {
-      if (length <= triggers[index].size() && triggerWildCard == triggers[index].substr(0, length)) {
-         found = index;
-         break;
-      }
-   }
-
-   return found;
-}
-
 
 DEFINE_FWK_MODULE(PFCandidateProducer);
