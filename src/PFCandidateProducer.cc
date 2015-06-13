@@ -130,6 +130,8 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
    runNum = iEvent.id().run();
    eventNum = iEvent.id().event();
    
+   fileOutput_ << "BeginEvent Run " << runNum << " Event " << eventNum << endl;
+   
    Handle<reco::PFCandidateCollection> PFCollection;
    iEvent.getByLabel(PFCandidateInputTag_, PFCollection);
    
@@ -341,6 +343,7 @@ void PFCandidateProducer::beginJob() {
    AK7JetCorrector_ = new FactorizedJetCorrector(vParAK7);
    
    std::cout << "Processing PFCandidates." << std::endl;
+   
 }
 
 void PFCandidateProducer::endJob() {
