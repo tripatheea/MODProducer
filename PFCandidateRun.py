@@ -58,30 +58,32 @@ process.p        = cms.Path(process.ana)
 '''
 
 import FWCore.ParameterSet.Config as cms
-#import FWCore.PythonUtilities.LumiList as LumiList 
+import FWCore.PythonUtilities.LumiList as LumiList 
 
 process = cms.Process("myprocess")
-#process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
+process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 
-#process.GlobalTag.globaltag = "GR_R_41_V0::All"
+process.GlobalTag.globaltag = 'GR_R_42_V25::All'
 
 
 
 #process.content = cms.EDAnalyzer("EventContentAnalyzer")
 
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))
 process.source = cms.Source("PoolSource", fileNames = cms.untracked.vstring("file://00052C5A-EF70-E011-B43F-00266CF32A00.root"))
 
-#goodJSON = 'file_paths/Cert_136033-149442_7TeV_Apr21ReReco_Collisions10_JSON_v2.txt' 
-#myLumis = LumiList.LumiList(filename = goodJSON).getCMSSWString().split(',') 
-#process.source.lumisToProcess = cms.untracked.VLuminosityBlockRange() 
-#process.source.lumisToProcess.extend(myLumis)
+goodJSON = 'file_paths/Cert_136033-149442_7TeV_Apr21ReReco_Collisions10_JSON_v2.txt' 
+myLumis = LumiList.LumiList(filename = goodJSON).getCMSSWString().split(',') 
+process.source.lumisToProcess = cms.untracked.VLuminosityBlockRange() 
+process.source.lumisToProcess.extend(myLumis)
 
 
 process.PFCandidateProducer = cms.EDProducer("PFCandidateProducer",
-                                             JetCollectionName = cms.InputTag("ak5PFJets"),
-                                             PFCandidateInputTag = cms.InputTag("particleFlow"),
-                                             rho = cms.InputTag("kt6PFJets","rho")
+                                             rho = cms.InputTag("kt6PFJets","rho"),
+                                             PFCandidateInputTag = cms.InputTag("particleFlow"),                            
+                                             AK5PFInputTag = cms.InputTag("ak5PFJets"),
+                                             AK7PFInputTag = cms.InputTag("ak7PFJets"),
+                                             outputFilename = cms.string("CMS_JetSample.dat"),
                                              )
 
 process.ana = cms.Sequence(process.PFCandidateProducer)
