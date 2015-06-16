@@ -54,10 +54,9 @@
 #include "FWCore/Sources/interface/EDInputSource.h"
 
 
-#include "DataFormats/Provenance/interface/Provenance.h"
+#include "FWCore/Framework/interface/LuminosityBlock.h"
+#include "DataFormats/Luminosity/interface/LumiSummary.h"
 
-#include "DataFormats/Provenance/interface/ProcessHistory.h"
-#include "DataFormats/Provenance/interface/ProcessHistoryID.h"
 
 #include <fastjet/PseudoJet.hh>
 #include <fastjet/ClusterSequenceAreaBase.hh>
@@ -102,7 +101,7 @@ private:
    InputTag AK5PFInputTag_;
    InputTag AK7PFInputTag_;
    
-   InputTag stuffInputTag_;
+   InputTag lumiSummaryLabel_;
    
    int runNum;
    int eventNum;
@@ -131,7 +130,8 @@ PFCandidateProducer::PFCandidateProducer(const ParameterSet& iConfig)
   rhoTag_(iConfig.getParameter<edm::InputTag>("rho")),
   PFCandidateInputTag_(iConfig.getParameter<InputTag>("PFCandidateInputTag")),
   AK5PFInputTag_(iConfig.getParameter<edm::InputTag>("AK5PFInputTag")),
-  AK7PFInputTag_(iConfig.getParameter<edm::InputTag>("AK7PFInputTag"))
+  AK7PFInputTag_(iConfig.getParameter<edm::InputTag>("AK7PFInputTag")),
+  lumiSummaryLabel_(iConfig.getUntrackedParameter<edm::InputTag>("LumiSummaryLabel", InputTag("lumiProducer")))
 {
   fileOutput_.open(outputFilename_.c_str());
 
@@ -146,7 +146,22 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
 
    runNum = iEvent.id().run();
    eventNum = iEvent.id().event();
-      
+   
+   // Luminosity Block Begins
+   
+   
+   LuminosityBlock const& iLumi = iEvent.getLuminosityBlock();
+   Handle<LumiSummary> lumi;
+   iLumi.getByLabel(lumiSummaryLabel_, lumi);
+   
+   if (lumi.isValid()) {
+      cout << "average inst lumi: " << lumi->avgInsDelLumi() << endl;
+      cout << "delivered luminosity integrated over LS: " << lumi->intgDelLumi() << endl;      
+   }
+   
+   // Luminosity Block Ends
+   
+   
    fileOutput_ << "BeginEvent Run " << runNum << " Event " << eventNum << endl;
    
    Handle<reco::PFCandidateCollection> PFCollection;
@@ -397,11 +412,11 @@ void PFCandidateProducer::endRun(edm::Run&, edm::EventSetup const&) {
 
 }
 
-void PFCandidateProducer::beginLuminosityBlock(edm::LuminosityBlock&, edm::EventSetup const&) {
-
+void PFCandidateProducer::beginLuminosityBlock(edm::LuminosityBlock& iLumi, edm::EventSetup const& iSetup) {
+   
 }
 
-void PFCandidateProducer::endLuminosityBlock(edm::LuminosityBlock&, edm::EventSetup const&) {
+void PFCandidateProducer::endLuminosityBlock(edm::LuminosityBlock& iLumi, edm::EventSetup const& iSetup) {
 
 }
 

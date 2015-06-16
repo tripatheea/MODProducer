@@ -3,10 +3,10 @@
 <use   name="FWCore/ParameterSet"/>
 <use   name="HLTrigger/HLTcore"/>
 <use   name="DataFormats/Common"/>
+<use   name="DataFormats/Luminosity"/>
 <use   name="CondFormats/JetMETObjects"/>
 <use   name="RecoJets/JetProducers"/>
 <use   name="FWCore/Sources"/>
-<use   name="DataFormats/Provenance"/>
 <use   name="fastjet"/>
 <use   name="clhep"/>
 <use   name="root"/>

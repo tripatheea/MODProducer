@@ -21,7 +21,7 @@ readFiles = cms.untracked.vstring( *mylist)
 
 process.source = cms.Source ("PoolSource", fileNames=readFiles)
 
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))
 
 # Process only those luminosity sections in which runs are considered good and should be processed.
 goodJSON = 'file_paths/Cert_136033-149442_7TeV_Apr21ReReco_Collisions10_JSON_v2.txt' 
