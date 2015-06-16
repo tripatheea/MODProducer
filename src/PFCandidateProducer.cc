@@ -112,6 +112,7 @@ private:
    double pz;
    double energy;
    double mass;
+   double area;
    
    int eventSerialNumber_;
    
@@ -134,7 +135,6 @@ PFCandidateProducer::PFCandidateProducer(const ParameterSet& iConfig)
   lumiSummaryLabel_(iConfig.getUntrackedParameter<edm::InputTag>("LumiSummaryLabel", InputTag("lumiProducer")))
 {
   fileOutput_.open(outputFilename_.c_str());
-
 }
 
 
@@ -227,7 +227,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
   //vector<string> triggersThatMatter(triggers, triggers + sizeof triggers / sizeof triggers[0]);
   
   vector<string> triggersThatMatter = triggerNames;
-  
+  /*
   for (unsigned int i = 0; i < triggersThatMatter.size(); i++) {
     if (i == 0)
        fileOutput_ << "# Trig                                       Name  Prescale_1  Prescale_2  Fired?" << endl;  
@@ -250,13 +250,13 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
         	    << endl;
       }
    }
-   
+   */
 
   // Get AK5 Jets.
   
   for(reco::PFJetCollection::const_iterator it = AK5Collection->begin(), end = AK5Collection->end(); it != end; it++) {    
     if (it == AK5Collection->begin())
-       fileOutput_ << "# AK5" << "            px            py            pz        energy          mass           jec" << endl;
+       fileOutput_ << "# AK5" << "            px            py            pz        energy          mass           jec          area" << endl;
     
     px = it->px();
     py = it->py();
@@ -264,6 +264,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
     energy = it->energy();
     mass = it->mass();
     mass = (abs(mass) <= std::numeric_limits<double>::epsilon()) ? +0.00 : mass;
+    area = it->jetArea();
     
     // JEC Factor.
     AK5JetCorrector_->setJetEta(it->eta());
@@ -279,7 +280,8 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
         << setw(14) << fixed << setprecision(8) << pz
         << setw(14) << fixed << setprecision(8) << energy
         << setw(14) << fixed << setprecision(8) << mass
-        << setw(14) << fixed << setprecision(8) << correction        
+        << setw(14) << fixed << setprecision(8) << correction  
+        << setw(14) << fixed << setprecision(8) << area       
         << endl;
   }
   
@@ -287,7 +289,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
   
   for(reco::PFJetCollection::const_iterator it = AK7Collection->begin(), end = AK7Collection->end(); it != end; it++) {    
     if (it == AK7Collection->begin())
-       fileOutput_ << "# AK7" << "            px            py            pz        energy          mass           jec" << endl;
+       fileOutput_ << "# AK7" << "            px            py            pz        energy          mass           jec          area" << endl;
     
     px = it->px();
     py = it->py();
@@ -295,6 +297,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
     energy = it->energy();
     mass = it->mass();
     mass = (abs(mass) <= std::numeric_limits<double>::epsilon()) ? +0.00 : mass;
+    area = it->jetArea();
     
     // JEC Factor.
     AK7JetCorrector_->setJetEta(it->eta());
@@ -310,7 +313,8 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
         << setw(14) << fixed << setprecision(8) << pz
         << setw(14) << fixed << setprecision(8) << energy
         << setw(14) << fixed << setprecision(8) << mass
-        << setw(14) << fixed << setprecision(8) << correction       
+        << setw(14) << fixed << setprecision(8) << correction    
+        << setw(14) << fixed << setprecision(8) << area     
         << endl;
   }
   
