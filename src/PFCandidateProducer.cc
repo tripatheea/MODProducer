@@ -45,6 +45,20 @@
 
 #include "RecoJets/JetProducers/interface/BackgroundEstimator.h"
 
+#include "FWCore/Framework/interface/InputSourceDescription.h"
+
+#include "FWCore/Sources/interface/ExternalInputSource.h"
+#include "FWCore/Sources/interface/EDInputSource.h"
+
+#include "FWCore/Framework/interface/InputSourceDescription.h"
+#include "FWCore/Sources/interface/EDInputSource.h"
+
+
+#include "DataFormats/Provenance/interface/Provenance.h"
+
+#include "DataFormats/Provenance/interface/ProcessHistory.h"
+#include "DataFormats/Provenance/interface/ProcessHistoryID.h"
+
 #include <fastjet/PseudoJet.hh>
 #include <fastjet/ClusterSequenceAreaBase.hh>
 #include <fastjet/RangeDefinition.hh>
@@ -55,6 +69,7 @@ using namespace edm;
 using namespace trigger;
 using namespace reco;
 using namespace fastjet;
+
 
 class PFCandidateProducer : public EDProducer 
 {
@@ -74,20 +89,21 @@ private:
    bool triggerFired(const string& triggerWildCard, const TriggerResults& triggerResults);
    unsigned int findTrigger(const string& triggerWildCard);
    
+   InputTag srcCorrJets_;
+
+   ofstream fileOutput_;
+   
+
+   HLTConfigProvider hltConfig_;
+   InputTag hltInputTag_;
+   string outputFilename_;
+   InputTag rhoTag_;
    InputTag PFCandidateInputTag_;
    InputTag AK5PFInputTag_;
    InputTag AK7PFInputTag_;
    
-   InputTag rhoTag_;
+   InputTag stuffInputTag_;
    
-   InputTag srcCorrJets_;
-
-   ofstream fileOutput_;
-   string outputFilename_;
-
-   HLTConfigProvider hltConfig_;
-   
-
    int runNum;
    int eventNum;
 
@@ -98,12 +114,12 @@ private:
    double energy;
    double mass;
    
-   InputTag hltInputTag_;
-
    int eventSerialNumber_;
    
    FactorizedJetCorrector *AK5JetCorrector_;
    FactorizedJetCorrector *AK7JetCorrector_;
+   
+   std::vector<std::string> filenames_;
 };
 
 
@@ -115,9 +131,10 @@ PFCandidateProducer::PFCandidateProducer(const ParameterSet& iConfig)
   rhoTag_(iConfig.getParameter<edm::InputTag>("rho")),
   PFCandidateInputTag_(iConfig.getParameter<InputTag>("PFCandidateInputTag")),
   AK5PFInputTag_(iConfig.getParameter<edm::InputTag>("AK5PFInputTag")),
-  AK7PFInputTag_(iConfig.getParameter<edm::InputTag>("AK7PFInputTag")) 
+  AK7PFInputTag_(iConfig.getParameter<edm::InputTag>("AK7PFInputTag"))
 {
   fileOutput_.open(outputFilename_.c_str());
+
 }
 
 
@@ -126,10 +143,10 @@ PFCandidateProducer::~PFCandidateProducer() {
 }
 
 void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
-   
+
    runNum = iEvent.id().run();
    eventNum = iEvent.id().event();
-   
+      
    fileOutput_ << "BeginEvent Run " << runNum << " Event " << eventNum << endl;
    
    Handle<reco::PFCandidateCollection> PFCollection;
@@ -159,6 +176,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
     return;
    }
    
+
    
    // Setup things for JEC factors.
    
@@ -186,26 +204,36 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
    BackgroundEstimator bckg = BackgroundEstimator(clust_seq, range);
    
    double rho = bckg.median_rho();
+   
  
    // Record trigger information first.
-
-   const vector<string> triggerNames = hltConfig_.triggerNames();
-  string triggers[7] = {"HLT_L1Jet6U", "HLT_L1Jet10U", "HLT_Jet15U", "HLT_Jet30U", "HLT_Jet50U", "HLT_Jet70U", "HLT_Jet100U"}; // Only these trigger info will be stored.
-  vector<string> triggersThatMatter(triggers, triggers + sizeof triggers / sizeof triggers[0]);
+  const vector<string> triggerNames = hltConfig_.triggerNames();
+  //string triggers[7] = {"HLT_L1Jet6U", "HLT_L1Jet10U", "HLT_Jet15U", "HLT_Jet30U", "HLT_Jet50U", "HLT_Jet70U", "HLT_Jet100U"}; // Only these trigger info will be stored.
+  //vector<string> triggersThatMatter(triggers, triggers + sizeof triggers / sizeof triggers[0]);
+  
+  vector<string> triggersThatMatter = triggerNames;
+  
   for (unsigned int i = 0; i < triggersThatMatter.size(); i++) {
     if (i == 0)
-       fileOutput_ << "# Trig                         Name  Prescale_1  Prescale_2  Fired?" << endl;  
+       fileOutput_ << "# Trig                                       Name  Prescale_1  Prescale_2  Fired?" << endl;  
        
     string name = triggersThatMatter[i];
-    pair<int, int> prescale = hltConfig_.prescaleValues(iEvent, iSetup, name);
-    bool fired = triggerFired(name, ( * trigResults));
     
-    fileOutput_ << "  Trig" 
-        << setw(29) <<  name 
-        << setw(12) << prescale.first 
-        << setw(12) << prescale.second 
-        << setw(8) << fired
-        << endl;
+    // Only include triggers related to the Jet dataset.
+        
+    size_t found = name.find("Jet");
+    
+    if (found != string::npos) { 
+	pair<int, int> prescale = hltConfig_.prescaleValues(iEvent, iSetup, name);
+	bool fired = triggerFired(name, ( * trigResults));
+	    
+	fileOutput_ << "  Trig" 
+		    << setw(43) <<  name 
+		    << setw(12) << prescale.first 
+		    << setw(12) << prescale.second 
+		    << setw(8) << fired
+        	    << endl;
+      }
    }
    
 
@@ -213,7 +241,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
   
   for(reco::PFJetCollection::const_iterator it = AK5Collection->begin(), end = AK5Collection->end(); it != end; it++) {    
     if (it == AK5Collection->begin())
-       fileOutput_ << "# AK5" << "          px          py          pz      energy        mass          jec" << endl;  
+       fileOutput_ << "# AK5" << "            px            py            pz        energy          mass           jec" << endl;
     
     px = it->px();
     py = it->py();
@@ -231,12 +259,12 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
     double correction = AK5JetCorrector_->getCorrection();
     
     fileOutput_ << "  AK5"
-        << setw(12) << fixed << setprecision(5) << px
-        << setw(12) << fixed << setprecision(5) << py
-        << setw(12) << fixed << setprecision(5) << pz
-        << setw(12) << fixed << setprecision(5) << energy
-        << setw(12) << fixed << setprecision(5) << mass
-        << setw(12) << fixed << setprecision(5) << correction        
+        << setw(14) << fixed << setprecision(8) << px
+        << setw(14) << fixed << setprecision(8) << py
+        << setw(14) << fixed << setprecision(8) << pz
+        << setw(14) << fixed << setprecision(8) << energy
+        << setw(14) << fixed << setprecision(8) << mass
+        << setw(14) << fixed << setprecision(8) << correction        
         << endl;
   }
   
@@ -244,7 +272,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
   
   for(reco::PFJetCollection::const_iterator it = AK7Collection->begin(), end = AK7Collection->end(); it != end; it++) {    
     if (it == AK7Collection->begin())
-       fileOutput_ << "# AK7" << "          px          py          pz      energy        mass          jec" << endl;  
+       fileOutput_ << "# AK7" << "            px            py            pz        energy          mass           jec" << endl;
     
     px = it->px();
     py = it->py();
@@ -262,19 +290,19 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
     double correction = AK7JetCorrector_->getCorrection();
     
     fileOutput_ << "  AK7"
-        << setw(12) << fixed << setprecision(5) << px
-        << setw(12) << fixed << setprecision(5) << py
-        << setw(12) << fixed << setprecision(5) << pz
-        << setw(12) << fixed << setprecision(5) << energy
-        << setw(12) << fixed << setprecision(5) << mass
-        << setw(12) << fixed << setprecision(5) << correction        
+        << setw(14) << fixed << setprecision(8) << px
+        << setw(14) << fixed << setprecision(8) << py
+        << setw(14) << fixed << setprecision(8) << pz
+        << setw(14) << fixed << setprecision(8) << energy
+        << setw(14) << fixed << setprecision(8) << mass
+        << setw(14) << fixed << setprecision(8) << correction       
         << endl;
   }
   
   // Get PFCandidates.
   for(reco::PFCandidateCollection::const_iterator it = PFCollection->begin(), end = PFCollection->end(); it != end; it++) {
     if (it == PFCollection->begin())
-       fileOutput_ << "# PFC" << "          px          py          pz      energy        mass   pdgId" << endl;  
+       fileOutput_ << "# PFC" << "            px            py            pz        energy          mass   pdgId" << endl;  
     
     particleType = (int) (*it).particleId();
     px = it->px();
@@ -286,11 +314,11 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
     
     int pdgId = it->pdgId();
     fileOutput_ << "  PFC"
-        << setw(12) << fixed << setprecision(5) << px
-        << setw(12) << fixed << setprecision(5) << py
-        << setw(12) << fixed << setprecision(5) << pz
-        << setw(12) << fixed << setprecision(5) << energy
-        << setw(12) << fixed << setprecision(5) << mass
+        << setw(14) << fixed << setprecision(8) << px
+        << setw(14) << fixed << setprecision(8) << py
+        << setw(14) << fixed << setprecision(8) << pz
+        << setw(14) << fixed << setprecision(8) << energy
+        << setw(14) << fixed << setprecision(8) << mass
         << setw(8) << noshowpos << pdgId
         << endl;
    }
