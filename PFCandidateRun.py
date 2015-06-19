@@ -22,7 +22,7 @@ process.PFCandidateProducer = cms.EDProducer("PFCandidateProducer",
 					rho = cms.InputTag("kt6PFJets","rho"),
 					PFCandidateInputTag = cms.InputTag("particleFlow"),
 					AK5PFInputTag = cms.InputTag("ak5PFJets"),
-					outputFilename = cms.string("CMS_JetSample.mod"),
+					outputBasePath = cms.string("/media/sf_virtual_machine/CMS/MOD/"),
 					mapFilename = cms.string("map.mod")
 				)
 

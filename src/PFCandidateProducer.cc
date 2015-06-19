@@ -91,12 +91,11 @@ private:
    
    InputTag srcCorrJets_;
 
-   ofstream fileOutput_;
    
 
    HLTConfigProvider hltConfig_;
    InputTag hltInputTag_;
-   string outputFilename_;
+   string outputBasePath_;
    InputTag rhoTag_;
    InputTag PFCandidateInputTag_;
    InputTag AK5PFInputTag_;
@@ -130,16 +129,13 @@ private:
 PFCandidateProducer::PFCandidateProducer(const ParameterSet& iConfig)
 : hltConfig_(),
   hltInputTag_("TriggerResults","","HLT"),
-  outputFilename_(iConfig.getParameter<string>("outputFilename")),
+  outputBasePath_(iConfig.getParameter<string>("outputBasePath")),
   rhoTag_(iConfig.getParameter<edm::InputTag>("rho")),
   PFCandidateInputTag_(iConfig.getParameter<InputTag>("PFCandidateInputTag")),
   AK5PFInputTag_(iConfig.getParameter<edm::InputTag>("AK5PFInputTag")),
   lumiSummaryLabel_(iConfig.getUntrackedParameter<edm::InputTag>("LumiSummaryLabel", InputTag("lumiProducer")))
 {
-  //iConfig.getParameter<string>("mapFilename").c_str()
-  fileOutput_.open(outputFilename_.c_str());
-  mapFile_.open("map.mod");
-  
+  mapFile_.open(iConfig.getParameter<string>("mapFilename").c_str()); 
   matchCount_ = 0;
 }
 
@@ -161,9 +157,13 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
    runNum = iEvent.id().run();
    eventNum = iEvent.id().event();
    
+   string outputFilename;
+   ofstream fileOutput_;
    if ((fileRunNum == runNum) && (fileEventNum == eventNum)) {
    	matchCount_++;
    	cout << matchCount_ << endl;
+   	outputFilename = outputBasePath_ + directory + "/" + filename + ".mod";
+   	fileOutput_.open(outputFilename.c_str(), ios::out | ios::app );
    }
    
    // Luminosity Block Begins
@@ -318,7 +318,8 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
   
    eventSerialNumber_++;
    fileOutput_ << "EndEvent" << endl;
-  
+   
+   fileOutput_.close();
 }
 
 void PFCandidateProducer::beginJob() {
@@ -347,10 +348,11 @@ void PFCandidateProducer::beginJob() {
    
    std::cout << "Processing PFCandidates." << std::endl;
    
+   
 }
 
 void PFCandidateProducer::endJob() {
-   fileOutput_.close();
+   
 }
 
 void PFCandidateProducer::beginRun(edm::Run & iRun, edm::EventSetup const & iSetup){
