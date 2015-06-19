@@ -1,10 +1,5 @@
 import FWCore.ParameterSet.Config as cms
 import FWCore.Utilities.FileUtils as FileUtils
-import FWCore.PythonUtilities.LumiList as LumiList 
-
-process = cms.Process("myprocess")
-process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
-process.GlobalTag.globaltag = 'GR_R_42_V25::All'
 
 source = "local" # or "remote"
 
@@ -19,23 +14,18 @@ mylist = FileUtils.loadListFromFile (indices_file + '0_file_index.txt')
 
 readFiles = cms.untracked.vstring( *mylist)
 
+process = cms.Process("myprocess")
 process.source = cms.Source ("PoolSource", fileNames=readFiles)
 
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))
-
-# Process only those luminosity sections in which runs are considered good and should be processed.
-goodJSON = 'file_paths/Cert_136033-149442_7TeV_Apr21ReReco_Collisions10_JSON_v2.txt' 
-myLumis = LumiList.LumiList(filename = goodJSON).getCMSSWString().split(',') 
-process.source.lumisToProcess = cms.untracked.VLuminosityBlockRange() 
-process.source.lumisToProcess.extend(myLumis)
 
 process.PFCandidateProducer = cms.EDProducer("PFCandidateProducer",
-                                             rho = cms.InputTag("kt6PFJets","rho"),
-                                             PFCandidateInputTag = cms.InputTag("particleFlow"),                            
-                                             AK5PFInputTag = cms.InputTag("ak5PFJets"),
-                                             AK7PFInputTag = cms.InputTag("ak7PFJets"),
-                                             outputFilename = cms.string("CMS_JetSample.dat"),
-                                             )
+					rho = cms.InputTag("kt6PFJets","rho"),
+					PFCandidateInputTag = cms.InputTag("particleFlow"),
+					AK5PFInputTag = cms.InputTag("ak5PFJets"),
+					outputFilename = cms.string("CMS_JetSample.mod"),
+					mapFilename = cms.string("map.mod")
+				)
 
+				
 process.producer = cms.Path(process.PFCandidateProducer)
-process.schedule = cms.Schedule(process.producer)
+process.schedule = cms.Schedule( process.producer )

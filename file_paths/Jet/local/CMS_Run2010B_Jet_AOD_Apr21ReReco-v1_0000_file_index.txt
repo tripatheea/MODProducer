@@ -1,2 +1,6 @@
-file://data/ROOT/6ADEA1BB-ED70-E011-A888-0025901D4C46.root
-file://data/ROOT/6CD3F555-EF70-E011-B0C0-003048D439A8.root
+file:///media/sf_virtual_machine/CMS/AOD/0002/6E9DAA2C-7471-E011-8137-003048F0E426.root
+file:///media/sf_virtual_machine/CMS/AOD/0002/6ADEA1BB-ED70-E011-A888-0025901D4C46.root
+file:///media/sf_virtual_machine/CMS/AOD/0002/6CD3F555-EF70-E011-B0C0-003048D439A8.root
+file:///media/sf_virtual_machine/CMS/AOD/0000/00052C5A-EF70-E011-B43F-00266CF32A00.root
+file:///media/sf_virtual_machine/CMS/AOD/0000/0017CF6D-EF70-E011-9682-003048C691DC.root
+file:///media/sf_virtual_machine/CMS/AOD/0000/00097BA6-F570-E011-905F-002481E94BFE.root
