@@ -4,14 +4,10 @@ import sys
 
 
 data_file_link = sys.argv[2]
-local_or_remote = sys.argv[3]
+registry_file_path = sys.argv[3]
 
-if local_or_remote == "remote":
-	file_directory = data_file_link[75:79]
-	file_name = data_file_link[80:len(data_file_link)]
-else:
-	file_directory = data_file_link[41:45]
-	file_name = data_file_link[46:len(data_file_link)]
+file_directory = data_file_link[41:45]
+file_name = data_file_link[46:len(data_file_link)]
 
 process = cms.Process("filenameMapProducer")
 
@@ -22,7 +18,7 @@ process.source = cms.Source ("PoolSource", fileNames=cms.untracked.vstring( data
 process.filenameMapProducer = cms.EDProducer("filenameMapProducer", 
 								filename = cms.string(file_name), 
 								file_dir = cms.string(file_directory), 
-								outputFile = cms.string("map.mod") 
+								outputFile = cms.string(registry_file_path) 
 						)
 
 
