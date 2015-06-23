@@ -1,31 +1,40 @@
 import FWCore.ParameterSet.Config as cms
 import FWCore.Utilities.FileUtils as FileUtils
+import sys
+import os
+from subprocess import call
 
-source = "local" # or "remote"
+input_dir = sys.argv[2]
+output_base_path = sys.argv[3]
+map_file_path = sys.argv[4]
 
-# Need to split into multiple separate files because there's a limit of 255 values for a set of parameters and thereby for the indices files too.
-indices_file = "file_paths/Jet/" + source + "/CMS_Run2010B_Jet_AOD_Apr21ReReco-v1_000"	# Should append "_" + indexNumber + ".txt" to this.
+files_to_process = []
+for file in os.listdir(input_dir):
+	if file.endswith("root"):
+		files_to_process.append("file://" + input_dir + "/" + file)
+		
+		# Delete any output MOD files that might already be there.
+		output_file = input_dir.replace("AOD", "MOD") + file + ".mod"
+		if os.path.exists(output_file):
+			call(["rm", output_file])
 
-mylist = FileUtils.loadListFromFile (indices_file + '0_file_index.txt')
-#mylist = FileUtils.loadListFromFile (indices_file + '1_file_index.txt')
-#mylist.extend(FileUtils.loadListFromFile(indices_file + '2_file_index.txt') )
-#mylist.extend(FileUtils.loadListFromFile(indices_file + '3_file_index.txt') )
-#mylist.extend(FileUtils.loadListFromFile(indices_file + '4_file_index.txt') )
+# This sorting is crucial.
+files_to_process = sorted(files_to_process)
 
-readFiles = cms.untracked.vstring( *mylist)
+readFiles = cms.untracked.vstring()
+readFiles.extend(files_to_process)
 
-process = cms.Process("myprocess")
+process = cms.Process("MITCMSOpenData")
 process.source = cms.Source ("PoolSource", fileNames=readFiles)
-
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))
 
 process.PFCandidateProducer = cms.EDProducer("PFCandidateProducer",
 					rho = cms.InputTag("kt6PFJets","rho"),
 					PFCandidateInputTag = cms.InputTag("particleFlow"),
 					AK5PFInputTag = cms.InputTag("ak5PFJets"),
-					outputBasePath = cms.string("/media/sf_virtual_machine/CMS/MOD/"),
-					mapFilename = cms.string("map.mod")
+					outputBasePath = cms.string(output_base_path),
+					mapFilename = cms.string(map_file_path)
 				)
-
 				
 process.producer = cms.Path(process.PFCandidateProducer)
 process.schedule = cms.Schedule( process.producer )

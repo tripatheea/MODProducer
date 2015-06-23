@@ -7,6 +7,8 @@
 #include <iomanip>
 #include <limits>
 #include <cmath>
+#include <algorithm>
+#include <sys/time.h>
 
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/EDProducer.h"
@@ -91,7 +93,6 @@ private:
    
    InputTag srcCorrJets_;
 
-   
 
    HLTConfigProvider hltConfig_;
    InputTag hltInputTag_;
@@ -104,6 +105,10 @@ private:
    
    int runNum;
    int eventNum;
+   edm::LuminosityBlockNumber_t lumiBlockNumber_;
+   
+   long int startTime_;
+   long int endTime_;
 
    int particleType;
    double px;
@@ -113,7 +118,7 @@ private:
    double mass;
    double area;
    
-   int eventSerialNumber_;
+   long int eventSerialNumber_;
    
    FactorizedJetCorrector *AK5JetCorrector_;
    
@@ -122,6 +127,13 @@ private:
    ifstream mapFile_;
    
    int matchCount_;
+   
+   ifstream mapNumbersFile_;
+   
+   ofstream fileOutput_;
+   
+   string outputFilename_;
+   string lastOutputFilename_;
 };
 
 
@@ -136,7 +148,11 @@ PFCandidateProducer::PFCandidateProducer(const ParameterSet& iConfig)
   lumiSummaryLabel_(iConfig.getUntrackedParameter<edm::InputTag>("LumiSummaryLabel", InputTag("lumiProducer")))
 {
   mapFile_.open(iConfig.getParameter<string>("mapFilename").c_str()); 
+  
   matchCount_ = 0;
+ 
+  outputFilename_ = "";
+  lastOutputFilename_ = "";
 }
 
 
@@ -156,32 +172,33 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
 
    runNum = iEvent.id().run();
    eventNum = iEvent.id().event();
+   lumiBlockNumber_ = iEvent.luminosityBlock();
    
-   string outputFilename;
-   ofstream fileOutput_;
    if ((fileRunNum == runNum) && (fileEventNum == eventNum)) {
    	matchCount_++;
-   	cout << matchCount_ << endl;
-   	outputFilename = outputBasePath_ + directory + "/" + filename + ".mod";
-   	fileOutput_.open(outputFilename.c_str(), ios::out | ios::app );
+   	outputFilename_ = outputBasePath_ + directory + "/" + filename + ".mod";
+	if ((eventSerialNumber_ == 1) || (outputFilename_ != lastOutputFilename_)) {
+	   fileOutput_.open(outputFilename_.c_str(), ios::out | ios::app );
+	   lastOutputFilename_ = outputFilename_;
+	}	
    }
    
+   
+   fileOutput_ << "BeginEvent Run " << runNum << " Event " << eventNum << " LumiSection " << lumiBlockNumber_;
+   
+   
    // Luminosity Block Begins
-   
-   
    LuminosityBlock const& iLumi = iEvent.getLuminosityBlock();
    Handle<LumiSummary> lumi;
    iLumi.getByLabel(lumiSummaryLabel_, lumi);
    
-   if (lumi.isValid()) {
-      //cout << "average inst lumi: " << lumi->avgInsDelLumi() << endl;
-      //cout << "delivered luminosity integrated over LS: " << lumi->intgDelLumi() << endl;      
-   }
-   
+   if (lumi.isValid())
+      fileOutput_ << " AvgInstLumi " << lumi->avgInsDelLumi();
    // Luminosity Block Ends
    
    
-   fileOutput_ << "BeginEvent Run " << runNum << " Event " << eventNum << endl;
+   fileOutput_ << " EventSerialNumber " << eventSerialNumber_ << endl;
+   
    
    Handle<reco::PFCandidateCollection> PFCollection;
    iEvent.getByLabel(PFCandidateInputTag_, PFCollection);
@@ -202,6 +219,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
     return;
    }
    
+
 
    
    // Setup things for JEC factors.
@@ -236,7 +254,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
    const vector<string> triggerNames = hltConfig_.triggerNames();
    
    vector<string> triggersThatMatter = triggerNames;
-   /*
+   
    for (unsigned int i = 0; i < triggersThatMatter.size(); i++) {
       if (i == 0)
          fileOutput_ << "# Trig Name Prescale_1 Prescale_2 Fired?" << endl;
@@ -257,7 +275,10 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
                      << endl;
          }
    }
-   */
+   
+
+ 
+  
 
   // Get AK5 Jets.
   
@@ -273,12 +294,14 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
     mass = (abs(mass) <= std::numeric_limits<double>::epsilon()) ? +0.00 : mass;
     area = it->jetArea();
     
-    // JEC Factor.
+    // JEC Factor
+    
     AK5JetCorrector_->setJetEta(it->eta());
     AK5JetCorrector_->setJetPt(it->pt());
     AK5JetCorrector_->setJetA(it->jetArea());
     AK5JetCorrector_->setRho(rho);
-
+    
+        
     double correction = AK5JetCorrector_->getCorrection();
     
     fileOutput_ << "  AK5"
@@ -315,15 +338,22 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
         << setw(8) << noshowpos << pdgId
         << endl;
    }
-  
-   eventSerialNumber_++;
+   
+   
    fileOutput_ << "EndEvent" << endl;
    
-   fileOutput_.close();
+   	
+   eventSerialNumber_++;
+   
 }
 
 void PFCandidateProducer::beginJob() {
    eventSerialNumber_ = 1;
+   
+   // Start timer.
+   struct timeval tp;
+   gettimeofday(&tp, NULL);
+   startTime_ = tp.tv_sec * 1000 + tp.tv_usec / 1000;
    
    // Figure out the JetCorrector objects for AK5 corrections.
    
@@ -347,12 +377,15 @@ void PFCandidateProducer::beginJob() {
    AK5JetCorrector_ = new FactorizedJetCorrector(vParAK5);
    
    std::cout << "Processing PFCandidates." << std::endl;
-   
-   
 }
 
 void PFCandidateProducer::endJob() {
+   struct timeval tp2;
+   gettimeofday(&tp2, NULL);
+   long int endTime_ = tp2.tv_sec * 1000 + tp2.tv_usec / 1000;   
+   double elapsed_milliseconds = endTime_ - startTime_;
    
+   cout << endl << endl << endl << "Finished processing " << (eventSerialNumber_ - 1) << " events in " << elapsed_milliseconds / (60*1000) << " minutes!" << endl;
 }
 
 void PFCandidateProducer::beginRun(edm::Run & iRun, edm::EventSetup const & iSetup){

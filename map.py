@@ -10,11 +10,9 @@ registry_file_path = sys.argv[2]
 def create_maps(path):
 	files_to_process = []
 	for f1 in os.listdir(path):
-		deeper_path = path + f1
-		for f2 in os.listdir(deeper_path):	
-			if (f2.endswith("root")):
-				root_file = "file://" + deeper_path + "/" + f2
-				files_to_process.append(root_file)
+		if (f1.endswith("root")):
+			root_file = "file://" + deeper_path + "/" + f1
+			files_to_process.append(root_file)
 	
 	for root_file in sorted(files_to_process):			
 		call(["cmsRun", "filenameRun.py", root_file, registry_file_path])
@@ -31,7 +29,6 @@ def create_numbers_registry(registry_file_path):
 			last_root_filename = root_filename
 	
 		events_in_root_files[last_root_filename] += 1
-			
 	
 	registry_path_list = registry_file_path.split("/")
 	numbers_path = ""
@@ -43,15 +40,21 @@ def create_numbers_registry(registry_file_path):
 		
 	numbers_path += registry_path_list[len(registry_path_list) - 1].split(".")[0] + "_numbers.txt"
 	
-	f = open(numbers_path,'w')
+	root_files = []
 	for root_filename in events_in_root_files:
+		root_files.append(root_filename)
+	
+	root_files = sorted(root_files)
+	
+	f = open(numbers_path,'w')
+	for root_filename in root_files:
 		f.write(str(events_in_root_files[root_filename]) + "\n")
 	f.close() 
 
 
 start = time()
 
-create_maps(path)
+#create_maps(path)
 
 # Next, take the registry you just created and create another file with info on how many events per file there are going to be.
 create_numbers_registry(registry_file_path)
