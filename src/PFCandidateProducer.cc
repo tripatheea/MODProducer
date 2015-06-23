@@ -177,8 +177,6 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
    if ((fileRunNum == runNum) && (fileEventNum == eventNum)) {
    	matchCount_++;
    	
-   	cout << matchCount_ << endl;
-   	
    	outputFilename_ = outputBasePath_ + directory + "/" + filename + ".mod";
 	
 	if ((eventSerialNumber_ == 1) || (outputFilename_ != lastOutputFilename_)) {
@@ -189,7 +187,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
    }
    
    
-   /*
+   
    
    fileOutput_ << "BeginEvent Run " << runNum << " Event " << eventNum << " LumiSection " << lumiBlockNumber_;
    
@@ -352,7 +350,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
    
    
    fileOutput_ << "EndEvent" << endl;
-   */
+   
    	
    eventSerialNumber_++;
    
