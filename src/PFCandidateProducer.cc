@@ -124,6 +124,7 @@ private:
    
    std::vector<std::string> filenames_;
    
+   string mapFilename_;
    ifstream mapFile_;
    
    int matchCount_;
@@ -134,6 +135,10 @@ private:
    
    string outputFilename_;
    string lastOutputFilename_;
+   
+   bool processFromTheBeginning_;
+   
+   string inputFile_;
 };
 
 
@@ -147,12 +152,18 @@ PFCandidateProducer::PFCandidateProducer(const ParameterSet& iConfig)
   AK5PFInputTag_(iConfig.getParameter<edm::InputTag>("AK5PFInputTag")),
   lumiSummaryLabel_(iConfig.getUntrackedParameter<edm::InputTag>("LumiSummaryLabel", InputTag("lumiProducer")))
 {
-  mapFile_.open(iConfig.getParameter<string>("mapFilename").c_str()); 
+  mapFilename_ = iConfig.getParameter<string>("mapFilename");
+  mapFile_.open(mapFilename_.c_str()); 
   
   matchCount_ = 0;
  
   outputFilename_ = "";
   lastOutputFilename_ = "";
+  
+  processFromTheBeginning_ = iConfig.getParameter<bool>("processFromTheBeginning");
+  
+  if ( ! processFromTheBeginning_)
+	  inputFile_ = iConfig.getParameter<string>("inputFile");
 }
 
 
@@ -271,6 +282,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
       size_t found = name.find("Jet");
       
       if (found != string::npos) {
+         cout << name << endl;
          pair<int, int> prescale = hltConfig_.prescaleValues(iEvent, iSetup, name);
          bool fired = triggerFired(name, ( * trigResults));
          fileOutput_ << " Trig"
@@ -279,6 +291,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
                      << setw(12) << prescale.second
                      << setw(8) << fired
                      << endl;
+          cout << endl << endl;
          }
    }
    
@@ -386,6 +399,37 @@ void PFCandidateProducer::beginJob() {
    AK5JetCorrector_ = new FactorizedJetCorrector(vParAK5);
    
    std::cout << "Processing PFCandidates." << std::endl;
+   
+   // Map thingy.
+   
+   if ( ! processFromTheBeginning_) {
+   	string line, directory;
+   	int fileEventNum, fileRunNum;
+   	int linesDown = 1;
+   
+	ifstream registryFile(mapFilename_.c_str());
+   
+   	string rootFilename = "";
+   	
+   	while((rootFilename != inputFile_)) {
+   		
+		getline(registryFile, line);
+		istringstream iss(line);
+   		iss >> directory >> rootFilename >> fileEventNum >> fileRunNum;
+   		
+   		linesDown++;
+	}
+	
+	for(int i = 0; i < linesDown - 2; i++) {
+		getline(mapFile_, line);
+		istringstream iss(line);
+		iss >> directory >> rootFilename >> fileEventNum >> fileRunNum;
+	}
+	
+   }
+   
+   
+   
 }
 
 void PFCandidateProducer::endJob() {

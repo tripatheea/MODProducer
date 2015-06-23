@@ -11,7 +11,7 @@ def create_maps(path):
 	files_to_process = []
 	for f1 in os.listdir(path):
 		if (f1.endswith("root")):
-			root_file = "file://" + path + "/" + f1
+			root_file = "file://" + path + f1
 			files_to_process.append(root_file)
 	
 	for root_file in sorted(files_to_process):			

@@ -43,3 +43,17 @@ and input the commands as explained below.
 which will produce the data files-  `CMS_JetSample.dat` and `CMS_MinBiasSample.dat`.
 
 Enjoy!
+
+##Utilities
+
+```
+cmsRun PFCandidateRun.py /media/sf_virtual_machine/CMS/AOD/0000/0611BEF5-0E71-E011-913B-003048D3739A.root /media/sf_virtual_machine/CMS/MOD/ /media/sf_virtual_machine/CMS/registry/0.txt 0
+```
+
+```
+python map.py /media/sf_virtual_machine/CMS/AOD/0000/ /media/sf_virtual_machine/CMS/registry/0.txt
+```
+
+```
+python download.py ../file_paths/Jet/remote/CMS_Run2010B_Jet_AOD_Apr21ReReco-v1_0000_file_index.txt  /media/sf_virtual_machine/CMS/AOD/
+```

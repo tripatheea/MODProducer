@@ -8,17 +8,30 @@ from subprocess import call
 input_dir = sys.argv[2]
 output_base_path = sys.argv[3]
 map_file_path = sys.argv[4]
+process_from_the_beginning = (sys.argv[5] == 1)
+
+
 
 files_to_process = []
-for file in os.listdir(input_dir):
-	if file.endswith("root"):
-		files_to_process.append("file://" + input_dir + "/" + file)
-		
-		# Delete any output MOD files that might already be there.
-		output_file = input_dir.replace("AOD", "MOD") + file + ".mod"
-		if os.path.exists(output_file):
-			call(["rm", output_file])
 
+if os.path.isdir(input_dir):
+	for file in os.listdir(input_dir):
+		if file.endswith("root"):
+			files_to_process.append("file://" + input_dir + "/" + file)
+			
+			is_input_directory = True
+			
+			# Delete any output MOD files that might already be there.
+			'''
+			output_file = input_dir.replace("AOD", "MOD") + file + ".mod"
+			if os.path.exists(output_file):
+				call(["rm", output_file])
+			'''
+else:
+	files_to_process.append("file://" + input_dir)
+	segments = files_to_process[0].split("/")
+	input_file = segments[len(segments) - 1:len(segments)][0]
+	
 # This sorting is crucial.
 files_to_process = sorted(files_to_process)
 
@@ -45,7 +58,9 @@ process.PFCandidateProducer = cms.EDProducer("PFCandidateProducer",
 					PFCandidateInputTag = cms.InputTag("particleFlow"),
 					AK5PFInputTag = cms.InputTag("ak5PFJets"),
 					outputBasePath = cms.string(output_base_path),
-					mapFilename = cms.string(map_file_path)
+					mapFilename = cms.string(map_file_path),
+					processFromTheBeginning = cms.bool(process_from_the_beginning),
+					inputFile = cms.string(input_file)
 				)
 				
 process.producer = cms.Path(process.PFCandidateProducer)
