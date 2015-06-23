@@ -11,7 +11,7 @@ def create_maps(path):
 	files_to_process = []
 	for f1 in os.listdir(path):
 		if (f1.endswith("root")):
-			root_file = "file://" + deeper_path + "/" + f1
+			root_file = "file://" + path + "/" + f1
 			files_to_process.append(root_file)
 	
 	for root_file in sorted(files_to_process):			
@@ -54,7 +54,7 @@ def create_numbers_registry(registry_file_path):
 
 start = time()
 
-#create_maps(path)
+create_maps(path)
 
 # Next, take the registry you just created and create another file with info on how many events per file there are going to be.
 create_numbers_registry(registry_file_path)

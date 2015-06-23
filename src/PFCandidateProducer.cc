@@ -177,6 +177,8 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
    if ((fileRunNum == runNum) && (fileEventNum == eventNum)) {
    	matchCount_++;
    	
+   	cout << matchCount_ << endl;
+   	
    	outputFilename_ = outputBasePath_ + directory + "/" + filename + ".mod";
 	
 	if ((eventSerialNumber_ == 1) || (outputFilename_ != lastOutputFilename_)) {
@@ -184,9 +186,10 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
 	   fileOutput_.open(outputFilename_.c_str(), ios::out | ios::app );
 	   lastOutputFilename_ = outputFilename_;
 	}
-		
    }
    
+   
+   /*
    
    fileOutput_ << "BeginEvent Run " << runNum << " Event " << eventNum << " LumiSection " << lumiBlockNumber_;
    
@@ -198,6 +201,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
    
    if (lumi.isValid())
       fileOutput_ << " AvgInstLumi " << lumi->avgInsDelLumi();
+   
    // Luminosity Block Ends
    
    
@@ -253,7 +257,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
    
    double rho = bckg.median_rho();
    
- 
+   
    // Record trigger information first.
    const vector<string> triggerNames = hltConfig_.triggerNames();
    
@@ -288,7 +292,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
   
   for(reco::PFJetCollection::const_iterator it = AK5Collection->begin(), end = AK5Collection->end(); it != end; it++) {    
     if (it == AK5Collection->begin())
-       fileOutput_ << "# AK5" << "            px            py            pz        energy          mass           jec          area" << endl;
+       fileOutput_ << "# AK5" << "              px              py              pz          energy            mass             jec            area" << endl;
     
     px = it->px();
     py = it->py();
@@ -309,13 +313,13 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
     double correction = AK5JetCorrector_->getCorrection();
     
     fileOutput_ << "  AK5"
-        << setw(14) << fixed << setprecision(8) << px
-        << setw(14) << fixed << setprecision(8) << py
-        << setw(14) << fixed << setprecision(8) << pz
-        << setw(14) << fixed << setprecision(8) << energy
-        << setw(14) << fixed << setprecision(8) << mass
-        << setw(14) << fixed << setprecision(8) << correction  
-        << setw(14) << fixed << setprecision(8) << area       
+        << setw(16) << fixed << setprecision(8) << px
+        << setw(16) << fixed << setprecision(8) << py
+        << setw(16) << fixed << setprecision(8) << pz
+        << setw(16) << fixed << setprecision(8) << energy
+        << setw(16) << fixed << setprecision(8) << mass
+        << setw(16) << fixed << setprecision(8) << correction  
+        << setw(16) << fixed << setprecision(8) << area       
         << endl;
   }
   
@@ -325,7 +329,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
   // Get PFCandidates.
   for(reco::PFCandidateCollection::const_iterator it = PFCollection->begin(), end = PFCollection->end(); it != end; it++) {
     if (it == PFCollection->begin())
-       fileOutput_ << "# PFC" << "            px            py            pz        energy          mass   pdgId" << endl;  
+       fileOutput_ << "# PFC" << "              px              py              pz          energy            mass     pdgId" << endl;  
     
     particleType = (int) (*it).particleId();
     px = it->px();
@@ -337,18 +341,18 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
     
     int pdgId = it->pdgId();
     fileOutput_ << "  PFC"
-        << setw(14) << fixed << setprecision(8) << px
-        << setw(14) << fixed << setprecision(8) << py
-        << setw(14) << fixed << setprecision(8) << pz
-        << setw(14) << fixed << setprecision(8) << energy
-        << setw(14) << fixed << setprecision(8) << mass
-        << setw(8) << noshowpos << pdgId
+        << setw(16) << fixed << setprecision(8) << px
+        << setw(16) << fixed << setprecision(8) << py
+        << setw(16) << fixed << setprecision(8) << pz
+        << setw(16) << fixed << setprecision(8) << energy
+        << setw(16) << fixed << setprecision(8) << mass
+        << setw(10) << noshowpos << pdgId
         << endl;
    }
    
    
    fileOutput_ << "EndEvent" << endl;
-   
+   */
    	
    eventSerialNumber_++;
    
