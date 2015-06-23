@@ -176,11 +176,15 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
    
    if ((fileRunNum == runNum) && (fileEventNum == eventNum)) {
    	matchCount_++;
+   	
    	outputFilename_ = outputBasePath_ + directory + "/" + filename + ".mod";
+	
 	if ((eventSerialNumber_ == 1) || (outputFilename_ != lastOutputFilename_)) {
+	   fileOutput_.close();
 	   fileOutput_.open(outputFilename_.c_str(), ios::out | ios::app );
 	   lastOutputFilename_ = outputFilename_;
-	}	
+	}
+		
    }
    
    
@@ -257,7 +261,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
    
    for (unsigned int i = 0; i < triggersThatMatter.size(); i++) {
       if (i == 0)
-         fileOutput_ << "# Trig Name Prescale_1 Prescale_2 Fired?" << endl;
+         fileOutput_ << "# Trig                         Name  Prescale_1  Prescale_2  Fired?" << endl;
       
       string name = triggersThatMatter[i];
       
@@ -314,6 +318,9 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
         << setw(14) << fixed << setprecision(8) << area       
         << endl;
   }
+  
+  
+  
   
   // Get PFCandidates.
   for(reco::PFCandidateCollection::const_iterator it = PFCollection->begin(), end = PFCollection->end(); it != end; it++) {

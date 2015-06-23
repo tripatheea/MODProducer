@@ -38,7 +38,7 @@ myLumis = LumiList.LumiList(filename = goodJSON).getCMSSWString().split(',')
 process.source.lumisToProcess = cms.untracked.VLuminosityBlockRange()
 process.source.lumisToProcess.extend(myLumis)
 
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))
 
 process.PFCandidateProducer = cms.EDProducer("PFCandidateProducer",
 					rho = cms.InputTag("kt6PFJets","rho"),
