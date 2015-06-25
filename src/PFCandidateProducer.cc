@@ -60,6 +60,7 @@
 #include "FWCore/Framework/interface/LuminosityBlock.h"
 #include "DataFormats/Luminosity/interface/LumiSummary.h"
 
+#include "HLTrigger/HLTcore/interface/HLTConfigData.h"
 
 #include <fastjet/PseudoJet.hh>
 #include <fastjet/ClusterSequenceAreaBase.hh>
@@ -139,6 +140,7 @@ private:
    bool processFromTheBeginning_;
    
    string inputFile_;
+   
 };
 
 
@@ -164,6 +166,8 @@ PFCandidateProducer::PFCandidateProducer(const ParameterSet& iConfig)
   
   if ( ! processFromTheBeginning_)
 	  inputFile_ = iConfig.getParameter<string>("inputFile");
+	  
+  
 }
 
 
@@ -204,17 +208,15 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
    
    
    // Luminosity Block Begins
+   
    LuminosityBlock const& iLumi = iEvent.getLuminosityBlock();
    Handle<LumiSummary> lumi;
    iLumi.getByLabel(lumiSummaryLabel_, lumi);
    
    if (lumi.isValid())
-      fileOutput_ << " AvgInstLumi " << lumi->avgInsDelLumi();
+      fileOutput_ << " AvgInstLumi " << lumi->avgInsDelLumi() << endl;
    
    // Luminosity Block Ends
-   
-   
-   fileOutput_ << " EventSerialNumber " << eventSerialNumber_ << endl;
    
    
    Handle<reco::PFCandidateCollection> PFCollection;
@@ -266,51 +268,49 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
    
    double rho = bckg.median_rho();
    
-   
    // Record trigger information first.
-   const vector<string> triggerNames = hltConfig_.triggerNames();
    
-   vector<string> triggersThatMatter = triggerNames;
+   // Get all trigger names associated with the "Jet" dataset.
+   const vector<string> triggerNames = hltConfig_.datasetContent("Jet");
+  
+  
+  
+   const vector<string> stuff = hltConfig_.triggerNames();
    
-   for (unsigned int i = 0; i < triggersThatMatter.size(); i++) {
-      if (i == 0)
-         fileOutput_ << "# Trig                         Name  Prescale_1  Prescale_2  Fired?" << endl;
-      
-      string name = triggersThatMatter[i];
-      
-      // Only include triggers related to the Jet dataset.
-      size_t found = name.find("Jet");
-      
-      if (found != string::npos) {
-         cout << name << endl;
-         pair<int, int> prescale = hltConfig_.prescaleValues(iEvent, iSetup, name);
-         bool fired = triggerFired(name, ( * trigResults));
-         fileOutput_ << " Trig"
-                     << setw(43) << name
-                     << setw(12) << prescale.first
-                     << setw(12) << prescale.second
-                     << setw(8) << fired
-                     << endl;
-          cout << endl << endl;
-         }
+   for (unsigned i = 0; i < triggerNames.size(); i++) {
+   	cout << triggerNames[i] << endl;
    }
    
+   /*
+   for (unsigned i = 0; i < triggerNames.size(); i++) {
+      if (i == 0)
+         fileOutput_ << "# Trig                              Name  Prescale_1  Prescale_2  Fired?" << endl;
+      
+      string name = triggerNames[i];
+      
+      pair<int, int> prescale = hltConfig_.prescaleValues(iEvent, iSetup, name);
 
- 
-  
+      bool fired = triggerFired(name, ( * trigResults));
+
+      fileOutput_ << "  Trig"
+       	          << setw(34) << name
+	          << setw(12) << prescale.first
+	          << setw(12) << prescale.second
+                  << setw(8) << fired
+                  << endl;
+   }
+   */
 
   // Get AK5 Jets.
   
   for(reco::PFJetCollection::const_iterator it = AK5Collection->begin(), end = AK5Collection->end(); it != end; it++) {    
     if (it == AK5Collection->begin())
-       fileOutput_ << "# AK5" << "              px              py              pz          energy            mass             jec            area" << endl;
+       fileOutput_ << "# AK5" << "              px              py              pz          energy             jec            area" << endl;
     
     px = it->px();
     py = it->py();
     pz = it->pz();
     energy = it->energy();
-    mass = it->mass();
-    mass = (abs(mass) <= std::numeric_limits<double>::epsilon()) ? +0.00 : mass;
     area = it->jetArea();
     
     // JEC Factor
@@ -328,7 +328,6 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
         << setw(16) << fixed << setprecision(8) << py
         << setw(16) << fixed << setprecision(8) << pz
         << setw(16) << fixed << setprecision(8) << energy
-        << setw(16) << fixed << setprecision(8) << mass
         << setw(16) << fixed << setprecision(8) << correction  
         << setw(16) << fixed << setprecision(8) << area       
         << endl;
@@ -340,15 +339,13 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
   // Get PFCandidates.
   for(reco::PFCandidateCollection::const_iterator it = PFCollection->begin(), end = PFCollection->end(); it != end; it++) {
     if (it == PFCollection->begin())
-       fileOutput_ << "# PFC" << "              px              py              pz          energy            mass     pdgId" << endl;  
+       fileOutput_ << "# PFC" << "              px              py              pz          energy     pdgId" << endl;  
     
     particleType = (int) (*it).particleId();
     px = it->px();
     py = it->py();
     pz = it->pz();
     energy = it->energy();
-    mass = it->mass();
-    mass = (abs(mass) <= std::numeric_limits<double>::epsilon()) ? +0.00 : mass;
     
     int pdgId = it->pdgId();
     fileOutput_ << "  PFC"
@@ -356,7 +353,6 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
         << setw(16) << fixed << setprecision(8) << py
         << setw(16) << fixed << setprecision(8) << pz
         << setw(16) << fixed << setprecision(8) << energy
-        << setw(16) << fixed << setprecision(8) << mass
         << setw(10) << noshowpos << pdgId
         << endl;
    }
@@ -384,10 +380,10 @@ void PFCandidateProducer::beginJob() {
    
    // Create the JetCorrectorParameter objects, the order does not matter.
    // YYYY is the first part of the txt files: usually the global tag from which they are retrieved
-   JetCorrectorParameters *AK5ResJetPar = new JetCorrectorParameters("data/JEC/GR_R_41_V0_AK5PF_L2L3Residual.txt"); 
-   JetCorrectorParameters *AK5L3JetPar  = new JetCorrectorParameters("data/JEC/GR_R_41_V0_AK5PF_L3Absolute.txt");
-   JetCorrectorParameters *AK5L2JetPar  = new JetCorrectorParameters("data/JEC/GR_R_41_V0_AK5PF_L2Relative.txt");
-   JetCorrectorParameters *AK5L1JetPar  = new JetCorrectorParameters("data/JEC/GR_R_41_V0_AK5PF_L1FastJet.txt");
+   JetCorrectorParameters *AK5ResJetPar = new JetCorrectorParameters("data/JEC/GR_R_42_V25_AK5PF_L2L3Residual.txt"); 
+   JetCorrectorParameters *AK5L3JetPar  = new JetCorrectorParameters("data/JEC/GR_R_42_V25_AK5PF_L3Absolute.txt");
+   JetCorrectorParameters *AK5L2JetPar  = new JetCorrectorParameters("data/JEC/GR_R_42_V25_AK5PF_L2Relative.txt");
+   JetCorrectorParameters *AK5L1JetPar  = new JetCorrectorParameters("data/JEC/GR_R_42_V25_AK5PF_L1FastJet.txt");
    
    //  Load the JetCorrectorParameter objects into a vector, IMPORTANT: THE ORDER MATTERS HERE !!!! 
    vector<JetCorrectorParameters> vParAK5;

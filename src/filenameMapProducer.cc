@@ -52,7 +52,7 @@ filenameMapProducer::filenameMapProducer(const ParameterSet& iConfig)
   currentFileDir_(iConfig.getParameter<string>("file_dir")),
   outputFilename_(iConfig.getParameter<string>("outputFile"))
 {
-  fileOutput_.open(outputFilename_.c_str(), std::fstream::in | std::fstream::out | std::fstream::app);
+  fileOutput_.open(outputFilename_.c_str(), std::fstream::out | std::fstream::app);
 }
 
 
