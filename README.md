@@ -55,5 +55,5 @@ python map.py /media/sf_virtual_machine/CMS/AOD/0000/ /media/sf_virtual_machine/
 ```
 
 ```
-python download.py ../file_paths/Jet/remote/CMS_Run2010B_Jet_AOD_Apr21ReReco-v1_0000_file_index.txt  /media/sf_virtual_machine/CMS/AOD/
+python download.py ../file_paths/Jet/remote/CMS_Run2010B_Jet_AOD_Apr21ReReco-v1_0000_file_index.txt  /media/sf_virtual_machine/CMS/
 ```
