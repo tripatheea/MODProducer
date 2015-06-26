@@ -146,6 +146,9 @@ private:
    
    string inputFile_;
    
+   InputTag primaryVertices_;
+   string dataVersion_;
+   
 };
 
 
@@ -157,7 +160,9 @@ PFCandidateProducer::PFCandidateProducer(const ParameterSet& iConfig)
   rhoTag_(iConfig.getParameter<edm::InputTag>("rho")),
   PFCandidateInputTag_(iConfig.getParameter<InputTag>("PFCandidateInputTag")),
   AK5PFInputTag_(iConfig.getParameter<edm::InputTag>("AK5PFInputTag")),
-  lumiSummaryLabel_(iConfig.getUntrackedParameter<edm::InputTag>("LumiSummaryLabel", InputTag("lumiProducer")))
+  lumiSummaryLabel_(iConfig.getUntrackedParameter<edm::InputTag>("LumiSummaryLabel", InputTag("lumiProducer"))),
+  primaryVertices_(iConfig.getParameter<InputTag>("primaryVertices")),
+  dataVersion_(iConfig.getParameter<string>("dataVersion"))
 {
   mapFilename_ = iConfig.getParameter<string>("mapFilename");
   mapFile_.open(mapFilename_.c_str()); 
@@ -188,14 +193,8 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
    getline(mapFile_, line);
    istringstream iss(line);
    
-   iss >> directory >> filename >> fileEventNum >> fileRunNum;
-   
-   
-   cout << "Getting primary vertices!" << endl;
-    //edm::Handle<VertexCollection> rhoHandle;
-    //iEvent.getByLabel( edm::InputTag("offlinePrimaryVertices"), rhoHandle);
-    //cout << rhoHandle->size() << endl;
-
+  	
+   iss >> fileEventNum >> fileRunNum >> directory >> filename;
 
    runNum = iEvent.id().run();
    eventNum = iEvent.id().event();
@@ -216,7 +215,11 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
    
    
    
-   fileOutput_ << "BeginEvent Run " << runNum << " Event " << eventNum << " LumiSection " << lumiBlockNumber_;
+   fileOutput_ << "BeginEvent Version " << dataVersion_ << " CMS Jet" << " Run " << runNum << " Event " << eventNum << endl;
+   
+   // Primary Vertices.
+   edm::Handle<VertexCollection> primaryVerticesHandle;
+   iEvent.getByLabel( edm::InputTag("offlinePrimaryVertices"), primaryVerticesHandle);
    
    
    // Luminosity Block Begins
@@ -225,11 +228,20 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
    Handle<LumiSummary> lumi;
    iLumi.getByLabel(lumiSummaryLabel_, lumi);
    
+   double avgInstLumi = -3.1415;
    if (lumi.isValid())
-      fileOutput_ << " AvgInstLumi " << lumi->avgInsDelLumi() << endl;
+      avgInstLumi = lumi->avgInsDelLumi();
+   
    
    // Luminosity Block Ends
    
+   fileOutput_ << "# Cond LumiBlock AvgInstLumi NPV" << endl;
+   fileOutput_ << "  Cond "
+   	       << setw(9) << lumiBlockNumber_
+   	       << setw(12) << lumi->avgInsDelLumi()
+   	       << setw(4) << primaryVerticesHandle->size()
+   	       << endl;   
+   	       
    
    Handle<reco::PFCandidateCollection> PFCollection;
    iEvent.getByLabel(PFCandidateInputTag_, PFCollection);
@@ -284,16 +296,8 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
    
    // Get all trigger names associated with the "Jet" dataset.
    const vector<string> triggerNames = hltConfig_.datasetContent("Jet");
-  
-  
-  
-   const vector<string> stuff = hltConfig_.triggerNames();
    
-   for (unsigned i = 0; i < triggerNames.size(); i++) {
-   	cout << triggerNames[i] << endl;
-   }
    
-   /*
    for (unsigned i = 0; i < triggerNames.size(); i++) {
       if (i == 0)
          fileOutput_ << "# Trig                              Name  Prescale_1  Prescale_2  Fired?" << endl;
@@ -311,7 +315,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
                   << setw(8) << fired
                   << endl;
    }
-   */
+   
 
   // Get AK5 Jets.
   
@@ -410,7 +414,9 @@ void PFCandidateProducer::beginJob() {
    
    // Map thingy.
    
+   
    if ( ! processFromTheBeginning_) {
+   	
    	string line, directory;
    	int fileEventNum, fileRunNum;
    	int linesDown = 1;
@@ -423,7 +429,7 @@ void PFCandidateProducer::beginJob() {
    		
 		getline(registryFile, line);
 		istringstream iss(line);
-   		iss >> directory >> rootFilename >> fileEventNum >> fileRunNum;
+   		iss >> fileEventNum >> fileRunNum >> directory >> rootFilename;
    		
    		linesDown++;
 	}
@@ -431,7 +437,7 @@ void PFCandidateProducer::beginJob() {
 	for(int i = 0; i < linesDown - 2; i++) {
 		getline(mapFile_, line);
 		istringstream iss(line);
-		iss >> directory >> rootFilename >> fileEventNum >> fileRunNum;
+		iss >> fileEventNum >> fileRunNum >> directory >> rootFilename;
 	}
 	
    }

@@ -20,7 +20,7 @@ if os.path.isdir(input_dir):
 			files_to_process.append("file://" + input_dir + "/" + file)
 			
 			is_input_directory = True
-			
+			input_file = ""
 			# Delete any output MOD files that might already be there.
 			'''
 			output_file = input_dir.replace("AOD", "MOD") + file + ".mod"
@@ -40,8 +40,8 @@ readFiles.extend(files_to_process)
 
 process = cms.Process("MITCMSOpenData")
 
-#process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
-#process.GlobalTag.globaltag = 'GR_R_42_V25::All'
+process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
+process.GlobalTag.globaltag = 'GR_R_42_V25::All'
 
 process.source = cms.Source ("PoolSource", fileNames=readFiles)
 
@@ -62,7 +62,9 @@ process.PFCandidateProducer = cms.EDProducer("PFCandidateProducer",
 					outputBasePath = cms.string(output_base_path),
 					mapFilename = cms.string(map_file_path),
 					processFromTheBeginning = cms.bool(process_from_the_beginning),
-					inputFile = cms.string(input_file)
+					inputFile = cms.string(input_file),
+					primaryVertices = cms.InputTag("offlinePrimaryVertices"),
+					dataVersion = cms.string("1")
 				)
 				
 process.producer = cms.Path(process.PFCandidateProducer)
