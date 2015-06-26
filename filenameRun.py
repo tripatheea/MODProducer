@@ -5,9 +5,9 @@ import sys
 
 data_file_link = sys.argv[2]
 registry_file_path = sys.argv[3]
+file_directory = data_file_link[7:80]
 
-file_directory = data_file_link[41:45]
-file_name = data_file_link[46:len(data_file_link)]
+file_name = data_file_link[len(data_file_link) - 41:len(data_file_link)]
 
 process = cms.Process("filenameMapProducer")
 
@@ -22,9 +22,9 @@ process.source.lumisToProcess = cms.untracked.VLuminosityBlockRange()
 process.source.lumisToProcess.extend(myLumis)
 
 process.filenameMapProducer = cms.EDProducer("filenameMapProducer", 
-								filename = cms.string(file_name), 
-								file_dir = cms.string(file_directory), 
-								outputFile = cms.string(registry_file_path) 
+						filename = cms.string(file_name), 
+						file_dir = cms.string(file_directory), 
+						outputFile = cms.string(registry_file_path) 
 						)
 
 

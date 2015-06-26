@@ -64,7 +64,7 @@ void filenameMapProducer::produce(Event& iEvent, const EventSetup& iSetup) {
    int runNum = iEvent.id().run();
    int eventNum = iEvent.id().event();
    
-   fileOutput_ << currentFileDir_ << " " << currentProcessingFilename_ << " " << eventNum << " " << runNum << endl;
+   fileOutput_ << eventNum << " " << runNum << " " << currentFileDir_ << " " << currentProcessingFilename_ << endl;
 }
 
 void filenameMapProducer::beginJob() {

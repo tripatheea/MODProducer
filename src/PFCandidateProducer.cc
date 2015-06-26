@@ -62,6 +62,11 @@
 
 #include "HLTrigger/HLTcore/interface/HLTConfigData.h"
 
+#include "DataFormats/TrackReco/interface/Track.h"
+#include "DataFormats/TrackReco/interface/TrackFwd.h"
+#include "DataFormats/VertexReco/interface/Vertex.h"
+#include "DataFormats/VertexReco/interface/VertexFwd.h"
+
 #include <fastjet/PseudoJet.hh>
 #include <fastjet/ClusterSequenceAreaBase.hh>
 #include <fastjet/RangeDefinition.hh>
@@ -184,6 +189,13 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
    istringstream iss(line);
    
    iss >> directory >> filename >> fileEventNum >> fileRunNum;
+   
+   
+   cout << "Getting primary vertices!" << endl;
+    //edm::Handle<VertexCollection> rhoHandle;
+    //iEvent.getByLabel( edm::InputTag("offlinePrimaryVertices"), rhoHandle);
+    //cout << rhoHandle->size() << endl;
+
 
    runNum = iEvent.id().run();
    eventNum = iEvent.id().event();

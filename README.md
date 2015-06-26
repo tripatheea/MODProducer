@@ -47,11 +47,11 @@ Enjoy!
 ##Utilities
 
 ```
-cmsRun PFCandidateRun.py /media/sf_virtual_machine/CMS/eos/opendata/cms/Run2010B/Jet/AOD/Apr21ReReco-v1/0000/0611BEF5-0E71-E011-913B-003048D3739A.root /media/sf_virtual_machine/CMS/eos/opendata/cms/Run2010B/Jet/MOD/Apr21ReReco-v1/0000/ /media/sf_virtual_machine/CMS/eos/opendata/cms/Run2010B/Jet/registry/0.txt 0
+cmsRun PFCandidateRun.py /media/sf_opendata/eos/opendata/cms/Run2010B/Jet/AOD/Apr21ReReco-v1/0000/0611BEF5-0E71-E011-913B-003048D3739A.root /media/sf_opendata/eos/opendata/cms/Run2010B/Jet/MOD/Apr21ReReco-v1/0000 /media/sf_opendata/eos/opendata/cms/Run2010B/Jet/Registry/Apr21ReReco-v1/0.txt 0
 ```
 
 ```
-python map.py /media/sf_virtual_machine/CMS/AOD/0000/ /media/sf_virtual_machine/CMS/registry/0.txt
+python map.py /media/sf_opendata/eos/opendata/cms/Run2010B/Jet/AOD/Apr21ReReco-v1/0000/ /media/sf_opendata/eos/opendata/cms/Run2010B/Jet/registry/Apr21ReReco-v1/0.txt
 ```
 
 ```
