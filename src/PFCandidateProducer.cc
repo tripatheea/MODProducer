@@ -148,7 +148,6 @@ private:
    
    InputTag primaryVertices_;
    string dataVersion_;
-   
 };
 
 
@@ -213,8 +212,6 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
    }
    
    
-   
-   
    fileOutput_ << "BeginEvent Version " << dataVersion_ << " CMS Jet" << " Run " << runNum << " Event " << eventNum << endl;
    
    // Primary Vertices.
@@ -262,8 +259,6 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
     return;
    }
    
-
-
    
    // Setup things for JEC factors.
    
@@ -282,22 +277,13 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
       	rapmax = it->rapidity();
    }
    
-
-   double R = 0.6;
-   fastjet::JetDefinition jet_def(fastjet::kt_algorithm, R);
-   ClusterSequenceAreaBase clust_seq(PFCForFastJet, jet_def);
-   
-   fastjet::RangeDefinition range = fastjet::RangeDefinition(rapmin, rapmax);
-   BackgroundEstimator bckg = BackgroundEstimator(clust_seq, range);
-   
-   double rho = bckg.median_rho();
    
    // Record trigger information first.
    
    // Get all trigger names associated with the "Jet" dataset.
    const vector<string> triggerNames = hltConfig_.datasetContent("Jet");
    
-   
+   /*
    for (unsigned i = 0; i < triggerNames.size(); i++) {
       if (i == 0)
          fileOutput_ << "# Trig                              Name  Prescale_1  Prescale_2  Fired?" << endl;
@@ -315,9 +301,13 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
                   << setw(8) << fired
                   << endl;
    }
-   
+   */
 
   // Get AK5 Jets.
+  
+  edm::Handle<double> rhoHandle;
+  iEvent.getByLabel( edm::InputTag("kt6PFJetsForIsolation", "rho"), rhoHandle);
+  double rho = * rhoHandle;
   
   for(reco::PFJetCollection::const_iterator it = AK5Collection->begin(), end = AK5Collection->end(); it != end; it++) {    
     if (it == AK5Collection->begin())
@@ -335,8 +325,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
     AK5JetCorrector_->setJetPt(it->pt());
     AK5JetCorrector_->setJetA(it->jetArea());
     AK5JetCorrector_->setRho(rho);
-    
-        
+         
     double correction = AK5JetCorrector_->getCorrection();
     
     fileOutput_ << "  AK5"
