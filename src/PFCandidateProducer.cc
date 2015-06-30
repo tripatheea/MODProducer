@@ -305,6 +305,8 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
 
   // Get AK5 Jets.
   
+  // Setup background density for AK5 JEC.
+  
   edm::Handle<double> rhoHandle;
   iEvent.getByLabel( edm::InputTag("kt6PFJetsForIsolation", "rho"), rhoHandle);
   double rho = * rhoHandle;
