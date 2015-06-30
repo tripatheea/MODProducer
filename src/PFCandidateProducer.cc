@@ -150,7 +150,6 @@ private:
    InputTag primaryVertices_;
    string dataVersion_;
 
-
 };
 
 
@@ -192,11 +191,6 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
 
    getline(mapFile_, line);
    istringstream iss(line);
-   
-   
-   struct timeval tp;
-  gettimeofday(&tp, NULL);
-  long int start = tp.tv_sec * 1000 + tp.tv_usec / 1000;
   	
    iss >> fileEventNum >> fileRunNum >> directory >> filename;
 
@@ -365,12 +359,6 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
         << setw(10) << noshowpos << pdgId
         << endl;
    }
-   
-   struct timeval tp2;
-   gettimeofday(&tp2, NULL);
-   long int end = tp2.tv_sec * 1000 + tp2.tv_usec / 1000;   
-   double elapsed = end - start;
-   cout << "Time Elapsed = " << elapsed << endl;
    
    output_ << "EndEvent" << endl;
    
