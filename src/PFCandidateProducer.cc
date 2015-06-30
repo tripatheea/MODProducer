@@ -132,12 +132,13 @@ private:
    
    string mapFilename_;
    ifstream mapFile_;
-   
-   int matchCount_;
+
    
    ifstream mapNumbersFile_;
    
    ofstream fileOutput_;
+   
+   stringstream output_;
    
    string outputFilename_;
    string lastOutputFilename_;
@@ -148,6 +149,8 @@ private:
    
    InputTag primaryVertices_;
    string dataVersion_;
+
+
 };
 
 
@@ -165,9 +168,7 @@ PFCandidateProducer::PFCandidateProducer(const ParameterSet& iConfig)
 {
   mapFilename_ = iConfig.getParameter<string>("mapFilename");
   mapFile_.open(mapFilename_.c_str()); 
-  
-  matchCount_ = 0;
- 
+
   outputFilename_ = "";
   lastOutputFilename_ = "";
   
@@ -192,6 +193,10 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
    getline(mapFile_, line);
    istringstream iss(line);
    
+   
+   struct timeval tp;
+  gettimeofday(&tp, NULL);
+  long int start = tp.tv_sec * 1000 + tp.tv_usec / 1000;
   	
    iss >> fileEventNum >> fileRunNum >> directory >> filename;
 
@@ -200,7 +205,6 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
    lumiBlockNumber_ = iEvent.luminosityBlock();
    
    if ((fileRunNum == runNum) && (fileEventNum == eventNum)) {
-   	matchCount_++;
    	
    	outputFilename_ = outputBasePath_ + directory + "/" + filename + ".mod";
 	
@@ -280,10 +284,11 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
    
    // Record trigger information first.
    
+   
    // Get all trigger names associated with the "Jet" dataset.
    const vector<string> triggerNames = hltConfig_.datasetContent("Jet");
    
-   
+   /*
    for (unsigned i = 0; i < triggerNames.size(); i++) {
       if (i == 0)
          fileOutput_ << "# Trig                              Name  Prescale_1  Prescale_2  Fired?" << endl;
@@ -301,7 +306,11 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
                   << setw(8) << fired
                   << endl;
    }
+   */
    
+   
+  
+  
 
   // Get AK5 Jets.
   
@@ -342,19 +351,20 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
   
   
   
+   
   
   // Get PFCandidates.
   for(reco::PFCandidateCollection::const_iterator it = PFCollection->begin(), end = PFCollection->end(); it != end; it++) {
     if (it == PFCollection->begin())
        fileOutput_ << "# PFC" << "              px              py              pz          energy     pdgId" << endl;  
     
-    particleType = (int) (*it).particleId();
     px = it->px();
     py = it->py();
     pz = it->pz();
     energy = it->energy();
-    
     int pdgId = it->pdgId();
+    
+    
     fileOutput_ << "  PFC"
         << setw(16) << fixed << setprecision(8) << px
         << setw(16) << fixed << setprecision(8) << py
@@ -362,7 +372,19 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
         << setw(16) << fixed << setprecision(8) << energy
         << setw(10) << noshowpos << pdgId
         << endl;
+    
+
+    
    }
+   
+   
+   struct timeval tp2;
+   gettimeofday(&tp2, NULL);
+   long int end = tp2.tv_sec * 1000 + tp2.tv_usec / 1000;   
+   
+   double elapsed = end - start;
+   
+   cout << "Time Elapsed = " << elapsed << endl;
    
    
    fileOutput_ << "EndEvent" << endl;
@@ -432,9 +454,6 @@ void PFCandidateProducer::beginJob() {
 	}
 	
    }
-   
-   
-   
 }
 
 void PFCandidateProducer::endJob() {
