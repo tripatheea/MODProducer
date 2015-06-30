@@ -1,16 +1,20 @@
-import FWCore.ParameterSet.Config as cms
-import FWCore.Utilities.FileUtils as FileUtils
-import FWCore.PythonUtilities.LumiList as LumiList
 import sys
 import os
 from subprocess import call
+
+import FWCore.ParameterSet.Config as cms
+import FWCore.Utilities.FileUtils as FileUtils
+import FWCore.PythonUtilities.LumiList as LumiList
+
+from RecoJets.JetProducers.PFJetParameters_cfi import *
+from RecoJets.JetProducers.AnomalousCellParameters_cfi import *
+from RecoJets.JetProducers.ak5PFJets_cfi import ak5PFJets
+from RecoJets.JetProducers.kt4PFJets_cfi import kt4PFJets
 
 input_dir = sys.argv[2]
 output_base_path = sys.argv[3]
 map_file_path = sys.argv[4]
 process_from_the_beginning = (sys.argv[5] == 1)
-
-
 
 files_to_process = []
 
@@ -40,23 +44,12 @@ readFiles.extend(files_to_process)
 
 process = cms.Process("MITCMSOpenData")
 
-#process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
-#process.GlobalTag.globaltag = 'GR_R_42_V25::All'
+process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
+process.GlobalTag.globaltag = 'GR_R_42_V25::All'
 
-from RecoJets.JetProducers.PFJetParameters_cfi import *
-from RecoJets.JetProducers.AnomalousCellParameters_cfi import *
-from RecoJets.JetProducers.ak5PFJets_cfi import ak5PFJets
+process.source = cms.Source("PoolSource", fileNames=readFiles)
 
-from RecoJets.JetProducers.kt4PFJets_cfi import kt4PFJets
-
-
-
-process.source = cms.Source ("PoolSource", fileNames=readFiles)
-
-#process.source = cms.Source("PoolSource", fileNames = cms.untracked.vstring(["root://eospublic.cern.ch//eos/opendata/cms/Run2010B/Jet/AOD/Apr21ReReco-v1/0000/00052C5A-EF70-E011-B43F-00266CF32A00.root"]))
-
-
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(5))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))
 
 goodJSON = "file_paths/Cert_136033-149442_7TeV_Apr21ReReco_Collisions10_JSON_v2.txt"
 myLumis = LumiList.LumiList(filename = goodJSON).getCMSSWString().split(',')
