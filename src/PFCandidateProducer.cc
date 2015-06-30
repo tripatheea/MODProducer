@@ -215,8 +215,10 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
 	}
    }
    
+   output_.str("");
+   output_.clear(); // Clear state flags.
    
-   fileOutput_ << "BeginEvent Version " << dataVersion_ << " CMS Jet" << " Run " << runNum << " Event " << eventNum << endl;
+   output_ << "BeginEvent Version " << dataVersion_ << " CMS Jet" << " Run " << runNum << " Event " << eventNum << endl;
    
    // Primary Vertices.
    edm::Handle<VertexCollection> primaryVerticesHandle;
@@ -236,8 +238,8 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
    
    // Luminosity Block Ends
    
-   fileOutput_ << "# Cond LumiBlock AvgInstLumi NPV" << endl;
-   fileOutput_ << "  Cond "
+   output_ << "# Cond LumiBlock AvgInstLumi NPV" << endl;
+   output_ << "  Cond "
    	       << setw(9) << lumiBlockNumber_
    	       << setw(12) << lumi->avgInsDelLumi()
    	       << setw(4) << primaryVerticesHandle->size()
@@ -288,10 +290,9 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
    // Get all trigger names associated with the "Jet" dataset.
    const vector<string> triggerNames = hltConfig_.datasetContent("Jet");
    
-   /*
    for (unsigned i = 0; i < triggerNames.size(); i++) {
       if (i == 0)
-         fileOutput_ << "# Trig                              Name  Prescale_1  Prescale_2  Fired?" << endl;
+         output_ << "# Trig                              Name  Prescale_1  Prescale_2  Fired?" << endl;
       
       string name = triggerNames[i];
       
@@ -299,18 +300,13 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
 
       bool fired = triggerFired(name, ( * trigResults));
 
-      fileOutput_ << "  Trig"
+      output_ << "  Trig"
        	          << setw(34) << name
 	          << setw(12) << prescale.first
 	          << setw(12) << prescale.second
                   << setw(8) << fired
                   << endl;
    }
-   */
-   
-   
-  
-  
 
   // Get AK5 Jets.
   
@@ -322,7 +318,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
   
   for(reco::PFJetCollection::const_iterator it = AK5Collection->begin(), end = AK5Collection->end(); it != end; it++) {    
     if (it == AK5Collection->begin())
-       fileOutput_ << "# AK5" << "              px              py              pz          energy             jec            area" << endl;
+       output_ << "# AK5" << "              px              py              pz          energy             jec            area" << endl;
     
     px = it->px();
     py = it->py();
@@ -339,7 +335,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
          
     double correction = AK5JetCorrector_->getCorrection();
     
-    fileOutput_ << "  AK5"
+    output_ << "  AK5"
         << setw(16) << fixed << setprecision(8) << px
         << setw(16) << fixed << setprecision(8) << py
         << setw(16) << fixed << setprecision(8) << pz
@@ -350,13 +346,10 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
   }
   
   
-  
-   
-  
   // Get PFCandidates.
   for(reco::PFCandidateCollection::const_iterator it = PFCollection->begin(), end = PFCollection->end(); it != end; it++) {
     if (it == PFCollection->begin())
-       fileOutput_ << "# PFC" << "              px              py              pz          energy     pdgId" << endl;  
+       output_ << "# PFC" << "              px              py              pz          energy     pdgId" << endl;  
     
     px = it->px();
     py = it->py();
@@ -364,34 +357,26 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
     energy = it->energy();
     int pdgId = it->pdgId();
     
-    
-    fileOutput_ << "  PFC"
+    output_ << "  PFC"
         << setw(16) << fixed << setprecision(8) << px
         << setw(16) << fixed << setprecision(8) << py
         << setw(16) << fixed << setprecision(8) << pz
         << setw(16) << fixed << setprecision(8) << energy
         << setw(10) << noshowpos << pdgId
         << endl;
-    
-
-    
    }
-   
    
    struct timeval tp2;
    gettimeofday(&tp2, NULL);
    long int end = tp2.tv_sec * 1000 + tp2.tv_usec / 1000;   
-   
    double elapsed = end - start;
-   
    cout << "Time Elapsed = " << elapsed << endl;
    
+   output_ << "EndEvent" << endl;
    
-   fileOutput_ << "EndEvent" << endl;
+   fileOutput_ << output_.rdbuf();
    
-   	
    eventSerialNumber_++;
-   
 }
 
 void PFCandidateProducer::beginJob() {
