@@ -21,16 +21,14 @@ files_to_process = []
 if os.path.isdir(input_dir):
 	for file in os.listdir(input_dir):
 		if file.endswith("root"):
-			files_to_process.append("file://" + input_dir + "/" + file)
+			output_file = input_dir.replace("AOD", "MOD") + "/" + file + ".mod"
+			if not os.path.exists(output_file):
+				files_to_process.append("file://" + input_dir + "/" + file)
 			
-			is_input_directory = True
-			input_file = ""
-			# Delete any output MOD files that might already be there.
-			'''
-			output_file = input_dir.replace("AOD", "MOD") + file + ".mod"
-			if os.path.exists(output_file):
-				call(["rm", output_file])
-			'''
+				is_input_directory = True
+				input_file = ""
+			
+			
 else:
 	files_to_process.append("file://" + input_dir)
 	segments = files_to_process[0].split("/")
@@ -39,8 +37,11 @@ else:
 # This sorting is crucial.
 files_to_process = sorted(files_to_process)
 
+
 readFiles = cms.untracked.vstring()
 readFiles.extend(files_to_process)
+
+
 
 process = cms.Process("MITCMSOpenData")
 
