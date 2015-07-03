@@ -25,18 +25,22 @@ if os.path.isdir(input_dir):
 			if not os.path.exists(output_file):
 				files_to_process.append("file://" + input_dir + "/" + file)
 			
-				is_input_directory = True
-				input_file = ""
+			is_input_directory = True
 			
 			
 else:
 	files_to_process.append("file://" + input_dir)
 	segments = files_to_process[0].split("/")
 	input_file = segments[len(segments) - 1:len(segments)][0]
+	is_input_directory = False
 	
 # This sorting is crucial.
 files_to_process = sorted(files_to_process)
 
+
+if is_input_directory:
+	segments = files_to_process[0].split("/")
+	input_file = segments[len(segments) - 1:len(segments)][0]
 
 readFiles = cms.untracked.vstring()
 readFiles.extend(files_to_process)

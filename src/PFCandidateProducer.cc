@@ -9,6 +9,7 @@
 #include <cmath>
 #include <algorithm>
 #include <sys/time.h>
+#include <sys/stat.h>
 
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/EDProducer.h"
@@ -67,6 +68,11 @@
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 
+
+#include "FWCore/Utilities/interface/GlobalIdentifier.h"
+#include "DataFormats/Provenance/interface/FileID.h"
+
+
 #include <fastjet/PseudoJet.hh>
 #include <fastjet/ClusterSequenceAreaBase.hh>
 #include <fastjet/RangeDefinition.hh>
@@ -94,8 +100,14 @@ private:
    virtual void beginLuminosityBlock(edm::LuminosityBlock&, edm::EventSetup const&);
    virtual void endLuminosityBlock(edm::LuminosityBlock&, edm::EventSetup const&);
 
+
+
    bool triggerFired(const string& triggerWildCard, const TriggerResults& triggerResults);
    unsigned int findTrigger(const string& triggerWildCard);
+
+
+   bool file_exists(const std::string& name);
+
    
    InputTag srcCorrJets_;
 
@@ -186,6 +198,8 @@ PFCandidateProducer::~PFCandidateProducer() {
 
 void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
 
+
+  
    string line, directory, filename;
    int fileEventNum, fileRunNum;
 
@@ -206,8 +220,12 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
 	   fileOutput_.close();
 	   fileOutput_.open(outputFilename_.c_str(), ios::out | ios::app );
 	   lastOutputFilename_ = outputFilename_;
+	   cout << "Writing to the file!" << endl;
 	}
    }
+
+
+
    
    output_.str("");
    output_.clear(); // Clear state flags.
@@ -284,6 +302,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
    // Get all trigger names associated with the "Jet" dataset.
    const vector<string> triggerNames = hltConfig_.datasetContent("Jet");
    
+   
    for (unsigned i = 0; i < triggerNames.size(); i++) {
       if (i == 0)
          output_ << "# Trig                              Name  Prescale_1  Prescale_2  Fired?" << endl;
@@ -301,7 +320,8 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
                   << setw(8) << fired
                   << endl;
    }
-
+   
+   
   // Get AK5 Jets.
   
   // Setup background density for AK5 JEC.
@@ -362,9 +382,16 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
    
    output_ << "EndEvent" << endl;
    
+   
    fileOutput_ << output_.rdbuf();
    
    eventSerialNumber_++;
+   
+
+
+   
+   
+   
 }
 
 void PFCandidateProducer::beginJob() {
@@ -416,9 +443,11 @@ void PFCandidateProducer::beginJob() {
 		getline(registryFile, line);
 		istringstream iss(line);
    		iss >> fileEventNum >> fileRunNum >> directory >> rootFilename;
-   		
    		linesDown++;
 	}
+	
+	cout << "Trying to find the correct line here!" << endl;
+	cout << linesDown << endl;
 	
 	for(int i = 0; i < linesDown - 2; i++) {
 		getline(mapFile_, line);
@@ -492,6 +521,11 @@ unsigned int PFCandidateProducer::findTrigger(const std::string& triggerWildCard
    }
 
    return found;
+}
+
+bool PFCandidateProducer::file_exists(const std::string& name) {
+  struct stat buffer;   
+  return (stat (name.c_str(), &buffer) == 0); 
 }
 
 DEFINE_FWK_MODULE(PFCandidateProducer);
