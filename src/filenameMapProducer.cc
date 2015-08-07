@@ -41,8 +41,9 @@ private:
 
    ofstream fileOutput_;
    string currentProcessingFilename_;
-   string outputFilename_;
    string currentFileDir_;
+   string outputFilename_;
+
 };
 
 

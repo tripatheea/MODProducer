@@ -42,6 +42,11 @@ You're supposed to follow the following steps inside a VM you've created as inst
   ```
   cd CMSOpenData/MODProducer
   ```
+- Compile everything:
+
+  ```
+  scram b
+  ```
 
 
 ### Workflow

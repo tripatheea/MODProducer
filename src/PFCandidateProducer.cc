@@ -158,7 +158,6 @@ private:
    
    InputTag primaryVertices_;
    string dataVersion_;
-
 };
 
 
