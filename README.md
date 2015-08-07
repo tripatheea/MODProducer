@@ -97,13 +97,13 @@ Note that this repository is concerned with steps (1) to (3) only. Steps (4) to 
 	Note that to get trigger prescales, PFCandidateProducer needs to load GlobalTags and so, it takes a long time before anything happens (in my computer, it takes ~10 minutes).
     
   ```
-  cmsRun PFCandidateRun.py ~/opendata/eos/opendata/cms/Run2010B/Jet/AOD/Apr21ReReco-v1/0000/ ~/opendata/registry.txt
+  cmsRun PFCandidateRun.py ~/MITOpenDataProject/eos/opendata/cms/Run2010B/Jet/AOD/Apr21ReReco-v1/0000/ ~/MITOpenDataProject/registry.txt
   ```
   
 - Congratulations! You've successfully converted all the AOD files that you downloaded to MOD files. In other words, you've completed steps (1) to (3) in the workflow given above. Heaad over to [MODAnalyzer](https://github.com/tripatheea/MODAnalyzer/ "MODAnalyzer") to see how you can analyze data in these MOD files to produce all sorts of super-interesting plots. 
 
 ### Notes about JEC
-While this repository already contains the necessary files to calculate JEC factors inside the directory `./data/JEC/`, if you want to regenerate them or need to use a global tag other than GR_R_42:V25, you can use the Python script `JEC_cfg.py`. The global tag can be edited on line 9 and 19. It might take a while (~20 minutes or more) for the script to complete. 
+While this repository already contains the necessary files to calculate JEC factors inside the directory `data/JEC/`, if you want to regenerate them or need to use a global tag other than GR_R_42:V25, you can use the Python script `JEC_cfg.py`. The global tag can be edited on line 9 and 19. It might take a while (~20 minutes or more) for the script to complete. 
 
 ```
 cmsRun JEC_cfg.py
