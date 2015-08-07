@@ -213,9 +213,6 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
 	}
    }
    
-   
-   cout << outputFilename_.c_str() << endl;
-   
    output_.str("");
    output_.clear(); // Clear state flags.
    
@@ -291,7 +288,6 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
    // Get all trigger names associated with the "Jet" dataset.
    const vector<string> triggerNames = hltConfig_.datasetContent("Jet");
    
-   /*
    for (unsigned i = 0; i < triggerNames.size(); i++) {
       if (i == 0)
          output_ << "# Trig                              Name  Prescale_1  Prescale_2  Fired?" << endl;
@@ -309,7 +305,6 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
                   << setw(8) << fired
                   << endl;
    }
-   */
    
   // Get AK5 Jets.
   

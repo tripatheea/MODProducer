@@ -52,8 +52,8 @@ readFiles.extend(files_to_process)
 
 process = cms.Process("MITCMSOpenData")
 
-#process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
-#process.GlobalTag.globaltag = 'GR_R_42_V25::All'
+process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
+process.GlobalTag.globaltag = 'GR_R_42_V25::All'
 
 process.source = cms.Source("PoolSource", fileNames=readFiles)
 
