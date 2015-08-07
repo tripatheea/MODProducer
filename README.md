@@ -1,81 +1,119 @@
-#MIT Open Data Producer
+# MIT Open Data Producer
 
-This package selects events from the CMS open
-data release. A custom DAT file containing the four-vector information, mass, PdgId and trigger information of the particles is produced.
+This package downloads AOD files from the CMS OpenData release and converts them into a human-readable file format called MOD (MITOpenData). Currently, the following information are stored:
+	
+	- 4-momentum and pdgId for PF Candidates.
+	- 4-momentum, Jet Area and Jet Energy Correction factors for AK5 Jets. These are stored for redundancy and validation of the jets clustered from the stored PF Candidates.
+	- Trigger Names, prescale values and whether or not that trigger fired for each event. 
+	- Run Number and Event Number.
+	- Luminosity Block, Average Instantaneous Luminosity and Number of Primary Vertices.
+
 
 See http://opendata.cern.ch for more information and for context on the instructions below.
 
-To produce files in the VM open a terminal with the X terminal emulator (an icon bottom-left of the VM screen)
-and input the commands as explained below.
+## Usage Instruction
 
-* Create a CMSSW environment: 
+You're supposed to follow the following steps inside a VM you've created as instructed [here](http://opendata.cern.ch/VM/CMS "CERN Open Data Portal"). 
 
-```
+### Preparation
+
+- Create a CMSSW environment: 
+
+    ```
     cmsrel CMSSW_4_2_8
-```
+    ```
 
-* Change to the CMSSW_4_2_8/src/ directory:
+- Change to the CMSSW_4_2_8/src/ directory:
 
-```
+    ```
     cd CMSSW_4_2_8/src/
-```
-* Initialize the CMSSW environment:
+    ```
 
-```
+- Initialize the CMSSW environment:
+
+  ```
+  cmsenv
+  ```
+- Clone the source code:
+
+  ```
+  git clone https://github.com/tripatheea/MODProducer.git CMSOpenData/MODProducer
+  ```
+- Go to the source directory:
+
+  ```
+  cd CMSOpenData/MODProducer
+  ```
+
+
+### Workflow
+
+We adopt the following workflow for extracting MOD files out of the given AOD files.
+
+1.  Download all the ROOT files and arrange them in the same directory structure as they live on the CMS server.
+
+2. Create a registry that maps each event and run number to a certain ROOT file. This is done so that things can be done one file at a time as we're dealing with multiple TeraBytes of data here and it's a pain to have to do everything at once. 
+
+3. Run the Producer on those AOD files. This reads the download directory and processes only the files in there. This produces N MOD files. 
+
+4. Filter those N MOD files to get only those files for which the correct trigger fired. This process is called Skimming in this workflow. This will produce M <= N MOD files. For a certain AOD file, if none of the events in there have the correct trigger fired, a corresponding skimmed MOD file will not be written. That's why M might be less than N.
+
+5. Read in those "skimmed" M <= N output files one by one and calculate stuff to produce a single DAT file. 
+
+6. Produce plots using the DAT file produced in step (5).
+
+Note that this repository is concerned with steps (1) to (3) only. Steps (4) to (6) are carried out by the [MODAnalyzer](https://github.com/tripatheea/MODAnalyzer/ "MODAnalyzer") package.
+
+### Workflow Instructions:
+
+
+- The first step is to download ROOT files from the CMS server. You can start the download process using the Python script `utilities/download.py`. This script takes two arguments:
+	
+    1. a path to a file which contains a list of links to files to download (one link per line) 
+    2. a destination path to write the files to. For a sample file that contains links to file, see `file_paths/Jet/small_list.txt`. Note that the ROOT files are each ~1 GB, so unless you have a lot of storage available, make sure you don't download too many files. 
+
+    ```
+    python ./utilities/download.py ./file_paths/Jet/small_list.txt ~/MITOpenDataProject/
+    ```
+
+- Once you've downloaded the AOD files (these are ROOT files), you need to create what's called a "registry". A registry creates a map between event and run number, and the corresponding ROOT file. The registry creator is just an [EDProducer](https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookEDMTutorialProducer "EDProducer") that you run N times for N files, each time simply recording which events and runs are there in a certain ROOT file, in a human readable format. Because this is an [EDProducer](https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookEDMTutorialProducer "EDProducer"), you need to initiazlie CMSSW environment variables first with `cmsenv`. You then create the registry using the Python script `create_registry.py`. This script takes two arguments: 
+	
+    1. a path to the ROOT files that you want to process. Note that this is NOT the same as the second argument in the previous step. Because the code maintain the same directory structure as in the CMS servers, the download script creates sub-directories inside the directory that you specified in the previous step. So you need to manually go inside the directory you provided in the previous step, following the subdirectories until you find yourself inside a directory where the ROOT files reside. 
+    2. a path to the registry file.
+
+    ```
     cmsenv
-```
-* Clone the source code:
+    ```
+    ```
+    python ./create_registry.py ~/MITOpenDataProject/eos/opendata/cms/Run2010B/Jet/AOD/Apr21ReReco-v1/0000/ ~/MITOpenDataProject/registry.txt
+    ```
 
+- Now that you have created a registry for all the AOD files that tou want to process, you are ready to run another [EDProducer](https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookEDMTutorialProducer "EDProducer") called PFCandidateProducer to convert them into MOD (MIT Open Data) files. You can run PFCandidateProducer with the Python script `PFCandidateRun.py`. This script takes two arguments: 
 
-```git clone https://github.com/tripatheea/MODProducer.git CMSOpenData/MODProducer```
+	1. input directory (path to the directory which contains all the AOD files). This is the same as the second argument that you supplied in the previous step.
+	2. path to the registry file, including the filename. 
 
+	As mentioned earlier, the "download" step above maintains the directory structure of CMS servers. This includes a directory named "AOD". This step maintains the same directory structure except AOD replaced with MOD. That's why you do not need to enter an output directory. 
 
-* Go to the source directory:
+	Note that to get trigger prescales, PFCandidateProducer needs to load GlobalTags and so, it takes a long time before anything happens (in my computer, it takes ~10 minutes).
+    
+  ```
+  cmsRun PFCandidateRun.py ~/opendata/eos/opendata/cms/Run2010B/Jet/AOD/Apr21ReReco-v1/0000/ ~/opendata/registry.txt
+  ```
+  
+- Congratulations! You've successfully converted all the AOD files that you downloaded to MOD files. In other words, you've completed steps (1) to (3) in the workflow given above. Heaad over to [MODAnalyzer](https://github.com/tripatheea/MODAnalyzer/ "MODAnalyzer") to see how you can analyze data in these MOD files to produce all sorts of super-interesting plots. 
 
-```
-    cd CMSOpenData/MODProducer
-```
-* Run the shell file `run_producers.sh`:
-
-```
-    ./run_producers.sh
-```
-which will produce the data files-  `CMS_JetSample.dat` and `CMS_MinBiasSample.dat`.
-
-Enjoy!
-
-##Utilities
-
-```
-cmsRun PFCandidateRun.py /media/sf_opendata/eos/opendata/cms/Run2010B/Jet/AOD/Apr21ReReco-v1/0000/1C27B39E-7171-E011-AC3A-003048D436CA.root /media/sf_opendata/eos/opendata/cms/Run2010B/Jet/MOD/Apr21ReReco-v1/ /media/sf_opendata/eos/opendata/cms/Run2010B/Jet/registry/Apr21ReReco-v1/0.txt 0
-```
-```
-cmsRun PFCandidateRun.py /media/sf_opendata/eos/opendata/cms/Run2010B/Jet/AOD/Apr21ReReco-v1/0000/problem/ /media/sf_opendata/eos/opendata/cms/Run2010B/Jet/MOD/Apr21ReReco-v1/problem/ /media/sf_opendata/eos/opendata/cms/Run2010B/Jet/registry/Apr21ReReco-v1/0.txt 1
-```
-```
-python map.py /media/sf_opendata/eos/opendata/cms/Run2010B/Jet/AOD/Apr21ReReco-v1/0000/ /media/sf_opendata/eos/opendata/cms/Run2010B/Jet/registry/Apr21ReReco-v1/0.txt
-```
+### Notes about JEC
+While this repository already contains the necessary files to calculate JEC factors inside the directory `./data/JEC/`, if you want to regenerate them or need to use a global tag other than GR_R_42:V25, you can use the Python script `JEC_cfg.py`. The global tag can be edited on line 9 and 19. It might take a while (~20 minutes or more) for the script to complete. 
 
 ```
-python download.py ../file_paths/Jet/remote/CMS_Run2010B_Jet_AOD_Apr21ReReco-v1_0000_file_index.txt  /media/sf_virtual_machine/CMS/
+cmsRun JEC_cfg.py
 ```
 
+If you're using a global tag other than GR_R_42:V25, the filenames will be different from what they are in the repository. For those cases, you need to edit the filenames in `src/PFCandidateProducer.cc`, under the method `PFCandidateProducer::beginJob()`, lines 389 to 392.
 
-## Workflow
-
-
-- The first step is to download ROOT files from the CMS server. We do this using the Python script `utilities/download.py`. This script takes two arguments; path to a file which contains a list of link to files to download (one link per line) and, a destination path to write the files to. For a sample file that contains links to file, see `./file_paths/Jet/small_list.txt`. Note that these files each are ~1 GB so unless you have a lot of storage available, use a file that contains only a handful of files to download. 
-
-`python ./utilities/download.py ./file_paths/Jet/small_list.txt ~/opendata/`
-
-- Once you've downloaded the ROOT files, we need to create what's called a "registry". This is not actually required to process AOD data but we maintain the same file and directory structure while writing out MOD files and so, we need to create a map between event and run number, and the corresponding ROOT file. The registry creator is in fact just an EDProducer that we run N times for N files, each time simply recording which events and runs are there in a certain filename in a human readable format. Because this is an EDProducer, we need to initiazlie CMSSW environment variables before running with `cmsenv`. We create the registry using the Python script `create_registry.py`. This script takes two arguments: a path to the ROOT files that we want to process, and a path to the file that we want to write the registry information to.
-
-`cmsenv`
-
-`python ./create_registry.py ~/opendata/eos/opendata/cms/Run2010B/Jet/AOD/Apr21ReReco-v1/0000/ ~/opendata/registry.txt`
-
-- Now that we have created a registry for all the AOD files that we want to process, we are ready to run another EDProducer called PFCandidateProducer to convert all the AOD files to MOD (MIT Open Data). We start PFCandidateProducer with the Python file `PFCandidateRun.py`. This Python file takes two arguments: input directory (path to directory which contains all the AOD files) and, registry file path (path, including the filename, to the registry file). The "download" step above maintains the directory structure from CMS, which includes a directory named "AOD". This step maintains the same directory structure except AOD replaced with MOD. That's why you don't need to enter an output directory. Note that to get trigger prescales PFCandidateProducer needs to load globaltags because of which it takes a long time before anything happens. So be patient:
-
-`cmsRun PFCandidateRun.py ~/opendata/eos/opendata/cms/Run2010B/Jet/AOD/Apr21ReReco-v1/0000/ ~/opendata/registry.txt`
-
-- Congratulations! You've successfully converted AOD files to MOD files. You can analyze these MOD files using the repository [MODAnalyzer](https://github.com/tripatheea/MODAnalyzer/ "MODAnalyzer"). 
+## Notes
+Some random notes that might be helpful as you play around with the code here:
+1. Do not forget to run `scram b` to compile your code any time you make a change to a C++ source file. 
+2. It's a pain to wait ~10 mins every time you want to run PFCandidateProducer. So for debugging/hacking purposes, you might want to turn off loading the GlobalTags. You can do this by commenting lines 55 and 56 in `PFCandidateRun.py`. You also have to comment out lines 291-307 in `src/PFCandidateProducer.cc`. Those lines are responsible to write out trigger information so if you need to test stuff pretaining to triggers, you cannot get around waiting (technically, you need to load the GlobalTags for trigger prescales only).
+3. If you use a new module/component inside `src/PFCandidateProducer.cc`, do not forget to include the corresponding module in the buildfile. Likewise, if you're not using a certain module, remove the corresponding module from the buildfile so that it doesn't slow down compilation of your code.  
