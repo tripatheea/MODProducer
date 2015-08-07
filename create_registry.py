@@ -7,7 +7,7 @@ from collections import defaultdict
 path = sys.argv[1]
 registry_file_path = sys.argv[2]
 
-def create_maps(path):
+def create_registry(path):
 	files_to_process = []
 	for f1 in os.listdir(path):
 		if (f1.endswith("root")):
@@ -20,7 +20,7 @@ def create_maps(path):
 
 start = time()
 
-create_maps(path)
+create_registry(path)
 
 end = time()
 

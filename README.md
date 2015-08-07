@@ -66,6 +66,11 @@ python download.py ../file_paths/Jet/remote/CMS_Run2010B_Jet_AOD_Apr21ReReco-v1_
 
 - The first step is to download ROOT files from the CMS server. We do this using the Python script `utilities/download.py`. This script takes two arguments; path to a file which contains a list of link to files to download (one link per line) and, a destination path to write the files to. For a sample file that contains links to file, see `./file_paths/Jet/small_list.txt`. Note that these files each are ~1 GB so unless you have a lot of storage available, use a file that contains only a handful of files to download. 
 
-`python ./utilities/download.py ./file_paths/Jet/small_list.txt ~/root_files`
+`python ./utilities/download.py ./file_paths/Jet/small_list.txt ~/opendata/AOD/`
+
+- Once you've downloaded the ROOT files, we need to create what's called a "registry". This is not actually required to process AOD data but we maintain the same file and directory structure while writing out MOD files and so, we need to create a map between event and run number, and the corresponding ROOT file. The registry creator is in fact just an EDProducer that we run N times for N files, each time simply recording which events and runs are there in a certain filename in a human readable format. Because this is an EDProducer, we need to initiazlie CMSSW environment variables before running with `cmsenv`. We create the registry using the Python script `create_registry.py`. This script takes two arguments: a path to the ROOT files that we want to process, and a path to the file that we want to write the registry information to.
+
+`cmsenv`
+`python ./create_registry.py ./opendata/AOD/ ~/opendata/registry.txt`
 
 - 
