@@ -60,7 +60,12 @@ python map.py /media/sf_opendata/eos/opendata/cms/Run2010B/Jet/AOD/Apr21ReReco-v
 python download.py ../file_paths/Jet/remote/CMS_Run2010B_Jet_AOD_Apr21ReReco-v1_0000_file_index.txt  /media/sf_virtual_machine/CMS/
 ```
 
+
 ## Workflow
 
-- The first step is to download ROOT files from the CMS server. We do this using the Python script `utilities/download.py`
+
+- The first step is to download ROOT files from the CMS server. We do this using the Python script `utilities/download.py`. This script takes two arguments; path to a file which contains a list of link to files to download (one link per line) and, a destination path to write the files to. For a sample file that contains links to file, see `./file_paths/Jet/small_list.txt`. Note that these files each are ~1 GB so unless you have a lot of storage available, use a file that contains only a handful of files to download. 
+
+`python ./utilities/download.py ./file_paths/Jet/small_list.txt ~/root_files`
+
 - 
