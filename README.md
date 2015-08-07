@@ -1,15 +1,13 @@
 # MIT Open Data Producer
 
-This package downloads AOD files from the CMS OpenData release and converts them into a human-readable file format called MOD (MITOpenData). Currently, the following information are stored:
+This package downloads AOD files from the [CERN Open Data Portal](http://opendata.cern.ch "CERN Open Data Portal") release and converts them into a human-readable file format called MOD (MIT Open Data). Currently, the following information are stored:
 	
-	- 4-momentum and pdgId for PF Candidates.
-	- 4-momentum, Jet Area and Jet Energy Correction factors for AK5 Jets. These are stored for redundancy and validation of the jets clustered from the stored PF Candidates.
-	- Trigger Names, prescale values and whether or not that trigger fired for each event. 
-	- Run Number and Event Number.
-	- Luminosity Block, Average Instantaneous Luminosity and Number of Primary Vertices.
+- 4-momentum and pdgId for PF Candidates.
+- 4-momentum, Jet Area and Jet Energy Correction factors for AK5 Jets. These are stored for redundancy and validation of the jets clustered from the stored PF Candidates.
+- Trigger Names, prescale values and whether or not that trigger fired for each event. 
+- Run Number and Event Number.
+- Luminosity Block, Average Instantaneous Luminosity and Number of Primary Vertices.
 
-
-See http://opendata.cern.ch for more information and for context on the instructions below.
 
 ## Usage Instruction
 
@@ -83,8 +81,6 @@ Note that this repository is concerned with steps (1) to (3) only. Steps (4) to 
 
     ```
     cmsenv
-    ```
-    ```
     python ./create_registry.py ~/MITOpenDataProject/eos/opendata/cms/Run2010B/Jet/AOD/Apr21ReReco-v1/0000/ ~/MITOpenDataProject/registry.txt
     ```
 
@@ -112,8 +108,11 @@ cmsRun JEC_cfg.py
 
 If you're using a global tag other than GR_R_42:V25, the filenames will be different from what they are in the repository. For those cases, you need to edit the filenames in `src/PFCandidateProducer.cc`, under the method `PFCandidateProducer::beginJob()`, lines 389 to 392.
 
-## Notes
+## Tips
 Some random notes that might be helpful as you play around with the code here:
+
 1. Do not forget to run `scram b` to compile your code any time you make a change to a C++ source file. 
+
 2. It's a pain to wait ~10 mins every time you want to run PFCandidateProducer. So for debugging/hacking purposes, you might want to turn off loading the GlobalTags. You can do this by commenting lines 55 and 56 in `PFCandidateRun.py`. You also have to comment out lines 291-307 in `src/PFCandidateProducer.cc`. Those lines are responsible to write out trigger information so if you need to test stuff pretaining to triggers, you cannot get around waiting (technically, you need to load the GlobalTags for trigger prescales only).
+
 3. If you use a new module/component inside `src/PFCandidateProducer.cc`, do not forget to include the corresponding module in the buildfile. Likewise, if you're not using a certain module, remove the corresponding module from the buildfile so that it doesn't slow down compilation of your code.  
