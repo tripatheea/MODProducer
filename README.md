@@ -81,6 +81,7 @@ Note that this repository is concerned with steps (1) to (3) only. Steps (4) to 
 
     ```
     cmsenv
+    
     python ./create_registry.py ~/MITOpenDataProject/eos/opendata/cms/Run2010B/Jet/AOD/Apr21ReReco-v1/0000/ ~/MITOpenDataProject/registry.txt
     ```
 
