@@ -12,9 +12,11 @@ from RecoJets.JetProducers.ak5PFJets_cfi import ak5PFJets
 from RecoJets.JetProducers.kt4PFJets_cfi import kt4PFJets
 
 input_dir = sys.argv[2]
-output_base_path = sys.argv[3]
-map_file_path = sys.argv[4]
-process_from_the_beginning = (sys.argv[5] == 1)
+map_file_path = sys.argv[3]
+
+dir_to_create = input_dir.replace("AOD", "MOD")
+if not os.path.exists(dir_to_create):
+    os.makedirs(dir_to_create)
 
 files_to_process = []
 
@@ -57,10 +59,10 @@ process.source = cms.Source("PoolSource", fileNames=readFiles)
 
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))
 
-#goodJSON = "file_paths/Cert_136033-149442_7TeV_Apr21ReReco_Collisions10_JSON_v2.txt"
-#myLumis = LumiList.LumiList(filename = goodJSON).getCMSSWString().split(',')
-#process.source.lumisToProcess = cms.untracked.VLuminosityBlockRange()
-#process.source.lumisToProcess.extend(myLumis)
+goodJSON = "file_paths/Cert_136033-149442_7TeV_Apr21ReReco_Collisions10_JSON_v2.txt"
+myLumis = LumiList.LumiList(filename = goodJSON).getCMSSWString().split(',')
+process.source.lumisToProcess = cms.untracked.VLuminosityBlockRange()
+process.source.lumisToProcess.extend(myLumis)
 
 
 process.ak5PFJets = ak5PFJets.clone(doAreaFastjet = cms.bool(True))
@@ -71,9 +73,7 @@ process.PFCandidateProducer = cms.EDProducer("PFCandidateProducer",
 					rho = cms.InputTag("kt6PFJets","rho"),
 					PFCandidateInputTag = cms.InputTag("particleFlow"),
 					AK5PFInputTag = cms.InputTag("ak5PFJets"),
-					outputBasePath = cms.string(output_base_path),
 					mapFilename = cms.string(map_file_path),
-					processFromTheBeginning = cms.bool(process_from_the_beginning),
 					inputFile = cms.string(input_file),
 					primaryVertices = cms.InputTag("offlinePrimaryVertices"),
 					dataVersion = cms.string("1")

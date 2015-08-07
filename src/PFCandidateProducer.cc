@@ -114,7 +114,6 @@ private:
 
    HLTConfigProvider hltConfig_;
    InputTag hltInputTag_;
-   string outputBasePath_;
    InputTag rhoTag_;
    InputTag PFCandidateInputTag_;
    InputTag AK5PFInputTag_;
@@ -155,8 +154,6 @@ private:
    string outputFilename_;
    string lastOutputFilename_;
    
-   bool processFromTheBeginning_;
-   
    string inputFile_;
    
    InputTag primaryVertices_;
@@ -169,7 +166,6 @@ private:
 PFCandidateProducer::PFCandidateProducer(const ParameterSet& iConfig)
 : hltConfig_(),
   hltInputTag_("TriggerResults","","HLT"),
-  outputBasePath_(iConfig.getParameter<string>("outputBasePath")),
   rhoTag_(iConfig.getParameter<edm::InputTag>("rho")),
   PFCandidateInputTag_(iConfig.getParameter<InputTag>("PFCandidateInputTag")),
   AK5PFInputTag_(iConfig.getParameter<edm::InputTag>("AK5PFInputTag")),
@@ -182,15 +178,6 @@ PFCandidateProducer::PFCandidateProducer(const ParameterSet& iConfig)
 
   outputFilename_ = "";
   lastOutputFilename_ = "";
-  
-  processFromTheBeginning_ = iConfig.getParameter<bool>("processFromTheBeginning");
-  
-  if ( ! processFromTheBeginning_) {
-	  inputFile_ = iConfig.getParameter<string>("inputFile");
-  }
-	
-	
-  fileOutput_.open("/media/sf_opendata/eos/opendata/cms/Run2010B/Jet/MOD/Apr21ReReco-v1/0000/problem/1C27B39E-7171-E011-AC3A-003048D436CA.root", ios::out | ios::app );  
 }
 
 
@@ -200,8 +187,6 @@ PFCandidateProducer::~PFCandidateProducer() {
 
 void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
 
-
-  
    string line, directory, filename;
    int fileEventNum, fileRunNum;
 
@@ -214,21 +199,22 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
    eventNum = iEvent.id().event();
    lumiBlockNumber_ = iEvent.luminosityBlock();
    
-   /*
+   
    if ((fileRunNum == runNum) && (fileEventNum == eventNum)) {
    	
-   	outputFilename_ = outputBasePath_ + directory + "/" + filename + ".mod";
+   	outputFilename_ = directory + "/" + filename + ".mod";
+   	
+   	outputFilename_.replace( outputFilename_.find("AOD"), 3, "MOD");
 	
 	if ((eventSerialNumber_ == 1) || (outputFilename_ != lastOutputFilename_)) {
 	   fileOutput_.close();
 	   fileOutput_.open(outputFilename_.c_str(), ios::out | ios::app );
 	   lastOutputFilename_ = outputFilename_;
-	   cout << "Writing to the file!" << endl;
 	}
    }
-   */
    
-
+   
+   cout << outputFilename_.c_str() << endl;
    
    output_.str("");
    output_.clear(); // Clear state flags.
@@ -335,7 +321,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
   
   for(reco::PFJetCollection::const_iterator it = AK5Collection->begin(), end = AK5Collection->end(); it != end; it++) {    
     if (it == AK5Collection->begin())
-       output_ << "# AK5" << "              px              py              pz          energy             jec            area" << endl;
+       output_ << "# AK5" << "                  px                  py                  pz              energy                 jec                area" << endl;
     
     px = it->px();
     py = it->py();
@@ -353,12 +339,12 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
     double correction = AK5JetCorrector_->getCorrection();
     
     output_ << "  AK5"
-        << setw(16) << fixed << setprecision(8) << px
-        << setw(16) << fixed << setprecision(8) << py
-        << setw(16) << fixed << setprecision(8) << pz
-        << setw(16) << fixed << setprecision(8) << energy
-        << setw(16) << fixed << setprecision(8) << correction  
-        << setw(16) << fixed << setprecision(8) << area       
+        << setw(20) << fixed << setprecision(8) << px
+        << setw(20) << fixed << setprecision(8) << py
+        << setw(20) << fixed << setprecision(8) << pz
+        << setw(20) << fixed << setprecision(8) << energy
+        << setw(20) << fixed << setprecision(8) << correction  
+        << setw(20) << fixed << setprecision(8) << area       
         << endl;
   }
   
@@ -366,7 +352,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
   // Get PFCandidates.
   for(reco::PFCandidateCollection::const_iterator it = PFCollection->begin(), end = PFCollection->end(); it != end; it++) {
     if (it == PFCollection->begin())
-       output_ << "# PFC" << "              px              py              pz          energy     pdgId" << endl;  
+       output_ << "# PFC" << "                  px                  py                  pz              energy         pdgId" << endl;  
     
     px = it->px();
     py = it->py();
@@ -375,26 +361,19 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
     int pdgId = it->pdgId();
     
     output_ << "  PFC"
-        << setw(16) << fixed << setprecision(8) << px
-        << setw(16) << fixed << setprecision(8) << py
-        << setw(16) << fixed << setprecision(8) << pz
-        << setw(16) << fixed << setprecision(8) << energy
-        << setw(10) << noshowpos << pdgId
+        << setw(20) << fixed << setprecision(8) << px
+        << setw(20) << fixed << setprecision(8) << py
+        << setw(20) << fixed << setprecision(8) << pz
+        << setw(20) << fixed << setprecision(8) << energy
+        << setw(14) << noshowpos << pdgId
         << endl;
    }
    
    output_ << "EndEvent" << endl;
    
-   
    fileOutput_ << output_.rdbuf();
    
    eventSerialNumber_++;
-   
-
-
-   
-   
-   
 }
 
 void PFCandidateProducer::beginJob() {
@@ -428,38 +407,6 @@ void PFCandidateProducer::beginJob() {
    
    std::cout << "Processing PFCandidates." << std::endl;
    
-   // Map thingy.
-   
-   /*
-   if ( ! processFromTheBeginning_) {
-   	
-   	string line, directory;
-   	int fileEventNum, fileRunNum;
-   	int linesDown = 1;
-   
-	ifstream registryFile(mapFilename_.c_str());
-   
-   	string rootFilename = "";
-   	
-   	while((rootFilename != inputFile_)) {
-   		
-		getline(registryFile, line);
-		istringstream iss(line);
-   		iss >> fileEventNum >> fileRunNum >> directory >> rootFilename;
-   		linesDown++;
-	}
-	
-	cout << "Trying to find the correct line here!" << endl;
-	cout << linesDown << endl;
-	
-	for(int i = 0; i < linesDown - 2; i++) {
-		getline(mapFile_, line);
-		istringstream iss(line);
-		iss >> fileEventNum >> fileRunNum >> directory >> rootFilename;
-	}
-	
-   }
-   */
 }
 
 void PFCandidateProducer::endJob() {
