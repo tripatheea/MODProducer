@@ -185,10 +185,12 @@ PFCandidateProducer::PFCandidateProducer(const ParameterSet& iConfig)
   
   processFromTheBeginning_ = iConfig.getParameter<bool>("processFromTheBeginning");
   
-  if ( ! processFromTheBeginning_)
+  if ( ! processFromTheBeginning_) {
 	  inputFile_ = iConfig.getParameter<string>("inputFile");
-	  
-  
+  }
+	
+	
+  fileOutput_.open("/media/sf_opendata/eos/opendata/cms/Run2010B/Jet/MOD/Apr21ReReco-v1/0000/problem/1C27B39E-7171-E011-AC3A-003048D436CA.root", ios::out | ios::app );  
 }
 
 
@@ -212,6 +214,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
    eventNum = iEvent.id().event();
    lumiBlockNumber_ = iEvent.luminosityBlock();
    
+   /*
    if ((fileRunNum == runNum) && (fileEventNum == eventNum)) {
    	
    	outputFilename_ = outputBasePath_ + directory + "/" + filename + ".mod";
@@ -223,8 +226,8 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
 	   cout << "Writing to the file!" << endl;
 	}
    }
-
-
+   */
+   
 
    
    output_.str("");
@@ -302,7 +305,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
    // Get all trigger names associated with the "Jet" dataset.
    const vector<string> triggerNames = hltConfig_.datasetContent("Jet");
    
-   
+   /*
    for (unsigned i = 0; i < triggerNames.size(); i++) {
       if (i == 0)
          output_ << "# Trig                              Name  Prescale_1  Prescale_2  Fired?" << endl;
@@ -320,7 +323,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
                   << setw(8) << fired
                   << endl;
    }
-   
+   */
    
   // Get AK5 Jets.
   
@@ -427,7 +430,7 @@ void PFCandidateProducer::beginJob() {
    
    // Map thingy.
    
-   
+   /*
    if ( ! processFromTheBeginning_) {
    	
    	string line, directory;
@@ -456,6 +459,7 @@ void PFCandidateProducer::beginJob() {
 	}
 	
    }
+   */
 }
 
 void PFCandidateProducer::endJob() {

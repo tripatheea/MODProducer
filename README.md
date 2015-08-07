@@ -47,10 +47,10 @@ Enjoy!
 ##Utilities
 
 ```
-cmsRun PFCandidateRun.py /media/sf_opendata/eos/opendata/cms/Run2010B/Jet/AOD/Apr21ReReco-v1/0000//141EC4AD-FE70-E011-AAE1-003048D43996.root /media/sf_opendata/eos/opendata/cms/Run2010B/Jet/MOD/Apr21ReReco-v1/ /media/sf_opendata/eos/opendata/cms/Run2010B/Jet/registry/Apr21ReReco-v1/0.txt 0
+cmsRun PFCandidateRun.py /media/sf_opendata/eos/opendata/cms/Run2010B/Jet/AOD/Apr21ReReco-v1/0000/1C27B39E-7171-E011-AC3A-003048D436CA.root /media/sf_opendata/eos/opendata/cms/Run2010B/Jet/MOD/Apr21ReReco-v1/ /media/sf_opendata/eos/opendata/cms/Run2010B/Jet/registry/Apr21ReReco-v1/0.txt 0
 ```
 ```
-cmsRun PFCandidateRun.py /media/sf_opendata/eos/opendata/cms/Run2010B/Jet/AOD/Apr21ReReco-v1/0000/ /media/sf_opendata/eos/opendata/cms/Run2010B/Jet/MOD/Apr21ReReco-v1/ /media/sf_opendata/eos/opendata/cms/Run2010B/Jet/registry/Apr21ReReco-v1/0.txt 1
+cmsRun PFCandidateRun.py /media/sf_opendata/eos/opendata/cms/Run2010B/Jet/AOD/Apr21ReReco-v1/0000/problem/ /media/sf_opendata/eos/opendata/cms/Run2010B/Jet/MOD/Apr21ReReco-v1/problem/ /media/sf_opendata/eos/opendata/cms/Run2010B/Jet/registry/Apr21ReReco-v1/0.txt 1
 ```
 ```
 python map.py /media/sf_opendata/eos/opendata/cms/Run2010B/Jet/AOD/Apr21ReReco-v1/0000/ /media/sf_opendata/eos/opendata/cms/Run2010B/Jet/registry/Apr21ReReco-v1/0.txt
@@ -59,3 +59,8 @@ python map.py /media/sf_opendata/eos/opendata/cms/Run2010B/Jet/AOD/Apr21ReReco-v
 ```
 python download.py ../file_paths/Jet/remote/CMS_Run2010B_Jet_AOD_Apr21ReReco-v1_0000_file_index.txt  /media/sf_virtual_machine/CMS/
 ```
+
+## Workflow
+
+- The first step is to download ROOT files from the CMS server. We do this using the Python script `utilities/download.py`
+- 
