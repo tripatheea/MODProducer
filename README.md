@@ -62,7 +62,7 @@ We adopt the following workflow for extracting MOD files out of the given AOD fi
 
 Note that this repository is concerned with steps (1) to (3) only. Steps (4) to (6) are carried out by the [MODAnalyzer](https://github.com/tripatheea/MODAnalyzer/ "MODAnalyzer") package.
 
-### Workflow Instructions:
+### Workflow Instructions
 
 
 - The first step is to download ROOT files from the CMS server. You can start the download process using the Python script `utilities/download.py`. This script takes two arguments:
@@ -108,7 +108,7 @@ cmsRun JEC_cfg.py
 
 If you're using a global tag other than GR_R_42:V25, the filenames will be different from what they are in the repository. For those cases, you need to edit the filenames in `src/PFCandidateProducer.cc`, under the method `PFCandidateProducer::beginJob()`, lines 389 to 392.
 
-## Tips
+## Other Notes
 Some random notes that might be helpful as you play around with the code here:
 
 1. Do not forget to run `scram b` to compile your code any time you make a change to a C++ source file. 
