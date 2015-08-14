@@ -37,7 +37,9 @@
 #include "DataFormats/JetReco/interface/PFJetCollection.h"
 
 #include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
+#include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
 #include "CondFormats/JetMETObjects/interface/FactorizedJetCorrector.h"
+
 
 #include "DataFormats/Common/interface/Handle.h"
 #include "FWCore/FWLite/interface/AutoLibraryLoader.h"
@@ -137,8 +139,10 @@ private:
    
    long int eventSerialNumber_;
    
-   FactorizedJetCorrector *AK5JetCorrector_;
-   
+   FactorizedJetCorrector * AK5JetCorrector_;
+   JetCorrectionUncertainty * AK5JECUncertainity_;
+
+
    std::vector<std::string> filenames_;
    
    string mapFilename_;
@@ -304,7 +308,8 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
                   << setw(8) << fired
                   << endl;
    }
-   
+
+
   // Get AK5 Jets.
   
   // Setup background density for AK5 JEC.
@@ -315,7 +320,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
   
   for(reco::PFJetCollection::const_iterator it = AK5Collection->begin(), end = AK5Collection->end(); it != end; it++) {    
     if (it == AK5Collection->begin())
-       output_ << "# AK5" << "                  px                  py                  pz              energy                 jec                area" << endl;
+       output_ << "# AK5" << "                  px                  py                  pz              energy                 jec                area    jec_uncertainity" << endl;
     
     px = it->px();
     py = it->py();
@@ -323,7 +328,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
     energy = it->energy();
     area = it->jetArea();
     
-    // JEC Factor
+    // JEC Factor.
     
     AK5JetCorrector_->setJetEta(it->eta());
     AK5JetCorrector_->setJetPt(it->pt());
@@ -331,7 +336,14 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
     AK5JetCorrector_->setRho(rho);
          
     double correction = AK5JetCorrector_->getCorrection();
-    
+
+    // JEC Uncertainity.
+
+    AK5JECUncertainity_->setJetEta(it->eta());
+    AK5JECUncertainity_->setJetPt( it->pt() * correction ); 				// Must be CORRECTED Jet pT.
+    double uncertainity = AK5JECUncertainity_->getUncertainty(true);
+
+ 
     output_ << "  AK5"
         << setw(20) << fixed << setprecision(8) << px
         << setw(20) << fixed << setprecision(8) << py
@@ -339,6 +351,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
         << setw(20) << fixed << setprecision(8) << energy
         << setw(20) << fixed << setprecision(8) << correction  
         << setw(20) << fixed << setprecision(8) << area       
+        << setw(20) << fixed << setprecision(8) << uncertainity
         << endl;
   }
   
@@ -398,6 +411,8 @@ void PFCandidateProducer::beginJob() {
    vParAK5.push_back(*AK5ResJetPar);
    
    AK5JetCorrector_ = new FactorizedJetCorrector(vParAK5);
+
+   AK5JECUncertainity_ = new JetCorrectionUncertainty("data/JEC/GR_R_42_V25_AK5PF_Uncertainty.txt");
    
    std::cout << "Processing PFCandidates." << std::endl;
    
