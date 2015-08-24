@@ -76,7 +76,7 @@ process.PFCandidateProducer = cms.EDProducer("PFCandidateProducer",
 					mapFilename = cms.string(map_file_path),
 					inputFile = cms.string(input_file),
 					primaryVertices = cms.InputTag("offlinePrimaryVertices"),
-					dataVersion = cms.string("1")
+					dataVersion = cms.string("3")
 				)
 				
 process.producer = cms.Path( process.ak5PFJets * process.kt6PFJetsForIsolation * process.PFCandidateProducer)

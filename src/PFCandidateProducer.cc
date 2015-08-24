@@ -71,13 +71,6 @@
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 
 
-#include "FWCore/Utilities/interface/GlobalIdentifier.h"
-#include "DataFormats/Provenance/interface/FileID.h"
-
-
-#include <fastjet/PseudoJet.hh>
-#include <fastjet/ClusterSequenceAreaBase.hh>
-#include <fastjet/RangeDefinition.hh>
 
 
 using namespace std;
@@ -206,7 +199,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
    if ((fileRunNum == runNum) && (fileEventNum == eventNum)) {
    	
    	outputFilename_ = directory + "/" + filename + ".mod";
-   	
+
    	outputFilename_.replace( outputFilename_.find("AOD"), 3, "MOD");
 	
 	if ((eventSerialNumber_ == 1) || (outputFilename_ != lastOutputFilename_)) {
@@ -291,6 +284,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
    // Get all trigger names associated with the "Jet" dataset.
    const vector<string> triggerNames = hltConfig_.datasetContent("Jet");
    
+   
    for (unsigned i = 0; i < triggerNames.size(); i++) {
       if (i == 0)
          output_ << "# Trig                              Name  Prescale_1  Prescale_2  Fired?" << endl;
@@ -308,7 +302,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
                   << setw(8) << fired
                   << endl;
    }
-
+   
 
   // Get AK5 Jets.
   
@@ -320,7 +314,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
   
   for(reco::PFJetCollection::const_iterator it = AK5Collection->begin(), end = AK5Collection->end(); it != end; it++) {    
     if (it == AK5Collection->begin())
-       output_ << "# AK5" << "                  px                  py                  pz              energy                 jec                area    jec_uncertainity" << endl;
+       output_ << "# AK5" << "                  px                  py                  pz              energy                 jec                area neutral_hadron_frac     neutral_em_frac  no_of_constituents charged_hadron_frac      charged_multip     charged_em_frac" << endl;
     
     px = it->px();
     py = it->py();
@@ -337,21 +331,28 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
          
     double correction = AK5JetCorrector_->getCorrection();
 
-    // JEC Uncertainity.
+    // Jet Quality Cut Parameters.
 
-    AK5JECUncertainity_->setJetEta(it->eta());
-    AK5JECUncertainity_->setJetPt( it->pt() * correction ); 				// Must be CORRECTED Jet pT.
-    double uncertainity = AK5JECUncertainity_->getUncertainty(true);
-
+    double neutral_hadron_fraction = it->neutralHadronEnergy() / it->energy();
+    double neutral_em_fraction = it->neutralEmEnergy() / it->energy();
+    int number_of_constituents = it->nConstituents();
+    double charged_hadron_fraction = it->chargedHadronEnergy() / it->energy();
+    int charged_multiplicity = it->chargedMultiplicity();
+    double charged_em_fraction = it->chargedEmEnergy() / it->energy();
  
     output_ << "  AK5"
         << setw(20) << fixed << setprecision(8) << px
         << setw(20) << fixed << setprecision(8) << py
         << setw(20) << fixed << setprecision(8) << pz
         << setw(20) << fixed << setprecision(8) << energy
-        << setw(20) << fixed << setprecision(8) << correction  
-        << setw(20) << fixed << setprecision(8) << area       
-        << setw(20) << fixed << setprecision(8) << uncertainity
+        << setw(20) << fixed << setprecision(8) << correction
+        << setw(20) << fixed << setprecision(8) << area   
+        << setw(20) << fixed << setprecision(8) << neutral_hadron_fraction   
+        << setw(20) << fixed << setprecision(8) << neutral_em_fraction   
+        << setw(20) << fixed << setprecision(8) << number_of_constituents   
+        << setw(20) << fixed << setprecision(8) << charged_hadron_fraction   
+        << setw(20) << fixed << setprecision(8) << charged_multiplicity   
+        << setw(20) << fixed << setprecision(8) << charged_em_fraction       
         << endl;
   }
   
@@ -412,7 +413,6 @@ void PFCandidateProducer::beginJob() {
    
    AK5JetCorrector_ = new FactorizedJetCorrector(vParAK5);
 
-   AK5JECUncertainity_ = new JetCorrectionUncertainty("data/JEC/GR_R_42_V25_AK5PF_Uncertainty.txt");
    
    std::cout << "Processing PFCandidates." << std::endl;
    
