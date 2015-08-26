@@ -23,9 +23,6 @@
 #include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
 #include "DataFormats/ParticleFlowCandidate/interface/PFCandidateFwd.h"
 
-#include "CommonTools/UtilAlgos/interface/TFileService.h"
-#include "DataFormats/Common/interface/HLTGlobalStatus.h"
-#include "DataFormats/Provenance/interface/ParameterSetID.h"
 #include "DataFormats/Common/interface/TriggerResults.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "FWCore/Common/interface/TriggerNames.h"
@@ -33,32 +30,13 @@
 #include "HLTrigger/HLTcore/interface/HLTConfigProvider.h"
 
 #include "DataFormats/JetReco/interface/PFJet.h"
-#include "DataFormats/ParticleFlowReco/interface/PFBlockFwd.h"
 #include "DataFormats/JetReco/interface/PFJetCollection.h"
 
 #include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
-#include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
 #include "CondFormats/JetMETObjects/interface/FactorizedJetCorrector.h"
 
 
-#include "DataFormats/Common/interface/Handle.h"
-#include "FWCore/FWLite/interface/AutoLibraryLoader.h"
-
-#include "DataFormats/PatCandidates/interface/Jet.h"
-
-#include "DataFormats/JetReco/interface/CaloJet.h" 
-#include "DataFormats/JetReco/interface/GenJet.h"
-
 #include "RecoJets/JetProducers/interface/BackgroundEstimator.h"
-
-#include "FWCore/Framework/interface/InputSourceDescription.h"
-
-#include "FWCore/Sources/interface/ExternalInputSource.h"
-#include "FWCore/Sources/interface/EDInputSource.h"
-
-#include "FWCore/Framework/interface/InputSourceDescription.h"
-#include "FWCore/Sources/interface/EDInputSource.h"
-
 
 #include "FWCore/Framework/interface/LuminosityBlock.h"
 #include "DataFormats/Luminosity/interface/LumiSummary.h"
@@ -69,7 +47,6 @@
 #include "DataFormats/TrackReco/interface/TrackFwd.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
-
 
 
 
@@ -133,8 +110,6 @@ private:
    long int eventSerialNumber_;
    
    FactorizedJetCorrector * AK5JetCorrector_;
-   JetCorrectionUncertainty * AK5JECUncertainity_;
-
 
    std::vector<std::string> filenames_;
    
