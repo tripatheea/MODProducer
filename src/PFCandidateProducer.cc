@@ -150,6 +150,8 @@ private:
    
    string outputFilename_;
    string lastOutputFilename_;
+
+   bool processFromTheBeginning_;
    
    string inputFile_;
    
@@ -174,6 +176,12 @@ PFCandidateProducer::PFCandidateProducer(const ParameterSet& iConfig)
 
   outputFilename_ = "";
   lastOutputFilename_ = "";
+
+  processFromTheBeginning_ = iConfig.getParameter<bool>("processFromTheBeginning");
+
+  if ( ! processFromTheBeginning_)
+    inputFile_ = iConfig.getParameter<string>("inputFile");
+	  
 }
 
 
@@ -284,7 +292,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
    // Get all trigger names associated with the "Jet" dataset.
    const vector<string> triggerNames = hltConfig_.datasetContent("Jet");
    
-   
+   /*
    for (unsigned i = 0; i < triggerNames.size(); i++) {
       if (i == 0)
          output_ << "# Trig                              Name  Prescale_1  Prescale_2  Fired?" << endl;
@@ -302,7 +310,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
                   << setw(8) << fired
                   << endl;
    }
-   
+   */
 
   // Get AK5 Jets.
   
@@ -416,6 +424,38 @@ void PFCandidateProducer::beginJob() {
    
    std::cout << "Processing PFCandidates." << std::endl;
    
+   // Map thingy.
+
+   if ( ! processFromTheBeginning_) {
+   	
+   	string line, directory;
+   	int fileEventNum, fileRunNum;
+   	int linesDown = 1;
+   
+	ifstream registryFile(mapFilename_.c_str());
+   
+   	string rootFilename = "";
+   	
+   	while((rootFilename != inputFile_)) {
+   		
+		getline(registryFile, line);
+		istringstream iss(line);
+   		iss >> fileEventNum >> fileRunNum >> directory >> rootFilename;
+   		linesDown++;
+	}
+	
+	cout << "Trying to find the correct line here!" << endl;
+	cout << linesDown << endl;
+	
+	for(int i = 0; i < linesDown - 2; i++) {
+		getline(mapFile_, line);
+		istringstream iss(line);
+		iss >> fileEventNum >> fileRunNum >> directory >> rootFilename;
+	}
+	
+   }
+
+
 }
 
 void PFCandidateProducer::endJob() {
