@@ -14,12 +14,18 @@ from RecoJets.JetProducers.kt4PFJets_cfi import kt4PFJets
 input_dir = sys.argv[2]
 map_file_path = sys.argv[3]
 process_from_the_beginning = (sys.argv[4] == "1")
+multiple_files = (sys.argv[5] == "1")
 
 dir_to_create = input_dir.replace("AOD", "MOD")
 if not os.path.exists(dir_to_create):
     os.makedirs(dir_to_create)
 
 files_to_process = []
+
+
+print
+print
+print
 
 if os.path.isdir(input_dir):
 	for file in os.listdir(input_dir):
@@ -36,7 +42,42 @@ else:
 	segments = files_to_process[0].split("/")
 	input_file = segments[len(segments) - 1:len(segments)][0]
 	is_input_directory = False
+
+
+
+
+if ( not process_from_the_beginning ) and multiple_files:
+	segments = files_to_process[0].split("/")
+	input_file_list = segments[0:len(segments) - 1]
+	input_file = segments[len(segments) - 1:len(segments)][0]
+
+	input_dir = ""
+	for x in input_file_list:
+		input_dir += x + "/"
+
+	input_dir = input_dir[len("file://"):]
 	
+	files_to_process = []
+	for file in os.listdir(input_dir):
+		if file.endswith("root"):
+			output_file = input_dir.replace("AOD", "MOD") + "/" + file + ".mod"
+			if not os.path.exists(output_file):
+				files_to_process.append("file://" + input_dir + "/" + file)
+	
+	# This sorting is crucial.
+	files_to_process = sorted(files_to_process)
+		
+	print
+	print
+	print files_to_process[0]
+	print "file://" + input_dir + input_file
+
+	#print files_to_process.index("file://" + input_dir + input_file)
+
+print
+print
+print
+
 # This sorting is crucial.
 files_to_process = sorted(files_to_process)
 
