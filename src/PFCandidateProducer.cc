@@ -269,7 +269,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
    
    for (unsigned i = 0; i < triggerNames.size(); i++) {
       if (i == 0)
-         output_ << "# Trig                              Name  Prescale_1  Prescale_2  Fired?" << endl;
+         output_ << "# Trig                              Name   Pre_1   Pre_2 Fir" << endl;
       
       string name = triggerNames[i];
       
@@ -279,9 +279,9 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
 
       output_ << "  Trig"
        	          << setw(34) << name
-	          << setw(12) << prescale.first
-	          << setw(12) << prescale.second
-                  << setw(8) << fired
+	          << setw(8) << prescale.first
+	          << setw(8) << prescale.second
+                  << setw(4) << fired
                   << endl;
    }
 
@@ -295,7 +295,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
   
   for(reco::PFJetCollection::const_iterator it = AK5Collection->begin(), end = AK5Collection->end(); it != end; it++) {    
     if (it == AK5Collection->begin())
-       output_ << "# AK5" << "                  px                  py                  pz              energy                 jec                area neutral_hadron_frac     neutral_em_frac  no_of_constituents charged_hadron_frac      charged_multip     charged_em_frac" << endl;
+       output_ << "# AK5" << "              px              py              pz          energy             jec            area    neu_had_frac     neu_em_frac     no_of_const   chrg_had_frac     chrg_multip    chrg_em_frac" << endl;
     
     px = it->px();
     py = it->py();
@@ -322,18 +322,18 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
     double charged_em_fraction = it->chargedEmEnergy() / it->energy();
  
     output_ << "  AK5"
-        << setw(20) << fixed << setprecision(8) << px
-        << setw(20) << fixed << setprecision(8) << py
-        << setw(20) << fixed << setprecision(8) << pz
-        << setw(20) << fixed << setprecision(8) << energy
-        << setw(20) << fixed << setprecision(8) << correction
-        << setw(20) << fixed << setprecision(8) << area   
-        << setw(20) << fixed << setprecision(8) << neutral_hadron_fraction   
-        << setw(20) << fixed << setprecision(8) << neutral_em_fraction   
-        << setw(20) << fixed << setprecision(8) << number_of_constituents   
-        << setw(20) << fixed << setprecision(8) << charged_hadron_fraction   
-        << setw(20) << fixed << setprecision(8) << charged_multiplicity   
-        << setw(20) << fixed << setprecision(8) << charged_em_fraction       
+        << setw(16) << fixed << setprecision(8) << px
+        << setw(16) << fixed << setprecision(8) << py
+        << setw(16) << fixed << setprecision(8) << pz
+        << setw(16) << fixed << setprecision(8) << energy
+        << setw(16) << fixed << setprecision(8) << correction
+        << setw(16) << fixed << setprecision(8) << area   
+        << setw(16) << fixed << setprecision(8) << neutral_hadron_fraction   
+        << setw(16) << fixed << setprecision(8) << neutral_em_fraction   
+        << setw(16) << fixed << setprecision(8) << number_of_constituents   
+        << setw(16) << fixed << setprecision(8) << charged_hadron_fraction   
+        << setw(16) << fixed << setprecision(8) << charged_multiplicity   
+        << setw(16) << fixed << setprecision(8) << charged_em_fraction       
         << endl;
   }
   
@@ -341,7 +341,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
   // Get PFCandidates.
   for(reco::PFCandidateCollection::const_iterator it = PFCollection->begin(), end = PFCollection->end(); it != end; it++) {
     if (it == PFCollection->begin())
-       output_ << "# PFC" << "                  px                  py                  pz              energy         pdgId" << endl;  
+       output_ << "# PFC" << "              px              py              pz          energy   pdgId" << endl;  
     
     px = it->px();
     py = it->py();
@@ -350,11 +350,11 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
     int pdgId = it->pdgId();
     
     output_ << "  PFC"
-        << setw(20) << fixed << setprecision(8) << px
-        << setw(20) << fixed << setprecision(8) << py
-        << setw(20) << fixed << setprecision(8) << pz
-        << setw(20) << fixed << setprecision(8) << energy
-        << setw(14) << noshowpos << pdgId
+        << setw(16) << fixed << setprecision(8) << px
+        << setw(16) << fixed << setprecision(8) << py
+        << setw(16) << fixed << setprecision(8) << pz
+        << setw(16) << fixed << setprecision(8) << energy
+        << setw(8) << noshowpos << pdgId
         << endl;
    }
    
