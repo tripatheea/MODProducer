@@ -12,10 +12,11 @@ from RecoJets.JetProducers.ak5PFJets_cfi import ak5PFJets
 from RecoJets.JetProducers.kt4PFJets_cfi import kt4PFJets
 
 input_dir = sys.argv[2]
-map_file_path = sys.argv[3]
-process_from_the_beginning = (sys.argv[4] == "1")
+output_dir = sys.argv[3]
+map_file_path = sys.argv[4]
+process_from_the_beginning = (sys.argv[5] == "1")
 
-dir_to_create = input_dir.replace("AOD", "MOD")
+dir_to_create = output_dir
 if not os.path.exists(dir_to_create):
     os.makedirs(dir_to_create)
 
@@ -24,7 +25,7 @@ files_to_process = []
 if os.path.isdir(input_dir):
 	for file in os.listdir(input_dir):
 		if file.endswith("root"):
-			output_file = input_dir.replace("AOD", "MOD") + "/" + file + ".mod"
+			output_file = output_dir + "/" + file + ".mod"
 			if not os.path.exists(output_file):
 				files_to_process.append("file://" + input_dir + "/" + file)
 			
@@ -54,8 +55,8 @@ readFiles.extend(files_to_process)
 
 process = cms.Process("MITCMSOpenData")
 
-process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
-process.GlobalTag.globaltag = 'GR_R_42_V25::All'
+#process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
+#process.GlobalTag.globaltag = 'GR_R_42_V25::All'
 
 process.source = cms.Source("PoolSource", fileNames=readFiles)
 
@@ -78,6 +79,7 @@ process.PFCandidateProducer = cms.EDProducer("PFCandidateProducer",
 					mapFilename = cms.string(map_file_path),
 					processFromTheBeginning = cms.bool(process_from_the_beginning),
 					inputFile = cms.string(input_file),
+					outputDir = cms.string(output_dir), 
 					primaryVertices = cms.InputTag("offlinePrimaryVertices"),
 					dataVersion = cms.string("4")
 				)

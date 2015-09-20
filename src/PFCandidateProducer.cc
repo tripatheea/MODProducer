@@ -119,6 +119,7 @@ private:
    
    ifstream mapNumbersFile_;
    
+   string outputDir_;
    ofstream fileOutput_;
    
    stringstream output_;
@@ -148,9 +149,12 @@ PFCandidateProducer::PFCandidateProducer(const ParameterSet& iConfig)
 {
   mapFilename_ = iConfig.getParameter<string>("mapFilename");
   mapFile_.open(mapFilename_.c_str()); 
-
+  
+  outputDir_ = iConfig.getParameter<string>("outputDir");
   outputFilename_ = "";
   lastOutputFilename_ = "";
+
+  cout << outputDir_ << endl;
 
   processFromTheBeginning_ = iConfig.getParameter<bool>("processFromTheBeginning");
 
@@ -178,14 +182,12 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
    eventNum = iEvent.id().event();
    lumiBlockNumber_ = iEvent.luminosityBlock();
    
-   
    if ((fileRunNum == runNum) && (fileEventNum == eventNum)) {
    	
-   	outputFilename_ = directory + "/" + filename + ".mod";
-
-   	outputFilename_.replace( outputFilename_.find("AOD"), 3, "MOD");
+   	outputFilename_ = outputDir_ + "/" + filename + ".mod";
 	
 	if ((eventSerialNumber_ == 1) || (outputFilename_ != lastOutputFilename_)) {
+	   cout << "Two step in :" << outputFilename_ << endl;
 	   fileOutput_.close();
 	   fileOutput_.open(outputFilename_.c_str(), ios::out | ios::app );
 	   lastOutputFilename_ = outputFilename_;
@@ -214,11 +216,8 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
    
    
    // Luminosity Block Ends
-
-
-   
-   output_ << "# Cond          RunNum        EventNum       LumiBlock     AvgInstLumi             NPV" << endl;
-   output_ << "  Cond "
+   output_ << "#   Cond          RunNum        EventNum       LumiBlock     AvgInstLumi             NPV" << endl;
+   output_ << "    Cond"
    	       << setw(16) << runNum
 	       << setw(16) << eventNum
 	       << setw(16) << lumiBlockNumber_
@@ -270,10 +269,10 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
    
    // Get all trigger names associated with the "Jet" dataset.
    const vector<string> triggerNames = hltConfig_.datasetContent("Jet");
-   
+   /*
    for (unsigned i = 0; i < triggerNames.size(); i++) {
       if (i == 0)
-         output_ << "# Trig                            Name            Prescale_1      Prescale_2          Fired?" << endl;
+         output_ << "#   Trig                            Name            Prescale_1      Prescale_2          Fired?" << endl;
       
       string name = triggerNames[i];
       
@@ -281,14 +280,14 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
 
       bool fired = triggerFired(name, ( * trigResults));
 
-      output_ << "  Trig"
+      output_ << "    Trig"
        	          << setw(32) << name
 	          << setw(16) << prescale.first
 	          << setw(16) << prescale.second
                   << setw(16) << fired
                   << endl;
    }
-
+   */
   // Get AK5 Jets.
   
   // Setup background density for AK5 JEC.
@@ -299,7 +298,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
   
   for(reco::PFJetCollection::const_iterator it = AK5Collection->begin(), end = AK5Collection->end(); it != end; it++) {    
     if (it == AK5Collection->begin())
-       output_ << "# AK5" << "              px              py              pz          energy             jec            area     no_of_const     chrg_multip    neu_had_frac     neu_em_frac   chrg_had_frac    chrg_em_frac" << endl;
+       output_ << "#    AK5" << "              px              py              pz          energy             jec            area     no_of_const     chrg_multip    neu_had_frac     neu_em_frac   chrg_had_frac    chrg_em_frac" << endl;
     
     px = it->px();
     py = it->py();
@@ -325,7 +324,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
     int charged_multiplicity = it->chargedMultiplicity();
     double charged_em_fraction = it->chargedEmEnergy() / it->energy();
  
-    output_ << "  AK5"
+    output_ << "     AK5"
         << setw(16) << fixed << setprecision(8) << px
         << setw(16) << fixed << setprecision(8) << py
         << setw(16) << fixed << setprecision(8) << pz
@@ -345,7 +344,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
   // Get PFCandidates.
   for(reco::PFCandidateCollection::const_iterator it = PFCollection->begin(), end = PFCollection->end(); it != end; it++) {
     if (it == PFCollection->begin())
-       output_ << "# PFC" << "              px              py              pz          energy           pdgId" << endl;  
+       output_ << "#    PFC" << "              px              py              pz          energy           pdgId" << endl;  
     
     px = it->px();
     py = it->py();
@@ -353,7 +352,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
     energy = it->energy();
     int pdgId = it->pdgId();
     
-    output_ << "  PFC"
+    output_ << "     PFC"
         << setw(16) << fixed << setprecision(8) << px
         << setw(16) << fixed << setprecision(8) << py
         << setw(16) << fixed << setprecision(8) << pz
