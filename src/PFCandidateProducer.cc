@@ -272,7 +272,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
 
    for (unsigned i = 0; i < triggerNames.size(); i++) {
       if (i == 0)
-         output_ << "#   Trig                            Name            Prescale_1      Prescale_2          Fired?" << endl;
+         output_ << "#   Trig                            Name      Prescale_1      Prescale_2          Fired?" << endl;
       
       string name = triggerNames[i];
       
