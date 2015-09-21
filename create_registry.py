@@ -2,7 +2,6 @@ from subprocess import call
 import os
 from time import time
 import sys
-from collections import defaultdict
 
 path = sys.argv[1]
 registry_file_path = sys.argv[2]

@@ -129,7 +129,7 @@ Some random notes that might be helpful as you play around with the code here:
 
 4. If you're using something like an external hard drive to store the MOD files into, you'll have to use a "shared directory". Here's how to set it up:
    - Add whatever directory you'd like to use under Shared Folder in the VM settings.
-   - Create a user group called `vboxsf` and add the user cms-opendata to that group with `sudo usermod -aG vboxsf cms-opendata`.
+   - Create a user group called `vboxsf` and add the user cms-opendata to that group with `sudo usermod -aG vboxsf cms-opendata`. The root password is `password`.
    - Restart your VM.
 
 ## Troubleshooting
