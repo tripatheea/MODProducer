@@ -127,6 +127,11 @@ Some random notes that might be helpful as you play around with the code here:
 
 3. If you use a new module/component inside `src/PFCandidateProducer.cc`, do not forget to include the corresponding module in the buildfile. Likewise, if you're not using a certain module, remove the corresponding module from the buildfile so that it doesn't slow down compilation of your code.  
 
+4. If you're using something like an external hard drive to store the MOD files into, you'll have to use a "shared directory". Here's how to set it up:
+   - Add whatever directory you'd like to use under Shared Folder in the VM settings.
+   - Create a user group called `vboxsf` and add the user cms-opendata to that group with `sudo usermod -aG vboxsf cms-opendata`.
+   - Restart your VM.
+
 ## Troubleshooting
 
     Standard library exception caught in cmsRun:
