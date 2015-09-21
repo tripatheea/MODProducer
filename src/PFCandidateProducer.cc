@@ -187,7 +187,6 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
    	outputFilename_ = outputDir_ + "/" + filename + ".mod";
 	
 	if ((eventSerialNumber_ == 1) || (outputFilename_ != lastOutputFilename_)) {
-	   cout << "Two step in :" << outputFilename_ << endl;
 	   fileOutput_.close();
 	   fileOutput_.open(outputFilename_.c_str(), ios::out | ios::app );
 	   lastOutputFilename_ = outputFilename_;
