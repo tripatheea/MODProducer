@@ -48,6 +48,7 @@
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 
+#include "DataFormats/Provenance/interface/Timestamp.h"
 
 
 using namespace std;
@@ -184,7 +185,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
    
    if ((fileRunNum == runNum) && (fileEventNum == eventNum)) {
    	
-   	outputFilename_ = outputDir_ + "/" + filename + ".mod";
+   	outputFilename_ = outputDir_ + "/" + filename.substr(0, filename.size() - strlen(".root")) + ".mod";
 	
 	if ((eventSerialNumber_ == 1) || (outputFilename_ != lastOutputFilename_)) {
 	   fileOutput_.close();
@@ -208,32 +209,25 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
    LuminosityBlock const& iLumi = iEvent.getLuminosityBlock();
    Handle<LumiSummary> lumi;
    iLumi.getByLabel(lumiSummaryLabel_, lumi);
-   
-   double avgInstLumi = -3.1415;
-   if (lumi.isValid())
-      avgInstLumi = lumi->avgInsDelLumi();
-   
-
-   //cout << lumi->isValid() << " " << lumi->intgDelLumi() << "  " << lumi->lumiSecQual() << "  " << lumi->deadcount() << "  " << " " << lumi->deadFrac() << " " << lumi->liveFrac() << " " << lumi->lumiSectionLength() << " " << lumi->lsNumber() << " " << lumi->intgRecLumi() << " " << lumi->startOrbit() << " " << lumi->numOrbit() << std::endl;
-   
+      
    // Luminosity Block Ends
-   output_ << "#   Cond          RunNum        EventNum       LumiBlock     AvgInstLumi             NPV       validLumi     intgDelLumi       deadCount    liveFraction   lumiSecLength     intgRecLumi        numOrbit" << endl;
+   output_ << "#   Cond          RunNum        EventNum       LumiBlock       validLumi     intgDelLumi     intgRecLumi     AvgInstLumi             NPV       timestamp        msOffset" << endl;
    output_ << "    Cond"
    	       << setw(16) << runNum
 	       << setw(16) << eventNum
 	       << setw(16) << lumiBlockNumber_
-   	       << setw(16) << lumi->avgInsDelLumi()
-   	       << setw(16) << primaryVerticesHandle->size()
    	       << setw(16) << lumi->isValid()
    	       << setw(16) << lumi->intgDelLumi()
-   	       << setw(16) << lumi->deadcount()
-   	       << setw(16) << lumi->liveFrac()
-   	       << setw(16) << lumi->lumiSectionLength()
    	       << setw(16) << lumi->intgRecLumi()
-   	       << setw(16) << lumi->numOrbit()
+   	       << setw(16) << lumi->avgInsDelLumi()
+   	       << setw(16) << primaryVerticesHandle->size()
+	       << setw(16) << iEvent.time().unixTime()
+	       << setw(16) << iEvent.time().microsecondOffset()
  	       << endl;   
-   	       
+
+   // timeValue = timeHigh (unixTime); timeValue = timeValue << 32; timeValue += microsecondsOffset;
    
+
    Handle<reco::PFCandidateCollection> PFCollection;
    iEvent.getByLabel(PFCandidateInputTag_, PFCollection);
    
@@ -277,7 +271,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
    
    // Get all trigger names associated with the "Jet" dataset.
    const vector<string> triggerNames = hltConfig_.datasetContent("Jet");
-   /*
+   
    for (unsigned i = 0; i < triggerNames.size(); i++) {
       if (i == 0)
          output_ << "#   Trig                            Name      Prescale_1      Prescale_2          Fired?" << endl;
@@ -295,7 +289,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
                   << setw(16) << fired
                   << endl;
    }
-   */
+   
   // Get AK5 Jets.
   
   // Setup background density for AK5 JEC.
