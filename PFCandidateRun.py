@@ -81,7 +81,7 @@ process.PFCandidateProducer = cms.EDProducer("PFCandidateProducer",
 					inputFile = cms.string(input_file),
 					outputDir = cms.string(output_dir), 
 					primaryVertices = cms.InputTag("offlinePrimaryVertices"),
-					dataVersion = cms.string("4")
+					dataVersion = cms.string("5")
 				)
 				
 process.producer = cms.Path( process.ak5PFJets * process.kt6PFJetsForIsolation * process.PFCandidateProducer)
