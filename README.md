@@ -144,7 +144,7 @@ This error message generally means that you didn't use  an encrypted Internet co
 ## TODO
 
 ####create_registry.py:
-- [ ] Is there a reason this isn't in the utilities folder?  Alternatively, does download.py need to be in a separate utilities folder?
+- [x] Is there a reason this isn't in the utilities folder?  Alternatively, does download.py need to be in a separate utilities folder?
 - [ ] Can you put comments at the beginning of this file saying how to run it?  (i.e. what the arguments are and what this does?)  This comment holds for all of the .py files that the user might call directly.
 
 ####data:
