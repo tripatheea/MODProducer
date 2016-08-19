@@ -2,6 +2,21 @@ import os
 from subprocess import call
 import sys
 
+'''
+This script downloads ROOT files from the CMS server. This script takes two arguments:
+
+1) a path to a file which contains a list of links to files to download (one link per line)
+2) a destination path to write the files to. For a sample file that contains links to file, see file_paths/Jet/small_list.txt.
+
+The download script will skip any ROOT file that you have already downloaded and will resume any broken downloads. So you don't have to download all the files at once as long as you are downloading all of them to the same directory.
+
+Run this script as follows:
+
+python ./utilities/download.py ./file_paths/Jet/small_list.txt ~/MITOpenDataProject/
+
+'''
+
+
 list_of_downloads_file = sys.argv[1]
 destination_dir = sys.argv[2]
 

@@ -139,3 +139,30 @@ Some random notes that might be helpful as you play around with the code here:
     Can not get data (Additional Information: [frontier.c:793]: No more servers/proxies. 
   
 This error message generally means that you didn't use  an encrypted Internet connection. If you are on MIT campus that means you should be using either the MIT SECURE access point or an Ethernet cable.
+
+
+## TODO
+
+####create_registry.py:
+- [x] Is there a reason this isn't in the utilities folder?  Alternatively, does download.py need to be in a separate utilities folder?
+- [ ] Can you put comments at the beginning of this file saying how to run it?  (i.e. what the arguments are and what this does?)  This comment holds for all of the .py files that the user might call directly.
+
+####data:
+- [ ] This directory has a bit misleading name, since it isn't data.  I would call this "databases" instead.  I would put the list of validated runs here.
+
+####file_paths:
+- [ ] It is a bad idea to have many nested folders if you don't need them.  If you move the list of validated runs to the databases folder, then inside in the file_paths, you can directly have a jet_primary_remote folder and jet_primary_small.txt
+
+####JEC_cfg.py:
+- [ ] Can this be moved to the utilities folder, or does it have to stay here?
+
+####filenameRun.py:
+- [ ] You should change this to FilenameMapRun.py for consistency.
+
+####filenameMapProducer.cc:
+- [ ] Capitalize this as FilenameMapProducer.cc for consistency.  (.cc and .hh files should always be capitalized.)
+
+####PFCanidateProducer.cc:
+- [ ] Line 200: You shouldn't hard code "CMS_2010" and "Jet_Primary_Dataset".  Rather, they should be parameters just like the version number that can be changed easily.  Note that it should be "CMS_2010B".
+- [ ] Line 273:  You shouldn't hard code "Jet" here.  Rather, the name of the primary data set should correlate with the name given in the header.  That way, we can run other primary datasets without having to change too much.
+- [ ] Line 453:  What's up with "TopPairElectronPlusJetsSelectionFilter"?
