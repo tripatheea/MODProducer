@@ -62,6 +62,7 @@ filenameMapProducer::~filenameMapProducer() {
 }
 
 void filenameMapProducer::produce(Event& iEvent, const EventSetup& iSetup) {
+   
    int runNum = iEvent.id().run();
    int eventNum = iEvent.id().event();
    
@@ -69,7 +70,7 @@ void filenameMapProducer::produce(Event& iEvent, const EventSetup& iSetup) {
 }
 
 void filenameMapProducer::beginJob() {
-   
+
 }
 
 void filenameMapProducer::endJob() {
@@ -85,7 +86,7 @@ void filenameMapProducer::endRun(edm::Run&, edm::EventSetup const&) {
 }
 
 void filenameMapProducer::beginLuminosityBlock(edm::LuminosityBlock& iLumi, edm::EventSetup const& iSetup) {
-   
+
 }
 
 void filenameMapProducer::endLuminosityBlock(edm::LuminosityBlock& iLumi, edm::EventSetup const& iSetup) {
