@@ -11,6 +11,8 @@
 #include <sys/time.h>
 #include <sys/stat.h>
 
+#include <boost/unordered_map.hpp>
+
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/EDProducer.h"
 #include "FWCore/Framework/interface/Event.h"
@@ -114,8 +116,8 @@ private:
 
    std::vector<std::string> filenames_;
    
-   string mapFilename_;
-   ifstream mapFile_;
+   string registry_filename_;
+   boost::unordered_map<pair<int, int>, string> registry_info_;
 
    
    ifstream mapNumbersFile_;
@@ -127,10 +129,7 @@ private:
    
    string outputFilename_;
    string lastOutputFilename_;
-
-   bool processFromTheBeginning_;
    
-   string inputFile_;
    
    InputTag primaryVertices_;
    string dataVersion_;
@@ -148,19 +147,12 @@ PFCandidateProducer::PFCandidateProducer(const ParameterSet& iConfig)
   primaryVertices_(iConfig.getParameter<InputTag>("primaryVertices")),
   dataVersion_(iConfig.getParameter<string>("dataVersion"))
 {
-  mapFilename_ = iConfig.getParameter<string>("mapFilename");
-  mapFile_.open(mapFilename_.c_str()); 
+  registry_filename_ = iConfig.getParameter<string>("mapFilename");
   
+
   outputDir_ = iConfig.getParameter<string>("outputDir");
   outputFilename_ = "";
   lastOutputFilename_ = "";
-
-  cout << outputDir_ << endl;
-
-  processFromTheBeginning_ = iConfig.getParameter<bool>("processFromTheBeginning");
-
-  if ( ! processFromTheBeginning_)
-    inputFile_ = iConfig.getParameter<string>("inputFile");
 	  
 }
 
@@ -171,38 +163,26 @@ PFCandidateProducer::~PFCandidateProducer() {
 
 void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
 
-   string line, directory, filename;
-   int fileEventNum, fileRunNum;
-
-   getline(mapFile_, line);
-   istringstream iss(line);
-  	
-   iss >> fileEventNum >> fileRunNum >> directory >> filename;
-
    runNum = iEvent.id().run();
    eventNum = iEvent.id().event();
    lumiBlockNumber_ = iEvent.luminosityBlock();
    
-   if ((fileRunNum == runNum) && (fileEventNum == eventNum)) {
-   	
-   	outputFilename_ = outputDir_ + "/" + filename.substr(0, filename.size() - strlen(".root")) + ".mod";
-	
-	if ((eventSerialNumber_ == 1) || (outputFilename_ != lastOutputFilename_)) {
-	   fileOutput_.close();
-	   fileOutput_.open(outputFilename_.c_str(), ios::out | ios::app );
-	   lastOutputFilename_ = outputFilename_;
-	}
+   outputFilename_ = outputDir_ + "/" + registry_info_[make_pair(runNum, eventNum)] + ".mod";
+   
+   if ((eventSerialNumber_ == 1) || (outputFilename_ != lastOutputFilename_)) {
+      fileOutput_.close();
+      fileOutput_.open(outputFilename_.c_str(), ios::out | ios::app );
+      lastOutputFilename_ = outputFilename_;
    }
    
    output_.str("");
    output_.clear(); // Clear state flags.
-   
+
    output_ << "BeginEvent Version " << dataVersion_ << " CMS_2010 Jet_Primary_Dataset" << endl;
    
    // Primary Vertices.
    edm::Handle<VertexCollection> primaryVerticesHandle;
-   iEvent.getByLabel( edm::InputTag("offlinePrimaryVertices"), primaryVerticesHandle);
-   
+   iEvent.getByLabel( edm::InputTag("offlinePrimaryVertices"), primaryVerticesHandle);   
    
    // Luminosity Block Begins
    
@@ -402,38 +382,34 @@ void PFCandidateProducer::beginJob() {
    
    std::cout << "Processing PFCandidates." << std::endl;
    
-   // Map thingy.
+   // Load the map to memory.
+   cout << "Loading registry to memory." << endl;
+   
+   ifstream registry(registry_filename_.c_str());
 
-   if ( ! processFromTheBeginning_) {
-   	
-   	string line, directory;
-   	int fileEventNum, fileRunNum;
-   	int linesDown = 1;
-   
-	ifstream registryFile(mapFilename_.c_str());
-   
-   	string rootFilename = "";
-   	
-   	while((rootFilename != inputFile_)) {
-   		
-		getline(registryFile, line);
-		istringstream iss(line);
-   		iss >> fileEventNum >> fileRunNum >> directory >> rootFilename;
-   		linesDown++;
-	}
-	
-	cout << "Trying to find the correct line here!" << endl;
-	cout << linesDown << endl;
-	
-	for(int i = 0; i < linesDown - 2; i++) {
-		getline(mapFile_, line);
-		istringstream iss(line);
-		iss >> fileEventNum >> fileRunNum >> directory >> rootFilename;
-	}
-	
+   int line_number = 1;
+
+   string line;
+   // while ((getline(registry, line)) && (line_number < 100000000)) {
+   while (getline(registry, line)) {
+
+      if (line_number % 100000 == 0)
+         cout << "On line number " << line_number << endl;
+
+      istringstream iss(line);
+
+      int registry_event_number, registry_run_number;
+      string file_path, root_filename;
+
+      iss >> registry_event_number >> registry_run_number >> file_path >> root_filename;
+
+      //registry_info_.emplace(registry_event_number, root_filename.substr(0, 36));  // 36 because the filenames without extensions are 37 characters long.
+      //registry_info_[registry_event_number] = root_filename.substr(0, 36);
+      registry_info_.insert(make_pair(make_pair(registry_run_number, registry_event_number), root_filename.substr(0, 36)));
+
+      line_number++;
    }
-
-
+   
 }
 
 void PFCandidateProducer::endJob() {

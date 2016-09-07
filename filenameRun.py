@@ -17,14 +17,6 @@ process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))
 process.source = cms.Source ("PoolSource", fileNames=cms.untracked.vstring( data_file_link ) )
 
 
-
-'''
-goodJSON = "file_paths/Cert_136033-149442_7TeV_Apr21ReReco_Collisions10_JSON_v2.txt"
-myLumis = LumiList.LumiList(filename = goodJSON).getCMSSWString().split(',')
-process.source.lumisToProcess = cms.untracked.VLuminosityBlockRange()
-process.source.lumisToProcess.extend(myLumis)
-'''
-
 process.filenameMapProducer = cms.EDProducer("filenameMapProducer", 
 						filename = cms.string(file_name), 
 						file_dir = cms.string(file_directory), 

@@ -14,7 +14,6 @@ from RecoJets.JetProducers.kt4PFJets_cfi import kt4PFJets
 input_dir = sys.argv[2]
 output_dir = sys.argv[3]
 map_file_path = sys.argv[4]
-process_from_the_beginning = (sys.argv[5] == "1")
 
 dir_to_create = output_dir
 if not os.path.exists(dir_to_create):
@@ -34,19 +33,11 @@ if os.path.isdir(input_dir):
 			
 else:
 	files_to_process.append("file://" + input_dir)
-	segments = files_to_process[0].split("/")
-	input_file = segments[len(segments) - 1:len(segments)][0]
-	is_input_directory = False
 
 
 # This sorting is crucial.
+# Not anymore since we store the entire map as a hashmap.
 files_to_process = sorted(files_to_process)
-
-
-if is_input_directory:
-	segments = files_to_process[0].split("/")
-	input_file = segments[len(segments) - 1:len(segments)][0]
-
 
 
 readFiles = cms.untracked.vstring()
@@ -77,8 +68,6 @@ process.PFCandidateProducer = cms.EDProducer("PFCandidateProducer",
 					PFCandidateInputTag = cms.InputTag("particleFlow"),
 					AK5PFInputTag = cms.InputTag("ak5PFJets"),
 					mapFilename = cms.string(map_file_path),
-					processFromTheBeginning = cms.bool(process_from_the_beginning),
-					inputFile = cms.string(input_file),
 					outputDir = cms.string(output_dir), 
 					primaryVertices = cms.InputTag("offlinePrimaryVertices"),
 					dataVersion = cms.string("5")
