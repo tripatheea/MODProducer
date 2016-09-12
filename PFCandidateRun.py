@@ -14,6 +14,7 @@ from RecoJets.JetProducers.kt4PFJets_cfi import kt4PFJets
 input_dir = sys.argv[2]
 output_dir = sys.argv[3]
 map_file_path = sys.argv[4]
+completed_log_filename = sys.argv[5]
 
 dir_to_create = output_dir
 if not os.path.exists(dir_to_create):
@@ -25,8 +26,7 @@ if os.path.isdir(input_dir):
 	for file in os.listdir(input_dir):
 		if file.endswith("root"):
 			output_file = output_dir + "/" + file + ".mod"
-			if not os.path.exists(output_file):
-				files_to_process.append("file://" + input_dir + "/" + file)
+			files_to_process.append("file://" + input_dir + "/" + file)
 			
 			is_input_directory = True
 			
@@ -34,15 +34,8 @@ if os.path.isdir(input_dir):
 else:
 	files_to_process.append("file://" + input_dir)
 
-
-# This sorting is crucial.
-# Not anymore since we store the entire map as a hashmap.
-files_to_process = sorted(files_to_process)
-
-
 readFiles = cms.untracked.vstring()
 readFiles.extend(files_to_process)
-
 
 process = cms.Process("MITCMSOpenData")
 
@@ -70,7 +63,8 @@ process.PFCandidateProducer = cms.EDProducer("PFCandidateProducer",
 					mapFilename = cms.string(map_file_path),
 					outputDir = cms.string(output_dir), 
 					primaryVertices = cms.InputTag("offlinePrimaryVertices"),
-					dataVersion = cms.string("5")
+					dataVersion = cms.string("5"),
+					completedLogFilename = cms.string(completed_log_filename)
 				)
 				
 process.producer = cms.Path( process.ak5PFJets * process.kt6PFJetsForIsolation * process.PFCandidateProducer)

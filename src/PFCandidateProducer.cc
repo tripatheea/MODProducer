@@ -117,11 +117,16 @@ private:
    std::vector<std::string> filenames_;
    
    string registry_filename_;
+   string completedLogFilename_;
    boost::unordered_map<pair<int, int>, string> registry_info_;
-
+   
+   boost::unordered_map<pair<int, int>, int> completedEvents_;
    
    ifstream mapNumbersFile_;
-   
+   ifstream completedLogFile_;
+
+   ofstream completedEventsFileOutput_;
+
    string outputDir_;
    ofstream fileOutput_;
    
@@ -148,8 +153,8 @@ PFCandidateProducer::PFCandidateProducer(const ParameterSet& iConfig)
   dataVersion_(iConfig.getParameter<string>("dataVersion"))
 {
   registry_filename_ = iConfig.getParameter<string>("mapFilename");
+  completedLogFilename_ = iConfig.getParameter<string>("completedLogFilename");
   
-
   outputDir_ = iConfig.getParameter<string>("outputDir");
   outputFilename_ = "";
   lastOutputFilename_ = "";
@@ -167,187 +172,202 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
    eventNum = iEvent.id().event();
    lumiBlockNumber_ = iEvent.luminosityBlock();
    
-   outputFilename_ = outputDir_ + "/" + registry_info_[make_pair(runNum, eventNum)] + ".mod";
-   
-   if ((eventSerialNumber_ == 1) || (outputFilename_ != lastOutputFilename_)) {
-      fileOutput_.close();
-      fileOutput_.open(outputFilename_.c_str(), ios::out | ios::app );
-      lastOutputFilename_ = outputFilename_;
+   // Check if we've already processed this event.
+   // Proceed only if we haven't.
+
+   if (completedEvents_.find(make_pair(runNum, eventNum)) == completedEvents_.end()) {
+	//cout << "Skipping event " << eventNum << " since it was already processed." << endl;
+   }
+   else {
+
+	   //cout << "Found event " << eventNum << " " << runNum << endl;
+
+	
+	   outputFilename_ = outputDir_ + "/" + registry_info_[make_pair(runNum, eventNum)] + ".mod";
+	   
+	   if ((eventSerialNumber_ == 1) || (outputFilename_ != lastOutputFilename_)) {
+	      fileOutput_.close();
+	      fileOutput_.open(outputFilename_.c_str(), ios::out | ios::app );
+	      lastOutputFilename_ = outputFilename_;
+	   }
+	   
+	   output_.str("");
+	   output_.clear(); // Clear state flags.
+	
+	   output_ << "BeginEvent Version " << dataVersion_ << " CMS_2010 Jet_Primary_Dataset" << endl;
+	   
+	   // Primary Vertices.
+	   edm::Handle<VertexCollection> primaryVerticesHandle;
+	   iEvent.getByLabel( edm::InputTag("offlinePrimaryVertices"), primaryVerticesHandle);   
+	   
+	   // Luminosity Block Begins
+	   
+	   LuminosityBlock const& iLumi = iEvent.getLuminosityBlock();
+	   Handle<LumiSummary> lumi;
+	   iLumi.getByLabel(lumiSummaryLabel_, lumi);
+	      
+	   // Luminosity Block Ends
+	   output_ << "#   Cond          RunNum        EventNum       LumiBlock       validLumi     intgDelLumi     intgRecLumi     AvgInstLumi             NPV       timestamp        msOffset" << endl;
+	   output_ << "    Cond"
+	   	       << setw(16) << runNum
+		       << setw(16) << eventNum
+		       << setw(16) << lumiBlockNumber_
+	   	       << setw(16) << lumi->isValid()
+	   	       << setw(16) << lumi->intgDelLumi()
+	   	       << setw(16) << lumi->intgRecLumi()
+	   	       << setw(16) << lumi->avgInsDelLumi()
+	   	       << setw(16) << primaryVerticesHandle->size()
+		       << setw(16) << iEvent.time().unixTime()
+		       << setw(16) << iEvent.time().microsecondOffset()
+	 	       << endl;   
+	
+	   // timeValue = timeHigh (unixTime); timeValue = timeValue << 32; timeValue += microsecondsOffset;
+	   
+	
+	   Handle<reco::PFCandidateCollection> PFCollection;
+	   iEvent.getByLabel(PFCandidateInputTag_, PFCollection);
+	   
+	   Handle<TriggerResults> trigResults; 
+	   iEvent.getByLabel(hltInputTag_, trigResults);
+	   
+	   edm::Handle<reco::PFJetCollection> AK5Collection;
+	   iEvent.getByLabel(AK5PFInputTag_, AK5Collection);
+	   
+	   if ( ! PFCollection.isValid()){
+	    cerr << "Invalid collection." << endl;
+	    return;
+	   }
+	   
+	   if ( ! AK5Collection.isValid()){
+	    std::cerr << "Invalid collection." << std::endl;
+	    return;
+	   }
+	   
+	   
+	   // Setup things for JEC factors.
+	   
+	   // Cluster with FastJet to get median background pt density.
+	   
+	   vector<PseudoJet> PFCForFastJet;
+	   
+	   double rapmin = std::numeric_limits<double>::min();
+	   double rapmax = std::numeric_limits<double>::max();
+	   for(reco::PFCandidateCollection::const_iterator it = PFCollection->begin(), end = PFCollection->end(); it != end; it++) {
+	      PFCForFastJet.push_back(PseudoJet(it->px(), it->py(), it->pz(), it->energy()));
+	      
+	      if (it->rapidity() < rapmin)
+	      	rapmin = it->rapidity();
+	      if (it->rapidity() > rapmax)
+	      	rapmax = it->rapidity();
+	   }
+	   
+	   
+	   // Record trigger information first.
+	   
+	   
+	   // Get all trigger names associated with the "Jet" dataset.
+	   const vector<string> triggerNames = hltConfig_.datasetContent("Jet");
+	   
+	   for (unsigned i = 0; i < triggerNames.size(); i++) {
+	      if (i == 0)
+	         output_ << "#   Trig                            Name      Prescale_1      Prescale_2          Fired?" << endl;
+	      
+	      string name = triggerNames[i];
+	      
+	      pair<int, int> prescale = hltConfig_.prescaleValues(iEvent, iSetup, name);
+	
+	      bool fired = triggerFired(name, ( * trigResults));
+	
+	      output_ << "    Trig"
+	       	          << setw(32) << name
+		          << setw(16) << prescale.first
+		          << setw(16) << prescale.second
+	                  << setw(16) << fired
+	                  << endl;
+	   }
+	   
+	  // Get AK5 Jets.
+	  
+	  // Setup background density for AK5 JEC.
+	  
+	  edm::Handle<double> rhoHandle;
+	  iEvent.getByLabel( edm::InputTag("kt6PFJetsForIsolation", "rho"), rhoHandle);
+	  double rho = * rhoHandle;
+	  
+	  for(reco::PFJetCollection::const_iterator it = AK5Collection->begin(), end = AK5Collection->end(); it != end; it++) {    
+	    if (it == AK5Collection->begin())
+	       output_ << "#    AK5" << "              px              py              pz          energy             jec            area     no_of_const     chrg_multip    neu_had_frac     neu_em_frac   chrg_had_frac    chrg_em_frac" << endl;
+	    
+	    px = it->px();
+	    py = it->py();
+	    pz = it->pz();
+	    energy = it->energy();
+	    area = it->jetArea();
+	    
+	    // JEC Factor.
+	    
+	    AK5JetCorrector_->setJetEta(it->eta());
+	    AK5JetCorrector_->setJetPt(it->pt());
+	    AK5JetCorrector_->setJetA(it->jetArea());
+	    AK5JetCorrector_->setRho(rho);
+	         
+	    double correction = AK5JetCorrector_->getCorrection();
+	
+	    // Jet Quality Cut Parameters.
+	
+	    double neutral_hadron_fraction = it->neutralHadronEnergy() / it->energy();
+	    double neutral_em_fraction = it->neutralEmEnergy() / it->energy();
+	    int number_of_constituents = it->nConstituents();
+	    double charged_hadron_fraction = it->chargedHadronEnergy() / it->energy();
+	    int charged_multiplicity = it->chargedMultiplicity();
+	    double charged_em_fraction = it->chargedEmEnergy() / it->energy();
+	 
+	    output_ << "     AK5"
+	        << setw(16) << fixed << setprecision(8) << px
+	        << setw(16) << fixed << setprecision(8) << py
+	        << setw(16) << fixed << setprecision(8) << pz
+	        << setw(16) << fixed << setprecision(8) << energy
+	        << setw(16) << fixed << setprecision(8) << correction
+	        << setw(16) << fixed << setprecision(8) << area   
+	        << setw(16) << fixed << setprecision(8) << number_of_constituents   
+	        << setw(16) << fixed << setprecision(8) << charged_multiplicity  
+	        << setw(16) << fixed << setprecision(8) << neutral_hadron_fraction   
+	        << setw(16) << fixed << setprecision(8) << neutral_em_fraction   
+	        << setw(16) << fixed << setprecision(8) << charged_hadron_fraction    
+	        << setw(16) << fixed << setprecision(8) << charged_em_fraction       
+	        << endl;
+	  }
+	  
+	  
+	  // Get PFCandidates.
+	  for(reco::PFCandidateCollection::const_iterator it = PFCollection->begin(), end = PFCollection->end(); it != end; it++) {
+	    if (it == PFCollection->begin())
+	       output_ << "#    PFC" << "              px              py              pz          energy           pdgId" << endl;  
+	    
+	    px = it->px();
+	    py = it->py();
+	    pz = it->pz();
+	    energy = it->energy();
+	    int pdgId = it->pdgId();
+	    
+	    output_ << "     PFC"
+	        << setw(16) << fixed << setprecision(8) << px
+	        << setw(16) << fixed << setprecision(8) << py
+	        << setw(16) << fixed << setprecision(8) << pz
+	        << setw(16) << fixed << setprecision(8) << energy
+	        << setw(16) << noshowpos << pdgId
+	        << endl;
+	   }
+	   
+	   output_ << "EndEvent" << endl;
+	   
+	   fileOutput_ << output_.rdbuf();
+	   
+  	   eventSerialNumber_++;
+	   completedEvents_.insert(make_pair(make_pair(runNum, eventNum), 1));
+           completedEventsFileOutput_ << runNum << "\t" << eventNum << endl;
    }
    
-   output_.str("");
-   output_.clear(); // Clear state flags.
-
-   output_ << "BeginEvent Version " << dataVersion_ << " CMS_2010 Jet_Primary_Dataset" << endl;
-   
-   // Primary Vertices.
-   edm::Handle<VertexCollection> primaryVerticesHandle;
-   iEvent.getByLabel( edm::InputTag("offlinePrimaryVertices"), primaryVerticesHandle);   
-   
-   // Luminosity Block Begins
-   
-   LuminosityBlock const& iLumi = iEvent.getLuminosityBlock();
-   Handle<LumiSummary> lumi;
-   iLumi.getByLabel(lumiSummaryLabel_, lumi);
-      
-   // Luminosity Block Ends
-   output_ << "#   Cond          RunNum        EventNum       LumiBlock       validLumi     intgDelLumi     intgRecLumi     AvgInstLumi             NPV       timestamp        msOffset" << endl;
-   output_ << "    Cond"
-   	       << setw(16) << runNum
-	       << setw(16) << eventNum
-	       << setw(16) << lumiBlockNumber_
-   	       << setw(16) << lumi->isValid()
-   	       << setw(16) << lumi->intgDelLumi()
-   	       << setw(16) << lumi->intgRecLumi()
-   	       << setw(16) << lumi->avgInsDelLumi()
-   	       << setw(16) << primaryVerticesHandle->size()
-	       << setw(16) << iEvent.time().unixTime()
-	       << setw(16) << iEvent.time().microsecondOffset()
- 	       << endl;   
-
-   // timeValue = timeHigh (unixTime); timeValue = timeValue << 32; timeValue += microsecondsOffset;
-   
-
-   Handle<reco::PFCandidateCollection> PFCollection;
-   iEvent.getByLabel(PFCandidateInputTag_, PFCollection);
-   
-   Handle<TriggerResults> trigResults; 
-   iEvent.getByLabel(hltInputTag_, trigResults);
-   
-   edm::Handle<reco::PFJetCollection> AK5Collection;
-   iEvent.getByLabel(AK5PFInputTag_, AK5Collection);
-   
-   if ( ! PFCollection.isValid()){
-    cerr << "Invalid collection." << endl;
-    return;
-   }
-   
-   if ( ! AK5Collection.isValid()){
-    std::cerr << "Invalid collection." << std::endl;
-    return;
-   }
-   
-   
-   // Setup things for JEC factors.
-   
-   // Cluster with FastJet to get median background pt density.
-   
-   vector<PseudoJet> PFCForFastJet;
-   
-   double rapmin = std::numeric_limits<double>::min();
-   double rapmax = std::numeric_limits<double>::max();
-   for(reco::PFCandidateCollection::const_iterator it = PFCollection->begin(), end = PFCollection->end(); it != end; it++) {
-      PFCForFastJet.push_back(PseudoJet(it->px(), it->py(), it->pz(), it->energy()));
-      
-      if (it->rapidity() < rapmin)
-      	rapmin = it->rapidity();
-      if (it->rapidity() > rapmax)
-      	rapmax = it->rapidity();
-   }
-   
-   
-   // Record trigger information first.
-   
-   
-   // Get all trigger names associated with the "Jet" dataset.
-   const vector<string> triggerNames = hltConfig_.datasetContent("Jet");
-   
-   for (unsigned i = 0; i < triggerNames.size(); i++) {
-      if (i == 0)
-         output_ << "#   Trig                            Name      Prescale_1      Prescale_2          Fired?" << endl;
-      
-      string name = triggerNames[i];
-      
-      pair<int, int> prescale = hltConfig_.prescaleValues(iEvent, iSetup, name);
-
-      bool fired = triggerFired(name, ( * trigResults));
-
-      output_ << "    Trig"
-       	          << setw(32) << name
-	          << setw(16) << prescale.first
-	          << setw(16) << prescale.second
-                  << setw(16) << fired
-                  << endl;
-   }
-   
-  // Get AK5 Jets.
-  
-  // Setup background density for AK5 JEC.
-  
-  edm::Handle<double> rhoHandle;
-  iEvent.getByLabel( edm::InputTag("kt6PFJetsForIsolation", "rho"), rhoHandle);
-  double rho = * rhoHandle;
-  
-  for(reco::PFJetCollection::const_iterator it = AK5Collection->begin(), end = AK5Collection->end(); it != end; it++) {    
-    if (it == AK5Collection->begin())
-       output_ << "#    AK5" << "              px              py              pz          energy             jec            area     no_of_const     chrg_multip    neu_had_frac     neu_em_frac   chrg_had_frac    chrg_em_frac" << endl;
-    
-    px = it->px();
-    py = it->py();
-    pz = it->pz();
-    energy = it->energy();
-    area = it->jetArea();
-    
-    // JEC Factor.
-    
-    AK5JetCorrector_->setJetEta(it->eta());
-    AK5JetCorrector_->setJetPt(it->pt());
-    AK5JetCorrector_->setJetA(it->jetArea());
-    AK5JetCorrector_->setRho(rho);
-         
-    double correction = AK5JetCorrector_->getCorrection();
-
-    // Jet Quality Cut Parameters.
-
-    double neutral_hadron_fraction = it->neutralHadronEnergy() / it->energy();
-    double neutral_em_fraction = it->neutralEmEnergy() / it->energy();
-    int number_of_constituents = it->nConstituents();
-    double charged_hadron_fraction = it->chargedHadronEnergy() / it->energy();
-    int charged_multiplicity = it->chargedMultiplicity();
-    double charged_em_fraction = it->chargedEmEnergy() / it->energy();
- 
-    output_ << "     AK5"
-        << setw(16) << fixed << setprecision(8) << px
-        << setw(16) << fixed << setprecision(8) << py
-        << setw(16) << fixed << setprecision(8) << pz
-        << setw(16) << fixed << setprecision(8) << energy
-        << setw(16) << fixed << setprecision(8) << correction
-        << setw(16) << fixed << setprecision(8) << area   
-        << setw(16) << fixed << setprecision(8) << number_of_constituents   
-        << setw(16) << fixed << setprecision(8) << charged_multiplicity  
-        << setw(16) << fixed << setprecision(8) << neutral_hadron_fraction   
-        << setw(16) << fixed << setprecision(8) << neutral_em_fraction   
-        << setw(16) << fixed << setprecision(8) << charged_hadron_fraction    
-        << setw(16) << fixed << setprecision(8) << charged_em_fraction       
-        << endl;
-  }
-  
-  
-  // Get PFCandidates.
-  for(reco::PFCandidateCollection::const_iterator it = PFCollection->begin(), end = PFCollection->end(); it != end; it++) {
-    if (it == PFCollection->begin())
-       output_ << "#    PFC" << "              px              py              pz          energy           pdgId" << endl;  
-    
-    px = it->px();
-    py = it->py();
-    pz = it->pz();
-    energy = it->energy();
-    int pdgId = it->pdgId();
-    
-    output_ << "     PFC"
-        << setw(16) << fixed << setprecision(8) << px
-        << setw(16) << fixed << setprecision(8) << py
-        << setw(16) << fixed << setprecision(8) << pz
-        << setw(16) << fixed << setprecision(8) << energy
-        << setw(16) << noshowpos << pdgId
-        << endl;
-   }
-   
-   output_ << "EndEvent" << endl;
-   
-   fileOutput_ << output_.rdbuf();
-   
-   eventSerialNumber_++;
 }
 
 void PFCandidateProducer::beginJob() {
@@ -390,7 +410,6 @@ void PFCandidateProducer::beginJob() {
    int line_number = 1;
 
    string line;
-   // while ((getline(registry, line)) && (line_number < 100000000)) {
    while (getline(registry, line)) {
 
       if (line_number % 100000 == 0)
@@ -410,6 +429,26 @@ void PFCandidateProducer::beginJob() {
       line_number++;
    }
    
+   // Load completed events to the vector "completedEvents_"
+   ifstream completedFile(completedLogFilename_.c_str());
+   
+   line_number = 1;
+   while(getline(completedFile, line)) {
+      if (line_number % 100000 == 0)
+         cout << "On line number " << line_number << endl;
+      istringstream iss(line);
+      int event_number, run_number;
+      iss >> run_number >> event_number;
+      
+      completedEvents_.insert(make_pair(make_pair(run_number, event_number), 1));
+
+      line_number++;
+   }
+
+
+   completedEventsFileOutput_.open(completedLogFilename_.c_str(), ios::out | ios::app );
+
+
 }
 
 void PFCandidateProducer::endJob() {
@@ -433,9 +472,6 @@ void PFCandidateProducer::beginRun(edm::Run & iRun, edm::EventSetup const & iSet
       edm::LogError("TopPairElectronPlusJetsSelectionFilter_Error")
       << "Error! HLT config extraction with process name " << hltInputTag_.process() << " failed";
    }
-
-
-  cout << "This is beginJob()" << endl;
 
 }
 
