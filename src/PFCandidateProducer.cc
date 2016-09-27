@@ -175,16 +175,16 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
    // Check if we've already processed this event.
    // Proceed only if we haven't.
 
+   
    if (completedEvents_.find(make_pair(runNum, eventNum)) == completedEvents_.end()) {
-	//cout << "Skipping event " << eventNum << " since it was already processed." << endl;
-   }
-   else {
 
 	   //cout << "Found event " << eventNum << " " << runNum << endl;
 
 	
 	   outputFilename_ = outputDir_ + "/" + registry_info_[make_pair(runNum, eventNum)] + ".mod";
 	   
+	   //cout << "Writing to " << outputFilename_ << endl; 
+
 	   if ((eventSerialNumber_ == 1) || (outputFilename_ != lastOutputFilename_)) {
 	      fileOutput_.close();
 	      fileOutput_.open(outputFilename_.c_str(), ios::out | ios::app );
@@ -366,6 +366,9 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
   	   eventSerialNumber_++;
 	   completedEvents_.insert(make_pair(make_pair(runNum, eventNum), 1));
            completedEventsFileOutput_ << runNum << "\t" << eventNum << endl;
+   }
+   else {
+	cout << "Skipping event " << eventNum << " since it was already processed." << endl;
    }
    
 }

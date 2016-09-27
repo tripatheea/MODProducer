@@ -25,14 +25,23 @@ files_to_process = []
 if os.path.isdir(input_dir):
 	for file in os.listdir(input_dir):
 		if file.endswith("root"):
-			output_file = output_dir + "/" + file + ".mod"
-			files_to_process.append("file://" + input_dir + "/" + file)
+			output_file = output_dir + "/" + file[:-5] + ".mod"
 			
+			'''
+			if not os.path.exists(output_file):
+				files_to_process.append("file://" + input_dir + "/" + file)
+			else:
+				#print "{} is already in the directory so skipping.".format(output_file)
+				pass
+			'''
+			files_to_process.append("file://" + input_dir + "/" + file)
 			is_input_directory = True
 			
 			
 else:
 	files_to_process.append("file://" + input_dir)
+
+print "Total number of files processing = ", len(files_to_process)
 
 readFiles = cms.untracked.vstring()
 readFiles.extend(files_to_process)
