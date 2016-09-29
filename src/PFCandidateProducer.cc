@@ -11,6 +11,7 @@
 #include <sys/time.h>
 #include <sys/stat.h>
 
+
 #include <boost/unordered_map.hpp>
 
 #include "FWCore/Framework/interface/Frameworkfwd.h"
@@ -51,6 +52,7 @@
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 
 #include "DataFormats/Provenance/interface/Timestamp.h"
+
 
 
 using namespace std;
@@ -196,6 +198,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
 	
 	   output_ << "BeginEvent Version " << dataVersion_ << " CMS_2010 Jet_Primary_Dataset" << endl;
 	   
+	   
 	   // Primary Vertices.
 	   edm::Handle<VertexCollection> primaryVerticesHandle;
 	   iEvent.getByLabel( edm::InputTag("offlinePrimaryVertices"), primaryVerticesHandle);   
@@ -223,7 +226,7 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
 	
 	   // timeValue = timeHigh (unixTime); timeValue = timeValue << 32; timeValue += microsecondsOffset;
 	   
-	
+	   
 	   Handle<reco::PFCandidateCollection> PFCollection;
 	   iEvent.getByLabel(PFCandidateInputTag_, PFCollection);
 	   
@@ -359,8 +362,10 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
 	        << endl;
 	   }
 	   
+	   
 	   output_ << "EndEvent" << endl;
 	   
+
 	   fileOutput_ << output_.rdbuf();
 	   
   	   eventSerialNumber_++;
