@@ -10,7 +10,7 @@
 #include <algorithm>
 #include <sys/time.h>
 #include <sys/stat.h>
-
+#include <string>
 
 #include <boost/unordered_map.hpp>
 
@@ -53,7 +53,7 @@
 
 #include "DataFormats/Provenance/interface/Timestamp.h"
 
-
+#include "FWCore/Utilities/interface/Exception.h"
 
 using namespace std;
 using namespace edm;
@@ -76,7 +76,7 @@ private:
    virtual void endRun(edm::Run&, edm::EventSetup const&);
    virtual void beginLuminosityBlock(edm::LuminosityBlock&, edm::EventSetup const&);
    virtual void endLuminosityBlock(edm::LuminosityBlock&, edm::EventSetup const&);
-
+   string to_string(int n);
 
 
    bool triggerFired(const string& triggerWildCard, const TriggerResults& triggerResults);
@@ -120,14 +120,15 @@ private:
    
    string registry_filename_;
    string completedLogFilename_;
-   boost::unordered_map<pair<int, int>, string> registry_info_;
+   boost::unordered_map<string, string> registry_info_;
    
-   boost::unordered_map<pair<int, int>, int> completedEvents_;
+   boost::unordered_map<string, int> completedEvents_;
    
    ifstream mapNumbersFile_;
    ifstream completedLogFile_;
 
    ofstream completedEventsFileOutput_;
+   ofstream logFileOutput_; 
 
    string outputDir_;
    ofstream fileOutput_;
@@ -140,6 +141,8 @@ private:
    
    InputTag primaryVertices_;
    string dataVersion_;
+
+   bool skipNextEvent_;
 };
 
 
@@ -160,7 +163,10 @@ PFCandidateProducer::PFCandidateProducer(const ParameterSet& iConfig)
   outputDir_ = iConfig.getParameter<string>("outputDir");
   outputFilename_ = "";
   lastOutputFilename_ = "";
-	  
+
+  logFileOutput_.open("log.log", ios::out | ios::app );
+
+  skipNextEvent_ = false;
 }
 
 
@@ -168,7 +174,26 @@ PFCandidateProducer::~PFCandidateProducer() {
 
 }
 
+
+std::string PFCandidateProducer::to_string ( int number ) {
+  std::ostringstream oss;
+
+  // Works just like cout
+  oss<< number;
+
+  // Return the underlying string
+  return oss.str();
+}
+
+
 void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
+   
+   if (skipNextEvent_) {
+	skipNextEvent_ = false;
+	return;
+   }
+
+
 
    runNum = iEvent.id().run();
    eventNum = iEvent.id().event();
@@ -176,14 +201,43 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
    
    // Check if we've already processed this event.
    // Proceed only if we haven't.
+   //cout << "The numbers are: " << runNum << " " << eventNum << " " << lumiBlockNumber_ << endl;
 
    
-   if (completedEvents_.find(make_pair(runNum, eventNum)) == completedEvents_.end()) {
+   if (registry_info_[to_string(runNum) + "_" + to_string(eventNum)] == "2CA2CA37-6871-E011-822B-003048C6928C") {
+	//cout << eventNum << " " << runNum << endl;
 
+	if ( ((runNum == 146436) && (eventNum == 107624154)) ) {
+		cout << "Skipping event " << runNum << " " << eventNum << " since it's corrupted." << endl;
+		return;
+	}
+
+
+	if ((runNum == 147757) && (eventNum == 204316912)) {
+		cout << "I think I am going to skip the next event." << endl;
+		skipNextEvent_ = true;
+	}
+
+   }
+   else if (registry_info_[to_string(runNum) + "_" + to_string(eventNum)] == "92EF2643-BB71-E011-B4D5-003048F02D36") {
+	//cout << eventNum << " " << runNum << endl;
+
+	if ( ((runNum == 147453) && (eventNum == 84229266)) ) {
+		cout << "Skipping event " << runNum << " " << eventNum << " since it's corrupted." << endl;
+		return;
+	}
+
+
+	
+
+   }
+   
+   if (completedEvents_.find(to_string(runNum) + "_" + to_string(eventNum)) == completedEvents_.end()) {
+     try {
 	   //cout << "Found event " << eventNum << " " << runNum << endl;
 
 	
-	   outputFilename_ = outputDir_ + "/" + registry_info_[make_pair(runNum, eventNum)] + ".mod";
+	   outputFilename_ = outputDir_ + "/" + registry_info_[to_string(runNum) + "_" + to_string(eventNum)] + ".mod";
 	   
 	   //cout << "Writing to " << outputFilename_ << endl; 
 
@@ -369,8 +423,13 @@ void PFCandidateProducer::produce(Event& iEvent, const EventSetup& iSetup) {
 	   fileOutput_ << output_.rdbuf();
 	   
   	   eventSerialNumber_++;
-	   completedEvents_.insert(make_pair(make_pair(runNum, eventNum), 1));
+	   completedEvents_.insert(make_pair(to_string(runNum) + "_" + to_string(eventNum), 1));
            completedEventsFileOutput_ << runNum << "\t" << eventNum << endl;
+     }
+     catch (const cms::Exception e) {
+	cout << "Boston, we have a problem!" << endl;
+	logFileOutput_ << "Error for " << runNum << ", " << eventNum << " in " << registry_info_[to_string(runNum) + "_" + to_string(eventNum)] << e << endl;
+     }
    }
    else {
 	cout << "Skipping event " << eventNum << " since it was already processed." << endl;
@@ -432,7 +491,7 @@ void PFCandidateProducer::beginJob() {
 
       //registry_info_.emplace(registry_event_number, root_filename.substr(0, 36));  // 36 because the filenames without extensions are 37 characters long.
       //registry_info_[registry_event_number] = root_filename.substr(0, 36);
-      registry_info_.insert(make_pair(make_pair(registry_run_number, registry_event_number), root_filename.substr(0, 36)));
+      registry_info_.insert(make_pair(to_string(registry_run_number) + "_" + to_string(registry_event_number), root_filename.substr(0, 36)));
 
       line_number++;
    }
@@ -448,7 +507,7 @@ void PFCandidateProducer::beginJob() {
       int event_number, run_number;
       iss >> run_number >> event_number;
       
-      completedEvents_.insert(make_pair(make_pair(run_number, event_number), 1));
+      completedEvents_.insert(make_pair(to_string(run_number) + "_" + to_string(event_number), 1));
 
       line_number++;
    }
