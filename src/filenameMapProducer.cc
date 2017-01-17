@@ -41,7 +41,6 @@ private:
 
    ofstream fileOutput_;
    string currentProcessingFilename_;
-   string currentFileDir_;
    string outputFilename_;
 
 };
@@ -50,7 +49,6 @@ private:
 
 filenameMapProducer::filenameMapProducer(const ParameterSet& iConfig)
 : currentProcessingFilename_(iConfig.getParameter<string>("filename")),
-  currentFileDir_(iConfig.getParameter<string>("file_dir")),
   outputFilename_(iConfig.getParameter<string>("outputFile"))
 {
   fileOutput_.open(outputFilename_.c_str(), std::fstream::out | std::fstream::app);
@@ -66,7 +64,7 @@ void filenameMapProducer::produce(Event& iEvent, const EventSetup& iSetup) {
    int runNum = iEvent.id().run();
    int eventNum = iEvent.id().event();
    
-   fileOutput_ << eventNum << " " << runNum << " " << currentFileDir_ << " " << currentProcessingFilename_ << endl;
+   fileOutput_ << eventNum << " " << runNum << " " << currentProcessingFilename_ << endl;
 }
 
 void filenameMapProducer::beginJob() {

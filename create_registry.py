@@ -3,34 +3,36 @@ import os
 from time import time
 import sys
 
-path = sys.argv[1]
+file_with_source_paths = sys.argv[1]
 registry_file_path = sys.argv[2]
+
 log_file_path = str(registry_file_path) + "_log.log"
 
 
 def get_files_already_in_registry(registry_file):
 
-	f = open(registry_file, "wb")
+	f = open(registry_file, "a")
 	f.close()
 
 	files = set()
 	with open(registry_file) as f:
 		for line in f:
-			files.add( line.split(" ")[3].split("\n")[0] )
+			if len(line) > 1:
+				files.add( line.split(" ")[2].split("\n")[0] )
+				print "Adding ", line.split(" ")
 
 	return list(files)
 
 def create_registry(path, log_file_path):
 	
 	files_already_processed = get_files_already_in_registry(registry_file_path)
-	files_already_processed = []
+	print "File already processed", files_already_processed
 	
 	files_to_process = []
-	for f1 in os.listdir(path):
-		if (f1.endswith("root")) and f1 not in files_already_processed:
-			root_file = "file://" + path + f1
-			files_to_process.append(root_file)
-	
+	with open(path, 'r') as f:
+		for line in f:
+			files_to_process.append(line.strip("\n"))
+
 	for root_file in sorted(files_to_process):			
 		stdoutdata, stderrdata = subprocess.Popen(["cmsRun", "filenameRun.py", root_file, registry_file_path]).communicate()
 		
@@ -40,7 +42,7 @@ def create_registry(path, log_file_path):
 			log_file.close()
 start = time()
 
-create_registry(path, log_file_path)
+create_registry(file_with_source_paths, log_file_path)
 
 end = time()
 

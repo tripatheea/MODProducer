@@ -485,9 +485,9 @@ void PFCandidateProducer::beginJob() {
       istringstream iss(line);
 
       int registry_event_number, registry_run_number;
-      string file_path, root_filename;
+      string root_filename;
 
-      iss >> registry_event_number >> registry_run_number >> file_path >> root_filename;
+      iss >> registry_event_number >> registry_run_number >> root_filename;
 
       //registry_info_.emplace(registry_event_number, root_filename.substr(0, 36));  // 36 because the filenames without extensions are 37 characters long.
       //registry_info_[registry_event_number] = root_filename.substr(0, 36);

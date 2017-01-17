@@ -67,17 +67,19 @@ process.GlobalTag.globaltag = 'GR_R_42_V25::All'
 #missing = ["root://eospublic.cern.ch/eos/opendata/cms/Run2010B/Jet/AOD/Apr21ReReco-v1/0000/" + f for f in missing_0000_files]
 #missing = ["file:///media/sf_37DCD64877C7286B/eos/opendata/cms/Run2010B/Jet/AOD/Apr21ReReco-v1/0000/" + f for f in missing_0000_files]
 
-#missing_0001_files = ["EC8896A7-A871-E011-B238-003048F0E3AE.root", "EAF18B48-4C71-E011-8E29-003048C68F6A.root"]
 
+#missing_0001_files = ["root://eospublic.cern.ch/eos/opendata/cms/Run2010B/Jet/AOD/Apr21ReReco-v1/0005/3AB36CE1-B171-E011-9090-0025901D4D20.root"]
 
-#missing = missing_0001_files
+missing_0004_files = ["root://eospublic.cern.ch//eos/opendata/cms/Run2010B/Jet/AOD/Apr21ReReco-v1/0004/A2438A46-F670-E011-870D-0030487D5E99.root",  "root://eospublic.cern.ch//eos/opendata/cms/Run2010B/Jet/AOD/Apr21ReReco-v1/0004/7690669D-7A7A-E011-A965-00266CF32BC4.root",  "root://eospublic.cern.ch//eos/opendata/cms/Run2010B/Jet/AOD/Apr21ReReco-v1/0004/E6CA74C3-6871-E011-9741-00266CF3322C.root",  "root://eospublic.cern.ch//eos/opendata/cms/Run2010B/Jet/AOD/Apr21ReReco-v1/0004/6C01FCC9-2D71-E011-BF9F-003048F0E828.root",  "root://eospublic.cern.ch//eos/opendata/cms/Run2010B/Jet/AOD/Apr21ReReco-v1/0004/6A9501B4-A171-E011-9A9F-002481E0D678.root",  "root://eospublic.cern.ch//eos/opendata/cms/Run2010B/Jet/AOD/Apr21ReReco-v1/0004/7A5313F0-EF70-E011-B524-003048D3CD6C.root",  "root://eospublic.cern.ch//eos/opendata/cms/Run2010B/Jet/AOD/Apr21ReReco-v1/0004/CE25A42B-7571-E011-B765-002481E0E440.root",  "root://eospublic.cern.ch//eos/opendata/cms/Run2010B/Jet/AOD/Apr21ReReco-v1/0004/D461164C-9671-E011-BCE2-002481E0D66C.root",  "root://eospublic.cern.ch//eos/opendata/cms/Run2010B/Jet/AOD/Apr21ReReco-v1/0004/EAB08582-5471-E011-9A73-00237DDCBEA4.root",  "root://eospublic.cern.ch//eos/opendata/cms/Run2010B/Jet/AOD/Apr21ReReco-v1/0004/64D9366D-EE70-E011-9AD3-002481E0DE14.root"]
 
-#readFiles = cms.untracked.vstring()
-#readFiles.extend(missing)
+missing = missing_0004_files
+
+readFiles = cms.untracked.vstring()
+readFiles.extend(missing)
 
 process.source = cms.Source("PoolSource", fileNames=readFiles)
 
-#print missing
+print missing
 
 
 
