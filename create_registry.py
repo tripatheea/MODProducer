@@ -1,3 +1,21 @@
+"""
+Utility for creating a "registry" / "map" between event and run numbers against which file each of those events should go to. 
+This is done to maintain the same local directory structure as in CMS' servers for all AOD files.
+
+Usage:
+
+1) First intialize CMS environment variables with:
+
+cmsenv
+
+2) Then, do:
+
+python ./create_registry.py <input_path> <path_to_registry_file.dat>
+
+where <input_path> is the path to the directory of your AOD files, and <path_to_registry_file.dat> is the path to a data file you'd like to write the registry to. The file need not exist but it needs to be a path to a file and not a directory.
+
+"""
+
 import subprocess
 import os
 from time import time
