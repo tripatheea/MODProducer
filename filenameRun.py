@@ -28,7 +28,6 @@ process.filenameMapProducer = cms.EDProducer("filenameMapProducer",
 						outputFile = cms.string(registry_file_path) 
 						)
 
-
 process.MessageLogger = cms.Service("MessageLogger",
         				default   =  cms.untracked.PSet(
                                                      timespan = cms.untracked.int32(60)
